@@ -419,14 +419,6 @@
                         <option value="50">Inkoop: 50%</option>
                     </select>
                     
-                    <select id="customerDiscount" style="padding:10px; border-radius:6px; border:1px solid var(--border);" onchange="renderStockTable()">
-                        <option value="0">Klant: 0% korting</option>
-                        <option value="5">Klant: 5% korting</option>
-                        <option value="10">Klant: 10% korting</option>
-                        <option value="15">Klant: 15% korting</option>
-                        <option value="20">Klant: 20% korting</option>
-                    </select>
-                    
                     <input type="text" id="searchStock" placeholder="Zoek SKU/Naam..." onkeyup="renderStockTable()" style="padding:10px; border-radius:6px; border:1px solid var(--border);">
                 </div>
             </div>
@@ -434,14 +426,14 @@
             <div class="dashboard-cards">
                 <div class="card-stat"><h3>VP in Stock</h3><p style="font-size:1.5rem; font-weight:bold; margin:10px 0 0 0;" id="dash-vp">0.00</p></div>
                 <div class="card-stat" style="border-color:var(--warning);"><h3>Inkoopwaarde</h3><p style="font-size:1.5rem; font-weight:bold; margin:10px 0 0 0;" id="dash-inkoop">€ 0.00</p></div>
-                <div class="card-stat" style="border-color:#9b59b6;"><h3>Verkoopwaarde</h3><p style="font-size:1.5rem; font-weight:bold; margin:10px 0 0 0;" id="dash-verkoop">€ 0.00</p></div>
+                <div class="card-stat" style="border-color:#9b59b6;"><h3>Verkoopwaarde (advies)</h3><p style="font-size:1.5rem; font-weight:bold; margin:10px 0 0 0;" id="dash-verkoop">€ 0.00</p></div>
                 <div class="card-stat" style="border-color:var(--success);"><h3>Potentiële Winst</h3><p style="font-size:1.5rem; font-weight:bold; margin:10px 0 0 0; color:var(--success);" id="dash-winst">€ 0.00</p></div>
             </div>
 
             <div class="stock-layout">
                 <div class="card" style="padding:0; overflow:hidden;">
                     <table id="stockTable">
-                        <thead><tr><th>Product</th><th>VP</th><th>Klant (€)</th><th>Inkoop (€)</th><th>Winst (€)</th><th>Voorraad</th><th>Acties</th></tr></thead>
+                        <thead><tr><th>Product</th><th>VP</th><th>Klant (€)</th><th>Inkoop (€)</th><th>Max. Winst (€)</th><th>Voorraad</th><th>Acties</th></tr></thead>
                         <tbody id="stockTableBody"></tbody>
                     </table>
                 </div>
@@ -978,7 +970,6 @@
     function renderStockTable() {
         const tbody = document.getElementById('stockTableBody');
         const disc = parseFloat(document.getElementById('discountSelect').value) / 100;
-        const custDisc = parseFloat(document.getElementById('customerDiscount').value) / 100;
         const search = document.getElementById('searchStock').value.toLowerCase();
         tbody.innerHTML = '';
         
@@ -989,7 +980,7 @@
             const count = myStock[p.sku] || 0;
             
             const buyPrice = p.retail * (1 - disc);
-            const sellPrice = p.retail * (1 - custDisc);
+            const sellPrice = p.retail; // In the table, we show 0% discount by default to calculate max potential
             const profit = sellPrice - buyPrice;
 
             if(count > 0) { tVP += (p.vp * count); tBuy += (buyPrice * count); tRet += (sellPrice * count); tProf += (profit * count); }
@@ -1017,7 +1008,14 @@
                     </td>
                     <td>
                         <div class="actie-cel">
-                            <button class="btn-primary" style="padding:6px 12px; font-size:0.8rem;" onclick="sellProduct('${p.sku}', ${profit})" ${count===0?'disabled':''}>Verkoop</button>
+                            <select id="cdisc-${p.sku}" style="padding:4px; border-radius:4px; border:1px solid #ccc; font-size:0.75rem;">
+                                <option value="0">0%</option>
+                                <option value="5">5%</option>
+                                <option value="10">10%</option>
+                                <option value="15">15%</option>
+                                <option value="20">20%</option>
+                            </select>
+                            <button class="btn-primary" style="padding:6px 12px; font-size:0.8rem;" onclick="sellProduct('${p.sku}')" ${count===0?'disabled':''}>Verkoop</button>
                             <button class="btn-danger" style="padding:6px 12px; font-size:0.8rem;" onclick="usePersonal('${p.sku}')" ${count===0?'disabled':''}>Demo</button>
                         </div>
                     </td>
@@ -1039,9 +1037,18 @@
         saveInventory(); 
     }
 
-    function sellProduct(sku, profit) {
+    function sellProduct(sku) {
         const p = dbProducts.find(x => x.sku === sku);
         if (p && (myStock[sku] || 0) > 0) {
+            // Bereken exacte winst op basis van specifieke korting
+            const coachDisc = parseFloat(document.getElementById('discountSelect').value) / 100;
+            const custDiscSelect = document.getElementById(`cdisc-${sku}`);
+            const custDisc = custDiscSelect ? parseFloat(custDiscSelect.value) / 100 : 0;
+            
+            const buyPrice = p.retail * (1 - coachDisc);
+            const sellPrice = p.retail * (1 - custDisc);
+            const profit = sellPrice - buyPrice;
+
             myStock[sku] -= 1;
             
             // Voeg toe aan geschiedenis
@@ -1051,7 +1058,7 @@
             // Koppel aan klant
             const linkedId = document.getElementById('link-client-select').value;
             if(linkedId && clients[linkedId]) {
-                const n = `[${new Date().toLocaleDateString()}] Gekocht: 1x ${p.name}\n`;
+                const n = `[${new Date().toLocaleDateString()}] Gekocht: 1x ${p.name} (${custDisc*100}% korting)\n`;
                 const oldNotes = clients[linkedId].notes || (clients[linkedId].fiche && clients[linkedId].fiche.notes) || "";
                 db.collection('coaches').doc(currentCoach).collection('clients').doc(linkedId).set({ notes: n + oldNotes }, { merge: true });
                 document.getElementById('link-client-select').value = ""; 
