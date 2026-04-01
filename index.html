@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HBL-Connect</title>
+    <title>HBL-Connect Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -19,8 +19,8 @@
         
         /* --- MENU --- */
         #app-sidebar { width: 250px; background: var(--sidebar); color: white; display: flex; flex-direction: column; z-index: 100; box-shadow: 2px 0 10px rgba(0,0,0,0.1);}
-        .branding { padding: 20px; font-weight: 700; font-size: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .branding span { color: var(--theme-color); }
+        .branding { padding: 20px; font-weight: 700; font-size: 1.4rem; border-bottom: 1px solid rgba(255,255,255,0.1); letter-spacing: 1px; }
+        .branding span { color: var(--hb-green); }
         .coach-box { padding: 20px; background: rgba(0,0,0,0.2); }
         .coach-select { width: 100%; padding: 10px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; outline: none;}
         .nav-menu { flex: 1; padding: 20px 0; list-style: none; margin: 0; }
@@ -49,6 +49,7 @@
         .btn-primary:hover { filter: brightness(1.1); }
         .btn-danger { background: white; color: var(--danger); border: 1px solid var(--danger); padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight:bold; }
         .btn-success { background: var(--success); color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;}
+        .btn-warning { background: var(--warning); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;}
 
         /* --- 1. EVALUATIE VIEW (MET INFOMUUR) --- */
         #view-eval { flex-direction: row; align-items: stretch; background: var(--bg-light); padding: 0;}
@@ -80,6 +81,11 @@
         #client-list { flex: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
         .client-item { padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; display: flex; justify-content: space-between; align-items: center;}
         .client-item.active { background: var(--theme-color); font-weight: bold; }
+        
+        /* Non-actief styling */
+        .client-inactive { opacity: 0.5; background: rgba(0,0,0,0.2); }
+        .client-inactive.active { background: #555; opacity: 1; }
+        
         .badge-alert { background: var(--danger); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; animation: pulse 2s infinite;}
         
         #fu-workspace { flex: 1; background: white; overflow-y: auto; display: flex; flex-direction: column; }
@@ -101,7 +107,7 @@
         th { background: #f8fafc; color: #7f8c8d; text-transform: uppercase; font-size: 0.75rem;}
         .cat-row { background: var(--sidebar-dark); color: white; font-weight: bold; cursor: pointer; }
         
-        /* Nieuwe Stock Knoppen */
+        /* Stock Knoppen (Groot) */
         .btn-qty { background: #e0e6ed; border: none; width: 28px; height: 28px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; color: #333; transition: 0.2s;}
         .btn-qty:hover { background: #cbd5e1; }
         
@@ -116,8 +122,6 @@
         .history-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;}
         .btn-undo { background: #e0e0e0; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; color: #333;}
         .btn-undo:hover { background: var(--danger); color: white; }
-        
-        /* Euroteken naast elkaar houden */
         .profit-green { color: var(--success); font-weight: bold; white-space: nowrap; }
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
@@ -126,7 +130,7 @@
 <body>
 
     <div id="app-sidebar">
-        <div class="branding">HBL <span id="brand-coach">Andreas</span></div>
+        <div class="branding">HBL-Connect <span>Pro</span></div>
         <div class="coach-box">
             <select id="coach-selector" class="coach-select" onchange="switchCoach()">
                 <option value="Andreas">Andreas</option>
@@ -283,6 +287,7 @@
                             <span id="header-client-phone" style="color:#888; font-size:0.9rem;">Telefoon</span>
                         </div>
                         <div>
+                            <button id="btn-toggle-active" class="btn-warning" style="margin-right:10px;" onclick="toggleActiveStatus()">Zet Inactief</button>
                             <button id="wa-btn" class="btn-success" style="background:#25D366; margin-right:10px;" onclick="openWA()">WhatsApp</button>
                             <button class="btn-danger" onclick="deleteClient()">Dossier Verwijderen</button>
                         </div>
@@ -440,7 +445,7 @@
                     </div>
 
                     <div class="card">
-                        <h3>🙋‍♂️ Persoonlijk Gebruik</h3>
+                        <h3>🙋‍♂️ Demo / Persoonlijk Gebruik</h3>
                         <ul class="history-list" id="personal-use-list"></ul>
                     </div>
                 </div>
@@ -482,58 +487,96 @@
         {t: "Veel dorst/plassen", f: ["Stress", "Vezels", "Eiwitten"]}, {t: "Slechte slaper", f: ["Stress", "Vezels", "Water"]}
     ];
 
-    // Uitgebreide PDF Product Data
+    // Geüpdatete Productenlijst 
     const dbProducts = [
-        // ALOE & THEE
-        { cat: "ONTBIJT & DRANKEN", sku: "1188", name: "Herbal Aloe Drank Original - 1.9L", vp: 91.10, retail: 190.90 },
-        { cat: "ONTBIJT & DRANKEN", sku: "0006", name: "Herbal Aloë Drank Original - 473 ml", vp: 24.95, retail: 52.80 },
-        { cat: "ONTBIJT & DRANKEN", sku: "1065", name: "Herbal Aloë Drank Mango - 473 ml", vp: 24.95, retail: 52.80 },
-        { cat: "ONTBIJT & DRANKEN", sku: "1196", name: "Herbal Aloë Max - 473 ml", vp: 28.15, retail: 61.70 },
-        { cat: "ONTBIJT & DRANKEN", sku: "166K", name: "Instant Theedrank Original - 102 g", vp: 34.95, retail: 73.25 },
-        { cat: "ONTBIJT & DRANKEN", sku: "0105", name: "Instant Theedrank Original - 50 g", vp: 19.95, retail: 41.85 },
-        { cat: "ONTBIJT & DRANKEN", sku: "0106", name: "Instant Theedrank Citroen - 50 g", vp: 19.95, retail: 41.85 },
-        { cat: "ONTBIJT & DRANKEN", sku: "0255", name: "Instant Theedrank Perzik - 50 g", vp: 19.95, retail: 41.85 },
-        { cat: "ONTBIJT & DRANKEN", sku: "0257", name: "Instant Theedrank Framboos - 50 g", vp: 19.95, retail: 41.85 },
+        // ONTBIJT & DRANKEN
+        { cat: "ONTBIJT & DRANKEN", sku: "1188", name: "Herbal Aloe Drank Original 1,9L", vp: 91.10, retail: 190.90 },
+        { cat: "ONTBIJT & DRANKEN", sku: "0006", name: "Herbal Aloë Drank Original 473ml", vp: 24.95, retail: 52.80 },
+        { cat: "ONTBIJT & DRANKEN", sku: "1065", name: "Herbal Aloë Drank Mango 473ml", vp: 24.95, retail: 52.80 },
+        { cat: "ONTBIJT & DRANKEN", sku: "1196", name: "Herbal Aloë Max 473ml", vp: 28.15, retail: 61.70 },
+        { cat: "ONTBIJT & DRANKEN", sku: "166K", name: "Instant Theedrank Original 102g", vp: 34.95, retail: 73.25 },
+        { cat: "ONTBIJT & DRANKEN", sku: "165K", name: "Instant Theedrank Original 51g", vp: 19.95, retail: 38.25 },
+        { cat: "ONTBIJT & DRANKEN", sku: "167K", name: "Instant Theedrank Citroen 51g", vp: 19.95, retail: 38.25 },
+        { cat: "ONTBIJT & DRANKEN", sku: "168K", name: "Instant Theedrank Framboos 51g", vp: 19.95, retail: 38.25 },
+        { cat: "ONTBIJT & DRANKEN", sku: "169K", name: "Instant Theedrank Perzik 51g", vp: 19.95, retail: 38.25 },
         
         // F1 SHAKES
-        { cat: "F1 VOEDINGSSHAKES (550G)", sku: "4466", name: "F1 Shake Romige Vanille", vp: 23.95, retail: 60.90 },
-        { cat: "F1 VOEDINGSSHAKES (550G)", sku: "4468", name: "F1 Shake Zachte Chocolade", vp: 23.95, retail: 60.90 },
-        { cat: "F1 VOEDINGSSHAKES (550G)", sku: "4469", name: "F1 Shake Fris Aardbeien", vp: 23.95, retail: 60.90 },
-        { cat: "F1 VOEDINGSSHAKES (550G)", sku: "4470", name: "F1 Shake Banaan Crème", vp: 23.95, retail: 60.90 },
-        { cat: "F1 VOEDINGSSHAKES (550G)", sku: "4467", name: "F1 Shake Cookie Crunch", vp: 23.95, retail: 60.90 },
-        { cat: "F1 VOEDINGSSHAKES (550G)", sku: "4471", name: "F1 Shake Appel Kaneel", vp: 23.95, retail: 60.90 },
-        { cat: "F1 VOEDINGSSHAKES (550G)", sku: "4472", name: "F1 Shake Zomerse Bosvruchten", vp: 23.95, retail: 60.90 },
-        { cat: "F1 VOEDINGSSHAKES (550G)", sku: "2100", name: "F1 Shake Cafe Latte", vp: 23.95, retail: 60.90 },
+        { cat: "F1 SHAKES", sku: "4462", name: "F1 Shake Bananen Crème 550g", vp: 23.95, retail: 60.90 },
+        { cat: "F1 SHAKES", sku: "4463", name: "F1 Shake Frisse Aardbei 550g", vp: 23.95, retail: 60.90 },
+        { cat: "F1 SHAKES", sku: "4465", name: "F1 Shake Cafè Latte 550g", vp: 23.95, retail: 60.90 },
+        { cat: "F1 SHAKES", sku: "4466", name: "F1 Shake Romige Vanille 550g", vp: 23.95, retail: 60.90 },
+        { cat: "F1 SHAKES", sku: "4467", name: "F1 Shake Cookie Crunch 550g", vp: 23.95, retail: 60.90 },
+        { cat: "F1 SHAKES", sku: "4468", name: "F1 Shake Zachte Chocolade 550g", vp: 23.95, retail: 60.90 },
+        { cat: "F1 SHAKES", sku: "4471", name: "F1 Shake Munt Chocolade 550g", vp: 23.95, retail: 60.90 },
+        { cat: "F1 SHAKES", sku: "4469", name: "F1 Vrij Van Framboos & Witte Choc 500g", vp: 23.95, retail: 60.90 },
+        { cat: "F1 SHAKES", sku: "048K", name: "F1 Shake Romige Vanille 780g", vp: 32.75, retail: 79.85 },
+        { cat: "F1 SHAKES", sku: "053K", name: "F1 Shake 7 zakjes (Vanille/Choco/Cookie)", vp: 10.00, retail: 25.35 },
+        { cat: "F1 SHAKES", sku: "4472", name: "Express Maaltijdreep (7 stuks)", vp: 14.00, retail: 30.70 },
         
-        // PROTEINE & SNACKS
+        // PROTEÏNE & SNACKS
         { cat: "PROTEÏNE & SNACKS", sku: "528K", name: "Proteïne Bak Mix (PBM)", vp: 26.90, retail: 68.35 },
-        { cat: "PROTEÏNE & SNACKS", sku: "2600", name: "Proteïnedrankmix (PDM) Vanille", vp: 33.00, retail: 71.75 },
-        { cat: "PROTEÏNE & SNACKS", sku: "0242", name: "Geroosterde Sojabonen", vp: 11.40, retail: 25.10 },
-        { cat: "PROTEÏNE & SNACKS", sku: "3968", name: "Proteïne Repen Citroen (14 stuks)", vp: 13.05, retail: 27.50 },
-        { cat: "PROTEÏNE & SNACKS", sku: "3972", name: "Proteïne Repen Chocolade Pinda", vp: 13.05, retail: 27.50 },
-        { cat: "PROTEÏNE & SNACKS", sku: "3976", name: "Proteïne Repen Vanille Amandel", vp: 13.05, retail: 27.50 },
-        { cat: "PROTEÏNE & SNACKS", sku: "001K", name: "High Protein Iced Coffee", vp: 25.25, retail: 64.10 },
-
-        // SUPPLEMENTEN
-        { cat: "SUPPLEMENTEN & DOELGERICHT", sku: "2554", name: "Multivezel Drank (Appel/Haver)", vp: 22.95, retail: 43.40 },
-        { cat: "SUPPLEMENTEN & DOELGERICHT", sku: "2039", name: "F2 Vit/Min Complex VROUWEN", vp: 13.55, retail: 30.95 },
-        { cat: "SUPPLEMENTEN & DOELGERICHT", sku: "2038", name: "F2 Vit/Min Complex MANNEN", vp: 13.55, retail: 30.95 },
-        { cat: "SUPPLEMENTEN & DOELGERICHT", sku: "0065", name: "Herbalifeline Max", vp: 20.35, retail: 43.15 },
-        { cat: "SUPPLEMENTEN & DOELGERICHT", sku: "0104", name: "Thermo Complete", vp: 35.25, retail: 68.60 },
-        { cat: "SUPPLEMENTEN & DOELGERICHT", sku: "0039", name: "RoseGuard", vp: 24.50, retail: 46.95 },
-        { cat: "SUPPLEMENTEN & DOELGERICHT", sku: "076K", name: "SKIN Collageen Skin Booster", vp: 37.10, retail: 83.00 },
+        { cat: "PROTEÏNE & SNACKS", sku: "013K", name: "Tri Blend Select Banaan 600g", vp: 37.50, retail: 90.25 },
+        { cat: "PROTEÏNE & SNACKS", sku: "172K", name: "Vegan Proteïnedrankmix Vanille 560g", vp: 31.45, retail: 68.35 },
+        { cat: "PROTEÏNE & SNACKS", sku: "441K", name: "Vegan Proteïnedrankmix Vanille (7 zakjes)", vp: 13.25, retail: 29.90 },
+        { cat: "PROTEÏNE & SNACKS", sku: "012K", name: "High Protein Iced Coffee 308g", vp: 30.55, retail: 72.75 },
+        { cat: "PROTEÏNE & SNACKS", sku: "141K", name: "Proteïne Chips Barbecue (10 stuks)", vp: 11.75, retail: 26.70 },
+        { cat: "PROTEÏNE & SNACKS", sku: "142K", name: "Proteïne Chips Sour Cream (10 stuks)", vp: 11.75, retail: 26.70 },
+        { cat: "PROTEÏNE & SNACKS", sku: "2600", name: "Proteïnedrankmix Vanille 588g", vp: 33.00, retail: 71.75 },
+        { cat: "PROTEÏNE & SNACKS", sku: "0242", name: "F3 Proteïnepoeder 240g", vp: 17.95, retail: 48.90 },
+        { cat: "PROTEÏNE & SNACKS", sku: "3968", name: "Proteïnereep Vanille Amandel", vp: 13.22, retail: 27.80 },
+        { cat: "PROTEÏNE & SNACKS", sku: "3976", name: "Proteïnereep Citroen", vp: 13.22, retail: 27.80 },
         
-        // H24 SPORT
-        { cat: "HERBALIFE 24 (SPORT)", sku: "403K", name: "H24 Rebuild Strength Chocolade", vp: 33.55, retail: 78.75 },
-        { cat: "HERBALIFE 24 (SPORT)", sku: "1432", name: "H24 CR7 Drive (Bus)", vp: 13.15, retail: 25.60 },
-        { cat: "HERBALIFE 24 (SPORT)", sku: "1436", name: "H24 Hydrate", vp: 20.00, retail: 49.30 },
+        // SUPPLEMENTEN
+        { cat: "SUPPLEMENTEN", sku: "376K", name: "Herbalife Gels ViewVita", vp: 27.20, retail: 62.60 },
+        { cat: "SUPPLEMENTEN", sku: "378K", name: "Herbalife Gels CoQ10Vita", vp: 23.20, retail: 53.35 },
+        { cat: "SUPPLEMENTEN", sku: "379K", name: "Herbalife Gels MindVita Kids", vp: 20.50, retail: 47.15 },
+        { cat: "SUPPLEMENTEN", sku: "369K", name: "Herbalife Gels NutrientVita Kids", vp: 9.30, retail: 21.50 },
+        { cat: "SUPPLEMENTEN", sku: "282K", name: "Night mode Kamille & Perzik", vp: 31.25, retail: 63.35 },
+        { cat: "SUPPLEMENTEN", sku: "236K", name: "Phyto Complete 42,8g", vp: 38.15, retail: 85.35 },
+        { cat: "SUPPLEMENTEN", sku: "243K", name: "Active Mind Complex", vp: 27.25, retail: 54.90 },
+        { cat: "SUPPLEMENTEN", sku: "173K", name: "Microbiotic Max (20 zakjes)", vp: 27.10, retail: 62.65 },
+        { cat: "SUPPLEMENTEN", sku: "233K", name: "Immune Booster (21 zakjes)", vp: 18.90, retail: 50.65 },
+        { cat: "SUPPLEMENTEN", sku: "0043", name: "Herbalifeline Max", vp: 19.40, retail: 40.70 },
+        { cat: "SUPPLEMENTEN", sku: "2554", name: "Multivezel Drank", vp: 22.95, retail: 43.40 },
+        { cat: "SUPPLEMENTEN", sku: "0267", name: "Beta Heart Vanille 229g", vp: 25.95, retail: 57.20 },
+        { cat: "SUPPLEMENTEN", sku: "2039", name: "F2 Vitaminencomplex VROUWEN", vp: 13.55, retail: 30.95 },
+        { cat: "SUPPLEMENTEN", sku: "1746", name: "F2 Vitaminencomplex MANNEN", vp: 13.55, retail: 30.95 },
+        { cat: "SUPPLEMENTEN", sku: "0020", name: "Xtra-Cal", vp: 10.25, retail: 24.35 },
+        { cat: "SUPPLEMENTEN", sku: "3150", name: "Niteworks", vp: 48.75, retail: 108.65 },
+        { cat: "SUPPLEMENTEN", sku: "3152", name: "Lift Off Citroen (10 tab)", vp: 15.95, retail: 39.95 },
+        { cat: "SUPPLEMENTEN", sku: "076K", name: "SKIN Collageen Booster 171g", vp: 37.10, retail: 83.00 },
+
+        // HERBALIFE 24
+        { cat: "HERBALIFE 24", sku: "488K", name: "H24 Creatine Plus", vp: 15.95, retail: 36.35 },
+        { cat: "HERBALIFE 24", sku: "402K", name: "ProLong Energy gel (10 zakjes)", vp: 13.60, retail: 27.75 },
+        { cat: "HERBALIFE 24", sku: "403K", name: "H24 Rebuild Strength Choco 1000g", vp: 33.55, retail: 78.75 },
+        { cat: "HERBALIFE 24", sku: "486K", name: "H24 Rebuild Strength zakjes", vp: 15.20, retail: 34.45 },
+        { cat: "HERBALIFE 24", sku: "192K", name: "H24 LiftOff Max Grapefruit (10st)", vp: 15.95, retail: 36.90 },
+        { cat: "HERBALIFE 24", sku: "149K", name: "H24 Achieve Repen Cookie Dough", vp: 11.30, retail: 23.65 },
+        { cat: "HERBALIFE 24", sku: "150K", name: "H24 Achieve Repen Pure Choco", vp: 11.30, retail: 23.65 },
+        { cat: "HERBALIFE 24", sku: "1466", name: "CR7 Drive Açai Bessen 540g", vp: 12.50, retail: 26.80 },
+        { cat: "HERBALIFE 24", sku: "1467", name: "CR7 Drive Açai Bessen (10 zakjes)", vp: 8.00, retail: 16.15 },
+        { cat: "HERBALIFE 24", sku: "1433", name: "H24 Hydrate Sinaasappel (20 zakjes)", vp: 17.20, retail: 42.90 },
 
         // SKIN & BODY
-        { cat: "VERZORGING (SKIN & ALOE)", sku: "514K", name: "Aloe Voedende Hand/Bodylotion", vp: 15.90, retail: 29.80 },
-        { cat: "VERZORGING (SKIN & ALOE)", sku: "515K", name: "SKIN Voedende Oogcrème", vp: 26.70, retail: 50.15 },
-        { cat: "VERZORGING (SKIN & ALOE)", sku: "0765", name: "SKIN Verzachtende Aloë Cleanser", vp: 16.75, retail: 33.70 },
-        { cat: "VERZORGING (SKIN & ALOE)", sku: "0767", name: "SKIN Verfrissende Herbalife Toner", vp: 12.70, retail: 25.55 },
-        { cat: "VERZORGING (SKIN & ALOE)", sku: "0770", name: "SKIN Verstevigende Ooggel", vp: 26.35, retail: 53.05 }
+        { cat: "SKIN & BODY", sku: "539K", name: "HL/Skin Revitaliserende Nachtcrème", vp: 35.20, retail: 66.00 },
+        { cat: "SKIN & BODY", sku: "508K", name: "HL/Skin 10% Niacinamide Serum", vp: 31.70, retail: 59.40 },
+        { cat: "SKIN & BODY", sku: "511K", name: "HL/Skin Vernieuwende Gel Cleanser", vp: 21.30, retail: 39.95 },
+        { cat: "SKIN & BODY", sku: "513K", name: "HL/Skin Versterkende Crème", vp: 35.20, retail: 66.00 },
+        { cat: "SKIN & BODY", sku: "514K", name: "HL/Skin Voedende Hand/Bodylotion", vp: 15.90, retail: 29.80 },
+        { cat: "SKIN & BODY", sku: "515K", name: "HL/Skin Voedende Oogcrème", vp: 26.70, retail: 50.15 },
+        { cat: "SKIN & BODY", sku: "0765", name: "SKIN Verzachtende Aloë Cleanser", vp: 16.75, retail: 33.70 },
+        { cat: "SKIN & BODY", sku: "0767", name: "SKIN Verfrissende Toner", vp: 12.70, retail: 25.55 },
+        { cat: "SKIN & BODY", sku: "0770", name: "SKIN Verstevigende Ooggel", vp: 26.35, retail: 53.05 },
+        { cat: "SKIN & BODY", sku: "0773", name: "SKIN Zuiverend Kleimasker", vp: 14.20, retail: 28.55 },
+        { cat: "SKIN & BODY", sku: "0827", name: "SKIN Herstellende Nachtcrème", vp: 32.65, retail: 65.70 },
+        { cat: "SKIN & BODY", sku: "0828", name: "SKIN Beschermende Moisturiser SPF 30", vp: 32.65, retail: 65.70 },
+        { cat: "SKIN & BODY", sku: "0829", name: "SKIN Lijn Minimaliserend Serum", vp: 43.35, retail: 87.25 },
+        { cat: "SKIN & BODY", sku: "0830", name: "SKIN Dagelijkse Glow Moisturizer", vp: 32.65, retail: 65.70 },
+        { cat: "SKIN & BODY", sku: "2561", name: "Herbal Aloë Hand & Body Wash", vp: 8.30, retail: 18.60 },
+        { cat: "SKIN & BODY", sku: "2562", name: "Herbal Aloë Soothing Gel", vp: 8.30, retail: 18.00 },
+        { cat: "SKIN & BODY", sku: "2564", name: "Herbal Aloë Strengthening Shampoo", vp: 8.30, retail: 18.40 },
+        { cat: "SKIN & BODY", sku: "2565", name: "Herbal Aloë Strengthening Conditioner", vp: 8.30, retail: 18.40 }
     ];
 
     // =========================================================================
@@ -700,6 +743,7 @@
             startdate: document.getElementById('eval-date').value,
             why: document.getElementById('eval-why').value,
             symptoms: symptomList,
+            active: true, // Nieuwe klanten zijn automatisch actief
             tanita_start: { 
                 gew: document.getElementById('eval-t-gew').value, vet: document.getElementById('eval-t-vet').value, 
                 spier: document.getElementById('eval-t-spier').value, visc: document.getElementById('eval-t-visc').value, 
@@ -726,28 +770,53 @@
         const q = document.getElementById('search-client').value.toLowerCase();
         const list = document.getElementById('client-list');
         list.innerHTML = '';
-        Object.keys(clients).sort().reverse().forEach(id => {
-            const c = clients[id];
-            
-            // ACHTERWAARTSE COMPATIBILITEIT: Zoek in name óf fiche.name
+        
+        // Converteer naar array om te sorteren
+        let clientArray = Object.keys(clients).map(id => ({id: id, ...clients[id]}));
+        
+        // Sorteer: Actief bovenaan, Inactief onderaan. Bij gelijke status op nieuwste eerst.
+        clientArray.sort((a, b) => {
+            const aActive = a.active !== false; // default = true
+            const bActive = b.active !== false;
+            if (aActive && !bActive) return -1;
+            if (!aActive && bActive) return 1;
+            return b.id.localeCompare(a.id); 
+        });
+
+        clientArray.forEach(c => {
+            // ACHTERWAARTSE COMPATIBILITEIT
             const displayName = c.name || (c.fiche && c.fiche.name) || 'Onbekend';
 
             if(q && !displayName.toLowerCase().includes(q)) return;
 
+            const isActive = c.active !== false;
             let badge = '';
-            // Zoek startdate in startdate óf fiche.startdate
-            const sDate = c.startdate || (c.fiche && c.fiche.startdate);
-            if(sDate) {
-                let diff = Math.round((new Date().setHours(0,0,0,0) - new Date(sDate).setHours(0,0,0,0)) / 86400000);
-                if([1,3,7,14,21].includes(diff)) badge = `<span class="badge-alert">Dag ${diff}</span>`;
+            
+            if (isActive) {
+                const sDate = c.startdate || (c.fiche && c.fiche.startdate);
+                if(sDate) {
+                    let diff = Math.round((new Date().setHours(0,0,0,0) - new Date(sDate).setHours(0,0,0,0)) / 86400000);
+                    if([1,3,7,14,21].includes(diff)) badge = `<span class="badge-alert">Dag ${diff}</span>`;
+                }
+            } else {
+                badge = `<span style="font-size:0.7rem; background:#888; color:white; padding:2px 6px; border-radius:10px;">Inactief</span>`;
             }
 
             const li = document.createElement('li');
-            li.className = 'client-item' + (id === currentClientId ? ' active' : '');
+            li.className = 'client-item' + (c.id === currentClientId ? ' active' : '') + (!isActive ? ' client-inactive' : '');
             li.innerHTML = `<span>${displayName}</span> ${badge}`;
-            li.onclick = () => { currentClientId = id; loadClientFiche(); renderClientList(); };
+            li.onclick = () => { currentClientId = c.id; loadClientFiche(); renderClientList(); };
             list.appendChild(li);
         });
+    }
+
+    function toggleActiveStatus() {
+        if(!currentClientId || !clients[currentClientId]) return;
+        const currentStatus = clients[currentClientId].active !== false; // true als het niet expliciet false is
+        
+        db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).set({
+            active: !currentStatus
+        }, { merge: true });
     }
 
     function loadClientFiche() {
@@ -756,6 +825,17 @@
         
         document.getElementById('fu-empty').style.display = 'none';
         document.getElementById('fu-content').style.display = 'flex';
+
+        // Check active status & Update Toggle Button
+        const isActive = c.active !== false;
+        const btnToggle = document.getElementById('btn-toggle-active');
+        if (isActive) {
+            btnToggle.innerText = "Zet Inactief";
+            btnToggle.style.background = "var(--warning)";
+        } else {
+            btnToggle.innerText = "Zet Actief";
+            btnToggle.style.background = "var(--theme-color)";
+        }
 
         // ACHTERWAARTSE COMPATIBILITEIT bij laden
         const name = c.name || (c.fiche && c.fiche.name) || 'Geen Naam';
@@ -775,7 +855,7 @@
         document.getElementById('fiche-why').value = why;
         document.getElementById('fiche-notes').value = notes;
 
-        // Velden vullen (Dagen - compatibel met oude structuur c.dag1.q1 of c['d1-q1'])
+        // Velden vullen (Dagen)
         document.getElementById('dag1-q1').value = c['d1-q1'] || (c.dag1 && c.dag1.q1) || '';
         document.getElementById('dag1-q2').value = c['d1-q2'] || (c.dag1 && c.dag1.q2) || '';
         document.getElementById('dag1-q3').value = c['d1-q3'] || (c.dag1 && c.dag1.q3) || '';
@@ -873,8 +953,12 @@
         const sel = document.getElementById('link-client-select');
         sel.innerHTML = '<option value="">-- Koppel verkoop aan klant --</option>';
         Object.keys(clients).forEach(id => { 
-            const n = clients[id].name || (clients[id].fiche && clients[id].fiche.name) || 'Klant';
-            sel.innerHTML += `<option value="${id}">${n}</option>`; 
+            // Laat alleen actieve klanten in dropdown zien (optioneel, nu laat hij alles zien)
+            const isActive = clients[id].active !== false;
+            if(isActive) {
+                const n = clients[id].name || (clients[id].fiche && clients[id].fiche.name) || 'Klant';
+                sel.innerHTML += `<option value="${id}">${n}</option>`; 
+            }
         });
     }
 
@@ -917,7 +1001,7 @@
                     <td>
                         <div class="actie-cel">
                             <button class="btn-primary" style="padding:6px 12px; font-size:0.8rem;" onclick="sellProduct('${p.sku}', ${profit})" ${count===0?'disabled':''}>Verkoop</button>
-                            <button class="btn-danger" style="padding:6px 12px; font-size:0.8rem;" onclick="usePersonal('${p.sku}')" ${count===0?'disabled':''}>Gebruik</button>
+                            <button class="btn-danger" style="padding:6px 12px; font-size:0.8rem;" onclick="usePersonal('${p.sku}')" ${count===0?'disabled':''}>Demo</button>
                         </div>
                     </td>
                 </tr>`;
