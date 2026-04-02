@@ -101,7 +101,8 @@
         .dashboard-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 20px 30px; }
         .card-stat { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid var(--theme-color);}
         
-        .stock-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; padding: 0 30px 30px 30px; align-items: start;}
+        /* Licht aangepaste grid voor meer ruimte voor de tabel */
+        .stock-layout { display: grid; grid-template-columns: 2.5fr 1fr; gap: 20px; padding: 0 30px 30px 30px; align-items: start;}
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 10px; border-bottom: 1px solid var(--border); text-align: left; font-size: 0.85rem;}
         th { background: #f8fafc; color: #7f8c8d; text-transform: uppercase; font-size: 0.75rem;}
@@ -116,7 +117,8 @@
         .st-2 { color: var(--warning); }
         .st-3 { color: var(--success); }
         
-        .actie-cel { display: flex; gap: 5px; align-items: center; }
+        /* Flex-wrap toegevoegd zodat knoppen niet afsnijden */
+        .actie-cel { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
         
         .history-list { list-style: none; padding: 0; margin: 0; }
         .history-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;}
@@ -431,7 +433,7 @@
             </div>
 
             <div class="stock-layout">
-                <div class="card" style="padding:0; overflow:hidden;">
+                <div class="card" style="padding:0; overflow-x:auto;">
                     <table id="stockTable">
                         <thead><tr><th>Product</th><th>VP</th><th>Klant (€)</th><th>Inkoop (€)</th><th>Max. Winst (€)</th><th>Voorraad</th><th>Acties</th></tr></thead>
                         <tbody id="stockTableBody"></tbody>
