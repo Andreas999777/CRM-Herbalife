@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HBL-Connect</title>
+    <title>HBL-Connect Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -17,13 +17,19 @@
         }
         body { font-family: 'Montserrat', sans-serif; background-color: var(--bg-light); margin: 0; display: flex; height: 100vh; overflow: hidden; color: #333; }
         
+        /* --- MOBILE HEADER & HAMBURGER --- */
+        .mobile-header { display: none; background: var(--sidebar); color: white; padding: 15px 20px; align-items: center; justify-content: space-between; z-index: 1001; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
+        .hamburger { font-size: 26px; background: none; border: none; color: white; cursor: pointer; }
+        .mobile-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index: 999; }
+        .mobile-overlay.active { display: block; }
+
         /* --- MENU --- */
-        #app-sidebar { width: 250px; background: var(--sidebar); color: white; display: flex; flex-direction: column; z-index: 100; box-shadow: 2px 0 10px rgba(0,0,0,0.1);}
+        #app-sidebar { width: 250px; background: var(--sidebar); color: white; display: flex; flex-direction: column; z-index: 1000; box-shadow: 2px 0 10px rgba(0,0,0,0.1); transition: left 0.3s ease;}
         .branding { padding: 20px; font-weight: 700; font-size: 1.4rem; border-bottom: 1px solid rgba(255,255,255,0.1); letter-spacing: 1px; }
         .branding span { color: var(--theme-color); font-size: 1.1rem; }
         .coach-box { padding: 20px; background: rgba(0,0,0,0.2); }
         .coach-select { width: 100%; padding: 10px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; outline: none;}
-        .nav-menu { flex: 1; padding: 20px 0; list-style: none; margin: 0; }
+        .nav-menu { flex: 1; padding: 20px 0; list-style: none; margin: 0; overflow-y:auto; }
         .nav-btn { width: 100%; text-align: left; padding: 15px 25px; background: transparent; border: none; color: #bdc3c7; font-size: 1rem; font-weight: 600; cursor: pointer; border-left: 4px solid transparent; transition: 0.2s;}
         .nav-btn:hover { background: rgba(255,255,255,0.05); color: white; }
         .nav-btn.active { background: rgba(255,255,255,0.1); color: white; border-left-color: var(--theme-color); }
@@ -51,10 +57,10 @@
         .btn-success { background: var(--success); color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;}
         .btn-warning { background: var(--warning); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;}
 
-        /* --- 1. EVALUATIE VIEW (MET INFOMUUR) --- */
+        /* --- 1. EVALUATIE VIEW --- */
         #view-eval { flex-direction: row; align-items: stretch; background: var(--bg-light); padding: 0;}
         .eval-scroll-area { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
-        .eval-container { max-width: 900px; width: 100%; }
+        .eval-container { max-width: 1000px; width: 100%; }
         
         .info-muur { width: 280px; background: var(--sidebar-dark); color: white; padding: 30px 20px; overflow-y: auto; box-shadow: -5px 0 15px rgba(0,0,0,0.1); }
         .info-muur h3 { border-bottom: 2px solid var(--theme-color); padding-bottom: 10px; margin-bottom: 20px; color: white; }
@@ -72,7 +78,7 @@
         .symp-item { font-size: 0.85rem; display: flex; align-items: center; gap: 8px; cursor: pointer; color:#444;}
         .symp-item input { margin: 0; cursor: pointer;}
         
-        .analysis-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 25px; }
+        .analysis-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 25px; }
         .analysis-box { padding: 15px; border-radius: 10px; background: #fdfdfd; border: 1px solid #eee; font-size: 0.85rem; }
 
         /* --- 2. FOLLOW-UP VIEW --- */
@@ -82,7 +88,6 @@
         .client-item { padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; display: flex; justify-content: space-between; align-items: center;}
         .client-item.active { background: var(--theme-color); font-weight: bold; }
         
-        /* Non-actief styling */
         .client-inactive { opacity: 0.5; background: rgba(0,0,0,0.2); }
         .client-inactive.active { background: #555; opacity: 1; }
         
@@ -98,41 +103,63 @@
 
         /* --- 3. STOCK VIEW --- */
         .stock-header { background: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index:20;}
-        .dashboard-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 20px 30px; }
+        .dashboard-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; padding: 20px 30px; }
         .card-stat { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid var(--theme-color);}
         
-        /* Licht aangepaste grid voor meer ruimte voor de tabel */
         .stock-layout { display: grid; grid-template-columns: 2.5fr 1fr; gap: 20px; padding: 0 30px 30px 30px; align-items: start;}
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 10px; border-bottom: 1px solid var(--border); text-align: left; font-size: 0.85rem;}
         th { background: #f8fafc; color: #7f8c8d; text-transform: uppercase; font-size: 0.75rem;}
         .cat-row { background: var(--sidebar-dark); color: white; font-weight: bold; cursor: pointer; }
         
-        /* Stock Knoppen (Groot) */
         .btn-qty { background: #e0e6ed; border: none; width: 28px; height: 28px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; color: #333; transition: 0.2s;}
         .btn-qty:hover { background: #cbd5e1; }
-        
-        .st-0 { color: #888; }
-        .st-1 { color: var(--danger); }
-        .st-2 { color: var(--warning); }
-        .st-3 { color: var(--success); }
-        
-        /* Flex-wrap toegevoegd zodat knoppen niet afsnijden */
+        .st-0 { color: #888; } .st-1 { color: var(--danger); } .st-2 { color: var(--warning); } .st-3 { color: var(--success); }
         .actie-cel { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
-        
         .history-list { list-style: none; padding: 0; margin: 0; }
         .history-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;}
         .btn-undo { background: #e0e0e0; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; color: #333;}
         .btn-undo:hover { background: var(--danger); color: white; }
         .profit-green { color: var(--success); font-weight: bold; white-space: nowrap; }
 
+        /* --- 4. CATALOGUS (PRODUCT INFO) --- */
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-btn { padding: 8px 15px; border: 1px solid var(--theme-color); background: white; color: var(--theme-color); border-radius: 20px; cursor: pointer; font-weight: 600; font-size:0.85rem;}
+        .filter-btn.active { background: var(--theme-color); color: white; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+        .product-card { background: white; border-radius: 10px; padding:20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-top: 3px solid var(--theme-color); display: flex; flex-direction: column;}
+        .product-cat-label { font-size: 0.75rem; color: var(--hb-green); font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
+
+        /* --- RESPONSIVE MOBILE FIX --- */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .mobile-header { display: flex; }
+            #app-sidebar { position: fixed; left: -260px; height: 100%; width: 260px; }
+            #app-sidebar.open { left: 0; }
+            #view-eval { flex-direction: column; }
+            .info-muur { width: 100%; height: auto; display: flex; flex-wrap: wrap; gap:10px; }
+            .info-btn { width: auto; flex: 1 1 45%; }
+            .eval-scroll-area { padding: 15px; }
+            .analysis-container { grid-template-columns: 1fr; }
+            #view-fu { flex-direction: column; }
+            #fu-list-pane { width: 100%; height: 300px; }
+            .client-header { flex-direction: column; align-items: flex-start; gap: 10px; padding: 15px; }
+            .stock-header { flex-direction: column; align-items: flex-start; }
+            .stock-layout { grid-template-columns: 1fr; }
+        }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
+    <div class="mobile-header">
+        <div style="font-weight: 700; font-size: 1.2rem; letter-spacing: 1px;">HBL-Connect <span style="color:var(--hb-green);">Pro</span></div>
+        <button class="hamburger" onclick="toggleMenu()">☰</button>
+    </div>
+    <div id="mobile-overlay" class="mobile-overlay" onclick="toggleMenu()"></div>
+
     <div id="app-sidebar">
-        <div class="branding">HBL-Connect <br><span id="brand-coach">Andreas</span></div>
+        <div class="branding" style="display:none;">HBL-Connect <br><span id="brand-coach">Andreas</span></div>
         <div class="coach-box">
             <select id="coach-selector" class="coach-select" onchange="switchCoach()">
                 <option value="Andreas">Andreas</option>
@@ -144,6 +171,7 @@
             <li><button class="nav-btn active" onclick="switchView('view-eval', this)">📝 Nieuwe Evaluatie</button></li>
             <li><button class="nav-btn" onclick="switchView('view-fu', this)">👥 Mijn Klanten</button></li>
             <li><button class="nav-btn" onclick="switchView('view-stock', this)">📦 Voorraad & Winst</button></li>
+            <li><button class="nav-btn" onclick="switchView('view-catalog', this)">📗 Product Info</button></li>
         </ul>
     </div>
 
@@ -234,7 +262,11 @@
 
                         <div class="analysis-container">
                             <div class="analysis-box"><strong style="color:var(--theme-color)">Geselecteerde Symptomen:</strong><div id="symp-details" style="margin-top:10px;">...</div></div>
-                            <div class="analysis-box" style="border-left:5px solid var(--theme-color);"><strong>Vermoedelijke Tekorten:</strong><div id="tally-results" style="margin-top:10px;">...</div></div>
+                            <div class="analysis-box" style="border-left:5px solid var(--warning);"><strong>Vermoedelijke Tekorten:</strong><div id="tally-results" style="margin-top:10px;">...</div></div>
+                            <div class="analysis-box" style="border-left:5px solid var(--success);">
+                                <strong style="color:var(--success)">Voorgestelde Producten:</strong>
+                                <div id="suggested-products" style="margin-top:10px; font-size:0.85rem; line-height:1.6;">...</div>
+                            </div>
                         </div>
                     </div>
 
@@ -321,7 +353,7 @@
                         </div>
                         <div class="card">
                             <h3>Tanita Startwaarden (Intake)</h3>
-                            <div style="display:flex; gap:20px; font-size:0.9rem; background:#f0f8ff; padding:15px; border-radius:8px;">
+                            <div style="display:flex; gap:20px; font-size:0.9rem; background:#f0f8ff; padding:15px; border-radius:8px; flex-wrap:wrap;">
                                 <div><strong>Gewicht:</strong> <span id="disp-t-gew"></span> kg</div>
                                 <div><strong>Vet:</strong> <span id="disp-t-vet"></span> %</div>
                                 <div><strong>Spier:</strong> <span id="disp-t-spier"></span> kg</div>
@@ -330,7 +362,7 @@
                             </div>
                         </div>
                         <div class="card">
-                            <h3>Vrij Notitieveld & Verkoophistoriek</h3>
+                            <h3>Vrij Notitieveld, Advies & Verkoophistoriek</h3>
                             <textarea id="fiche-notes" rows="12" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border); font-family:inherit; box-sizing:border-box;" oninput="autoSaveFiche('notes')"></textarea>
                         </div>
                     </div>
@@ -459,6 +491,19 @@
             </div>
         </div>
 
+        <div id="view-catalog" class="view">
+            <div style="padding: 20px 30px; background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index:20;">
+                <h2 style="margin:0 0 15px 0; color:var(--theme-color);">📗 Product Info & Catalogus</h2>
+                <div class="filter-bar">
+                    <input type="text" id="search-catalog" placeholder="🔍 Zoek product of sku..." onkeyup="renderCatalog()" style="max-width:300px; margin:0; border-radius:20px; padding:10px; border:1px solid var(--border);">
+                    <div id="catalog-filters" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+                </div>
+            </div>
+            <div style="padding: 30px; overflow-y:auto;">
+                <div class="product-grid" id="catalog-grid"></div>
+            </div>
+        </div>
+
     </div>
 
 <script>
@@ -466,6 +511,12 @@
     // 1. DATA CONFIGURATIE (Vragen, Symptomen & Volledige PDF Productlijst)
     // =========================================================================
     
+    // Toggle Mobile Menu
+    function toggleMenu() {
+        document.getElementById('app-sidebar').classList.toggle('open');
+        document.getElementById('mobile-overlay').classList.toggle('active');
+    }
+
     const evalQuestions = [
         {q: "Ik ben uitgeslapen als ik 's morgens opsta", val: "JA"}, {q: "Ik start elke ochtend met een volwaardig ontbijt", val: "JA"},
         {q: "Ik heb tijdens de dag last van energiedips", val: "NEE"}, {q: "Ik heb geregeld honger of snoepzin", val: "NEE"},
@@ -495,7 +546,6 @@
     ];
 
     const dbProducts = [
-        // ONTBIJT & DRANKEN
         { cat: "ONTBIJT & DRANKEN", sku: "1188", name: "Herbal Aloe Drank Original 1,9L", vp: 91.10, retail: 190.90 },
         { cat: "ONTBIJT & DRANKEN", sku: "0006", name: "Herbal Aloë Drank Original 473ml", vp: 24.95, retail: 52.80 },
         { cat: "ONTBIJT & DRANKEN", sku: "1065", name: "Herbal Aloë Drank Mango 473ml", vp: 24.95, retail: 52.80 },
@@ -505,8 +555,6 @@
         { cat: "ONTBIJT & DRANKEN", sku: "167K", name: "Instant Theedrank Citroen 51g", vp: 19.95, retail: 38.25 },
         { cat: "ONTBIJT & DRANKEN", sku: "168K", name: "Instant Theedrank Framboos 51g", vp: 19.95, retail: 38.25 },
         { cat: "ONTBIJT & DRANKEN", sku: "169K", name: "Instant Theedrank Perzik 51g", vp: 19.95, retail: 38.25 },
-        
-        // F1 SHAKES
         { cat: "F1 SHAKES", sku: "4462", name: "F1 Shake Bananen Crème 550g", vp: 23.95, retail: 60.90 },
         { cat: "F1 SHAKES", sku: "4463", name: "F1 Shake Frisse Aardbei 550g", vp: 23.95, retail: 60.90 },
         { cat: "F1 SHAKES", sku: "4465", name: "F1 Shake Cafè Latte 550g", vp: 23.95, retail: 60.90 },
@@ -518,8 +566,6 @@
         { cat: "F1 SHAKES", sku: "048K", name: "F1 Shake Romige Vanille 780g", vp: 32.75, retail: 79.85 },
         { cat: "F1 SHAKES", sku: "053K", name: "F1 Shake 7 zakjes (Vanille/Choco/Cookie)", vp: 10.00, retail: 25.35 },
         { cat: "F1 SHAKES", sku: "4472", name: "Express Maaltijdreep (7 stuks)", vp: 14.00, retail: 30.70 },
-        
-        // PROTEÏNE & SNACKS
         { cat: "PROTEÏNE & SNACKS", sku: "528K", name: "Proteïne Bak Mix (PBM)", vp: 26.90, retail: 68.35 },
         { cat: "PROTEÏNE & SNACKS", sku: "013K", name: "Tri Blend Select Banaan 600g", vp: 37.50, retail: 90.25 },
         { cat: "PROTEÏNE & SNACKS", sku: "172K", name: "Vegan Proteïnedrankmix Vanille 560g", vp: 31.45, retail: 68.35 },
@@ -531,8 +577,6 @@
         { cat: "PROTEÏNE & SNACKS", sku: "0242", name: "F3 Proteïnepoeder 240g", vp: 17.95, retail: 48.90 },
         { cat: "PROTEÏNE & SNACKS", sku: "3968", name: "Proteïnereep Vanille Amandel", vp: 13.22, retail: 27.80 },
         { cat: "PROTEÏNE & SNACKS", sku: "3976", name: "Proteïnereep Citroen", vp: 13.22, retail: 27.80 },
-        
-        // SUPPLEMENTEN
         { cat: "SUPPLEMENTEN", sku: "376K", name: "Herbalife Gels ViewVita", vp: 27.20, retail: 62.60 },
         { cat: "SUPPLEMENTEN", sku: "378K", name: "Herbalife Gels CoQ10Vita", vp: 23.20, retail: 53.35 },
         { cat: "SUPPLEMENTEN", sku: "379K", name: "Herbalife Gels MindVita Kids", vp: 20.50, retail: 47.15 },
@@ -551,8 +595,6 @@
         { cat: "SUPPLEMENTEN", sku: "3150", name: "Niteworks", vp: 48.75, retail: 108.65 },
         { cat: "SUPPLEMENTEN", sku: "3152", name: "Lift Off Citroen (10 tab)", vp: 15.95, retail: 39.95 },
         { cat: "SUPPLEMENTEN", sku: "076K", name: "SKIN Collageen Booster 171g", vp: 37.10, retail: 83.00 },
-
-        // HERBALIFE 24
         { cat: "HERBALIFE 24", sku: "488K", name: "H24 Creatine Plus", vp: 15.95, retail: 36.35 },
         { cat: "HERBALIFE 24", sku: "402K", name: "ProLong Energy gel (10 zakjes)", vp: 13.60, retail: 27.75 },
         { cat: "HERBALIFE 24", sku: "403K", name: "H24 Rebuild Strength Choco 1000g", vp: 33.55, retail: 78.75 },
@@ -563,8 +605,6 @@
         { cat: "HERBALIFE 24", sku: "1466", name: "CR7 Drive Açai Bessen 540g", vp: 12.50, retail: 26.80 },
         { cat: "HERBALIFE 24", sku: "1467", name: "CR7 Drive Açai Bessen (10 zakjes)", vp: 8.00, retail: 16.15 },
         { cat: "HERBALIFE 24", sku: "1433", name: "H24 Hydrate Sinaasappel (20 zakjes)", vp: 17.20, retail: 42.90 },
-
-        // SKIN & BODY
         { cat: "SKIN & BODY", sku: "539K", name: "HL/Skin Revitaliserende Nachtcrème", vp: 35.20, retail: 66.00 },
         { cat: "SKIN & BODY", sku: "508K", name: "HL/Skin 10% Niacinamide Serum", vp: 31.70, retail: 59.40 },
         { cat: "SKIN & BODY", sku: "511K", name: "HL/Skin Vernieuwende Gel Cleanser", vp: 21.30, retail: 39.95 },
@@ -608,6 +648,7 @@
     let salesHistory = [];
     let personalUse = [];
     let collapsedCats = {};
+    let currentCatFilter = "Alles";
     
     let unsubClients, unsubStock;
 
@@ -623,6 +664,8 @@
         const yyyy = now.getFullYear();
         const mm = String(now.getMonth() + 1).padStart(2, '0');
         document.getElementById('monthSelector').value = `${yyyy}-${mm}`;
+        
+        initCatalog();
     };
 
     // UI Functies
@@ -631,6 +674,10 @@
         document.getElementById(viewId).classList.add('active');
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         if(btn) btn.classList.add('active');
+        
+        // Close menu on mobile
+        document.getElementById('app-sidebar').classList.remove('open');
+        document.getElementById('mobile-overlay').classList.remove('active');
     }
 
     function switchCoach() {
@@ -679,7 +726,7 @@
     }
 
     // =========================================================================
-    // 3. EVALUATIE LOGICA
+    // 3. EVALUATIE LOGICA & SLIMME VOORSTELLEN (FASE 5)
     // =========================================================================
     function buildEvalForm() {
         const cl = document.getElementById('check-list');
@@ -707,12 +754,27 @@
         const checked = document.querySelectorAll('.sc:checked');
         let tallies = {}; let names = []; let hasAllergy = false;
         
+        // Product Suggesties Logica
+        let suggested = new Set();
+        suggested.add("F1 Shake (Ideaal Basis Ontbijt)");
+        suggested.add("Instant Theedrank (Energie & Verbranding)");
+        suggested.add("Herbal Aloë Drank (Spijsvertering & Hydratatie)");
+
         checked.forEach(c => {
             const sn = c.getAttribute('data-name');
             const st = c.getAttribute('data-tags').split(',');
             names.push(`&bull; ${sn}`);
             st.forEach(t => tallies[t] = (tallies[t]||0)+1);
             if (sn === "Allergieën") hasAllergy = true;
+            
+            // Match met producten
+            if (sn.includes("Energiegebrek") || sn.includes("Concentratieverlies") || sn.includes("Minder aankunnen")) { suggested.add("Lift-Off"); }
+            if (sn.includes("Slechte slaper")) { suggested.add("Night Mode"); }
+            if (sn.includes("Spierpijn") || sn.includes("Spierkrampen") || sn.includes("Gewrichtspijn")) { suggested.add("H24 Rebuild Strength"); suggested.add("Xtra-Cal"); }
+            if (sn.includes("Stoelgang") || sn.includes("Opgeblazen") || sn.includes("Brandend maagzuur")) { suggested.add("Multivezel Drank"); suggested.add("Microbiotic Max"); }
+            if (sn.includes("Droge huid") || sn.includes("Haarverlies") || sn.includes("Broze nagels")) { suggested.add("Collageen Skin Booster"); }
+            if (sn.includes("Regelmatig verkouden") || sn.includes("Koortsblaasjes")) { suggested.add("Immune Booster"); }
+            if (sn.includes("Zin in zoet") || sn.includes("Honger") || sn.includes("Onzeker zijn")) { suggested.add("Proteïnedrankmix (PDM)"); suggested.add("Proteïne Repen"); }
         });
 
         // Allergie waarschuwing
@@ -728,6 +790,10 @@
         document.getElementById('symp-details').innerHTML = names.join('<br>') || "...";
         const sorted = Object.entries(tallies).sort((a,b) => b[1]-a[1]);
         document.getElementById('tally-results').innerHTML = sorted.map(r => `<div>${r[0]}: ${r[1]}x</div>`).join('') || "...";
+        
+        // Render Suggested Products
+        let suggestedHTML = Array.from(suggested).map(s => `<div><span style="color:var(--success); font-weight:bold;">+</span> ${s}</div>`).join('');
+        document.getElementById('suggested-products').innerHTML = suggestedHTML;
     }
 
     function saveEvaluatie() {
@@ -737,8 +803,12 @@
         const symptomList = Array.from(document.querySelectorAll('.sc:checked')).map(c => c.getAttribute('data-name'));
         const extraNotes = document.getElementById('eval-extra-notes').value.trim();
         
-        // Genereer de startnotitie inclusief extra opmerkingen
+        // Voorgestelde producten vangen
+        let adviceText = Array.from(document.querySelectorAll('#suggested-products div')).map(d => d.innerText.replace('+ ', '')).join(', ');
+
+        // Genereer de startnotitie inclusief advies en extra opmerkingen
         let initialNote = "Evaluatie opgeslagen op " + new Date().toLocaleDateString() + "\n";
+        initialNote += "Aangeraden Producten: " + adviceText + "\n";
         if (extraNotes) initialNote += "\n--- Extra Opmerkingen Intake ---\n" + extraNotes + "\n";
 
         const newId = 'client_' + Date.now();
@@ -750,7 +820,7 @@
             startdate: document.getElementById('eval-date').value,
             why: document.getElementById('eval-why').value,
             symptoms: symptomList,
-            active: true, // Nieuwe klanten zijn automatisch actief
+            active: true,
             tanita_start: { 
                 gew: document.getElementById('eval-t-gew').value, vet: document.getElementById('eval-t-vet').value, 
                 spier: document.getElementById('eval-t-spier').value, visc: document.getElementById('eval-t-visc').value, 
@@ -778,12 +848,10 @@
         const list = document.getElementById('client-list');
         list.innerHTML = '';
         
-        // Converteer naar array om te sorteren
         let clientArray = Object.keys(clients).map(id => ({id: id, ...clients[id]}));
         
-        // Sorteer: Actief bovenaan, Inactief onderaan. Bij gelijke status op nieuwste eerst.
         clientArray.sort((a, b) => {
-            const aActive = a.active !== false; // default = true
+            const aActive = a.active !== false;
             const bActive = b.active !== false;
             if (aActive && !bActive) return -1;
             if (!aActive && bActive) return 1;
@@ -791,9 +859,7 @@
         });
 
         clientArray.forEach(c => {
-            // ACHTERWAARTSE COMPATIBILITEIT
             const displayName = c.name || (c.fiche && c.fiche.name) || 'Onbekend';
-
             if(q && !displayName.toLowerCase().includes(q)) return;
 
             const isActive = c.active !== false;
@@ -812,14 +878,18 @@
             const li = document.createElement('li');
             li.className = 'client-item' + (c.id === currentClientId ? ' active' : '') + (!isActive ? ' client-inactive' : '');
             li.innerHTML = `<span>${displayName}</span> ${badge}`;
-            li.onclick = () => { currentClientId = c.id; loadClientFiche(); renderClientList(); };
+            li.onclick = () => { currentClientId = c.id; loadClientFiche(); renderClientList(); 
+                if(window.innerWidth <= 768) {
+                    document.getElementById('fu-workspace').scrollIntoView({behavior: "smooth"});
+                }
+            };
             list.appendChild(li);
         });
     }
 
     function toggleActiveStatus() {
         if(!currentClientId || !clients[currentClientId]) return;
-        const currentStatus = clients[currentClientId].active !== false; // true als het niet expliciet false is
+        const currentStatus = clients[currentClientId].active !== false; 
         
         db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).set({
             active: !currentStatus
@@ -833,7 +903,6 @@
         document.getElementById('fu-empty').style.display = 'none';
         document.getElementById('fu-content').style.display = 'flex';
 
-        // Check active status & Update Toggle Button
         const isActive = c.active !== false;
         const btnToggle = document.getElementById('btn-toggle-active');
         if (isActive) {
@@ -844,7 +913,6 @@
             btnToggle.style.background = "var(--theme-color)";
         }
 
-        // ACHTERWAARTSE COMPATIBILITEIT bij laden
         const name = c.name || (c.fiche && c.fiche.name) || 'Geen Naam';
         const phone = c.phone || (c.fiche && c.fiche.phone) || 'Geen Tel.';
         const startdate = c.startdate || (c.fiche && c.fiche.startdate) || '';
@@ -855,14 +923,12 @@
         document.getElementById('header-client-phone').innerText = phone;
         document.getElementById('wa-btn').style.display = (phone.length > 8) ? 'inline-block' : 'none';
 
-        // Velden vullen (Fiche)
         document.getElementById('fiche-name').value = name;
         document.getElementById('fiche-phone').value = phone;
         document.getElementById('fiche-startdate').value = startdate;
         document.getElementById('fiche-why').value = why;
         document.getElementById('fiche-notes').value = notes;
 
-        // Velden vullen (Dagen)
         document.getElementById('dag1-q1').value = c['d1-q1'] || (c.dag1 && c.dag1.q1) || '';
         document.getElementById('dag1-q2').value = c['d1-q2'] || (c.dag1 && c.dag1.q2) || '';
         document.getElementById('dag1-q3').value = c['d1-q3'] || (c.dag1 && c.dag1.q3) || '';
@@ -898,7 +964,6 @@
         document.getElementById('week3-q4').value = c['w3-q4'] || (c.week3 && c.week3.q4) || '';
         document.getElementById('week3-notes').value = c['w3-notes'] || (c.week3 && c.week3.notes) || '';
 
-        // Sticky Info
         document.getElementById('sticky-why').innerText = why || '-';
         document.getElementById('sticky-symptoms').innerText = (c.symptoms && c.symptoms.length) ? c.symptoms.join(', ') : 'Geen';
         document.getElementById('w2-symp-reminder').innerText = (c.symptoms && c.symptoms.length) ? c.symptoms.join(', ') : 'Geen';
@@ -912,21 +977,16 @@
         }
     }
 
-    // Specifieke opslag voor basis fiche data
     function autoSaveFiche(field) {
         if(!currentClientId) return;
         const el = document.getElementById(`fiche-${field}`);
-        
         db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).set({ [field]: el.value }, { merge: true });
-        
         if(field === 'name') { document.getElementById('header-client-name').innerText = el.value; renderClientList(); updateClientLinkDropdown(); }
     }
 
-    // Specifieke opslag voor opvolg dagen
     function autoSaveDag(sectie, field) {
         if(!currentClientId) return;
         const el = document.getElementById(`${sectie}-${field}`);
-        
         db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).set({ 
             [`${sectie.replace('week', 'w').replace('dag', 'd')}-${field}`]: el.value 
         }, { merge: true });
@@ -960,7 +1020,6 @@
         const sel = document.getElementById('link-client-select');
         sel.innerHTML = '<option value="">-- Koppel verkoop aan klant --</option>';
         Object.keys(clients).forEach(id => { 
-            // Laat alleen actieve klanten in dropdown zien
             const isActive = clients[id].active !== false;
             if(isActive) {
                 const n = clients[id].name || (clients[id].fiche && clients[id].fiche.name) || 'Klant';
@@ -982,7 +1041,7 @@
             const count = myStock[p.sku] || 0;
             
             const buyPrice = p.retail * (1 - disc);
-            const sellPrice = p.retail; // In the table, we show 0% discount by default to calculate max potential
+            const sellPrice = p.retail; 
             const profit = sellPrice - buyPrice;
 
             if(count > 0) { tVP += (p.vp * count); tBuy += (buyPrice * count); tRet += (sellPrice * count); tProf += (profit * count); }
@@ -1042,7 +1101,6 @@
     function sellProduct(sku) {
         const p = dbProducts.find(x => x.sku === sku);
         if (p && (myStock[sku] || 0) > 0) {
-            // Bereken exacte winst op basis van specifieke korting
             const coachDisc = parseFloat(document.getElementById('discountSelect').value) / 100;
             const custDiscSelect = document.getElementById(`cdisc-${sku}`);
             const custDisc = custDiscSelect ? parseFloat(custDiscSelect.value) / 100 : 0;
@@ -1053,11 +1111,9 @@
 
             myStock[sku] -= 1;
             
-            // Voeg toe aan geschiedenis
             const sale = { id: Date.now(), sku: p.sku, name: p.name, profit: profit, date: new Date().toISOString() };
-            salesHistory.unshift(sale); // Bovenaan toevoegen
+            salesHistory.unshift(sale); 
             
-            // Koppel aan klant
             const linkedId = document.getElementById('link-client-select').value;
             if(linkedId && clients[linkedId]) {
                 const n = `[${new Date().toLocaleDateString()}] Gekocht: 1x ${p.name} (${custDisc*100}% korting)\n`;
@@ -1081,21 +1137,18 @@
     }
 
     function renderHistoryLists() {
-        const selectedMonth = document.getElementById('monthSelector').value; // YYYY-MM
+        const selectedMonth = document.getElementById('monthSelector').value; 
         if (!selectedMonth) return;
 
-        // Maand titel fixen
         const dateObj = new Date(selectedMonth + "-01");
         const monthYearStr = dateObj.toLocaleString('nl-NL', { month: 'long', year: 'numeric' });
         document.getElementById('month-title-display').innerText = "📈 Winst (" + monthYearStr.charAt(0).toUpperCase() + monthYearStr.slice(1) + ")";
 
-        // Maandwinst berekenen via filter
         let mProfit = 0;
         const filteredSales = salesHistory.filter(s => s.date.startsWith(selectedMonth));
         filteredSales.forEach(s => { mProfit += s.profit; });
         document.getElementById('current-month-profit').innerText = formatMoney(mProfit);
 
-        // Verkooplijst gefilterd
         const sList = document.getElementById('sales-history-list');
         sList.innerHTML = filteredSales.length ? '' : '<li class="history-item">Geen verkopen in deze maand.</li>';
         filteredSales.slice(0, 15).forEach(s => {
@@ -1105,8 +1158,6 @@
             </li>`;
         });
 
-        // Persoonlijk Gebruik / Demo
-        // Omdat een item pas uit de lijst gaat als je "Is op!" klikt, dragen deze automatisch over.
         const pList = document.getElementById('personal-use-list');
         pList.innerHTML = personalUse.length ? '' : '<li class="history-item">Geen actieve producten.</li>';
         personalUse.forEach(p => {
@@ -1129,6 +1180,61 @@
         personalUse = personalUse.filter(p => p.id !== id);
         saveInventory();
         renderHistoryLists();
+    }
+
+    // =========================================================================
+    // 6. PRODUCT CATALOGUS (NIEUWE MODULE)
+    // =========================================================================
+    function initCatalog() {
+        const cats = ["Alles", ...new Set(dbProducts.map(p => p.cat))];
+        const filterContainer = document.getElementById('catalog-filters');
+        filterContainer.innerHTML = "";
+        
+        cats.forEach(c => {
+            let btn = document.createElement('button');
+            btn.className = `filter-btn ${c === currentCatFilter ? 'active' : ''}`;
+            btn.innerText = c;
+            btn.onclick = () => {
+                currentCatFilter = c;
+                document.querySelectorAll('#catalog-filters .filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderCatalog();
+            };
+            filterContainer.appendChild(btn);
+        });
+        renderCatalog();
+    }
+
+    function renderCatalog() {
+        const search = document.getElementById('search-catalog').value.toLowerCase();
+        const grid = document.getElementById('catalog-grid');
+        grid.innerHTML = "";
+
+        let filtered = dbProducts.filter(p => {
+            let matchesSearch = p.name.toLowerCase().includes(search) || p.sku.toLowerCase().includes(search);
+            let matchesCat = currentCatFilter === "Alles" || p.cat === currentCatFilter;
+            return matchesSearch && matchesCat;
+        });
+
+        if(filtered.length === 0) {
+            grid.innerHTML = "<p>Geen producten gevonden met deze zoekopdracht.</p>";
+            return;
+        }
+
+        filtered.forEach(p => {
+            let card = document.createElement('div');
+            card.className = "product-card";
+            card.innerHTML = `
+                <div class="product-info-cat">
+                    <div class="product-cat-label">${p.cat}</div>
+                    <h4 style="margin:0 0 10px 0; color:#2C3E50;">${p.name}</h4>
+                    <p style="margin: 0 0 5px 0; font-size:0.85rem; color:#666;"><strong>SKU:</strong> ${p.sku}</p>
+                    <p style="margin: 0 0 5px 0; font-size:0.85rem; color:#666;"><strong>VP:</strong> ${p.vp.toFixed(2)}</p>
+                    <p style="margin: 0 0 15px 0; font-size:0.9rem; color:var(--theme-color); font-weight:bold;">${formatMoney(p.retail)}</p>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
     }
 
 </script>
