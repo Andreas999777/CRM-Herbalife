@@ -344,7 +344,7 @@
                     </div>
 
                     <div class="tabs">
-                        <button class="tab-btn active" onclick="openTab('tab-evaluatie', this)">Evaluatie (Intake)</button>
+                        <button id="tab-btn-eval" class="tab-btn active" onclick="openTab('tab-evaluatie', this)">Evaluatie (Intake)</button>
                         <button class="tab-btn" onclick="openTab('tab-fiche', this)">Klantfiche</button>
                         <button class="tab-btn" onclick="openTab('tab-d1', this)">Dag 1</button>
                         <button class="tab-btn" onclick="openTab('tab-d3', this)">Dag 3</button>
@@ -356,7 +356,9 @@
                     <div id="tab-evaluatie" class="tab-content active">
                         <div class="card">
                             <h3>Start Resultaten Evaluatie</h3>
-                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <p style="margin-top:0;"><strong>Leefstijl Score:</strong> <span id="crm-eval-score" style="color:var(--theme-color); font-weight:bold; font-size:1.1rem;">?</span> / 15</p>
+                            
+                            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
                                 <div style="background:#fff3cd; padding:15px; border-radius:8px; border-left:4px solid var(--warning);">
                                     <h4 style="margin:0 0 10px 0;">Symptomen bij Start</h4>
                                     <p id="crm-eval-symptoms" style="margin:0; font-size:0.9rem; line-height:1.5;">Geen</p>
@@ -437,6 +439,12 @@
                     <div id="tab-w2" class="tab-content">
                         <div class="card">
                             <h3 style="color:var(--warning);">Opvolging Week 2</h3>
+                            
+                            <div style="background:#fff8e1; border-left:4px solid #f39c12; padding:15px; margin-bottom:15px;">
+                                <h4 style="margin:0 0 5px 0; color:#d35400;">Symptomen Check</h4>
+                                <p style="margin:0; font-size:0.85rem;">Klant gaf bij start aan last te hebben van: <strong id="w2-symp-reminder" style="color:var(--danger);"></strong></p>
+                            </div>
+                            
                             <div class="form-group"><label>1. Hoe voel je je nu? Meer energie?</label><textarea id="week2-q1" oninput="autoSaveDag('week2', 'q1')"></textarea></div>
                             <div class="form-group"><label>2. Hoeveel water heb je gedronken?</label><textarea id="week2-q2" oninput="autoSaveDag('week2', 'q2')"></textarea></div>
                             <div class="form-group"><label>3. Heb je vanmorgen gemeten?</label><textarea id="week2-q3" oninput="autoSaveDag('week2', 'q3')"></textarea></div>
@@ -548,7 +556,6 @@
     // 1. DATA CONFIGURATIE 
     // =========================================================================
     
-    // Toggle Mobile Menu
     function toggleMenu() {
         document.getElementById('app-sidebar').classList.toggle('open');
         document.getElementById('mobile-overlay').classList.toggle('active');
@@ -582,7 +589,6 @@
         {t: "Veel dorst/plassen", f: ["Stress", "Vezels", "Eiwitten"]}, {t: "Slechte slaper", f: ["Stress", "Vezels", "Water"]}
     ];
 
-    // PRODUCTEN MET DESCRIPTIONS
     const dbProducts = [
         { cat: "ONTBIJT & DRANKEN", sku: "1188", name: "Herbal Aloe Drank Original 1,9L", vp: 91.10, retail: 190.90, desc: "Verzacht de maag en bevordert een optimale spijsvertering en opname van voedingsstoffen. Extra grote fles." },
         { cat: "ONTBIJT & DRANKEN", sku: "0006", name: "Herbal Aloë Drank Original 473ml", vp: 24.95, retail: 52.80, desc: "Verzacht de maag en bevordert de spijsvertering. Ideaal voor hydratatie." },
@@ -659,7 +665,7 @@
         { cat: "SKIN & BODY", sku: "0770", name: "SKIN Verstevigende Ooggel", vp: 26.35, retail: 53.05, desc: "Helpt de elasticiteit van de gevoelige huid rond de ogen te verbeteren." },
         { cat: "SKIN & BODY", sku: "0773", name: "SKIN Zuiverend Kleimasker", vp: 14.20, retail: 28.55, desc: "Diepreinigend masker met munt. Verwijdert overtollig talg." },
         { cat: "SKIN & BODY", sku: "0827", name: "SKIN Herstellende Nachtcrème", vp: 32.65, retail: 65.70, desc: "Verdubbelt de hydratatie van je huid binnen acht uur." },
-        { cat: "SKIN & BODY", sku: "0828", name: "SKIN Moisturiser SPF 30", vp: 32.65, retail: 65.70, desc: "Dagcrème met zonnefactor. Beschermt tegen UVA/UVB straling." },
+        { cat: "SKIN & BODY", sku: "0828", name: "SKIN Beschermende Moisturiser SPF 30", vp: 32.65, retail: 65.70, desc: "Dagcrème met zonnefactor. Beschermt tegen UVA/UVB straling." },
         { cat: "SKIN & BODY", sku: "0829", name: "SKIN Lijn Minimaliserend Serum", vp: 43.35, retail: 87.25, desc: "Krachtig serum, vermindert zichtbaar fijne lijntjes en rimpels." },
         { cat: "SKIN & BODY", sku: "0830", name: "SKIN Dagelijkse Glow Moisturizer", vp: 32.65, retail: 65.70, desc: "Laat de huid stralen, zelfs zonder make-up. Diep voedend." },
         { cat: "SKIN & BODY", sku: "2561", name: "Herbal Aloë Hand & Body Wash", vp: 8.30, retail: 18.60, desc: "Milde zeep met Aloë Vera. Reinigt zonder de huid uit te drogen." },
@@ -668,7 +674,6 @@
         { cat: "SKIN & BODY", sku: "2565", name: "Herbal Aloë Strengthening Conditioner", vp: 8.30, retail: 18.40, desc: "Kleurbehoudende crèmespoeling voor sterk, glad en glanzend haar." }
     ];
 
-    // TESTIMONIALS (Uit PDF)
     const dbTestimonials = [
         { naam: "Marieke", fase: "Hersenletsel, altijd moe", nu: "Energie, geen dutjes meer, -63cm", label: "Energie & Herstel" },
         { naam: "Huguette", fase: "Maatje 42, snoepverslaving", nu: "Maatje 38, fit & uitgeslapen", label: "Afslanken & Fit" },
@@ -727,14 +732,12 @@
         renderTestimonials();
     };
 
-    // UI Functies
     function switchView(viewId, btn) {
         document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
         document.getElementById(viewId).classList.add('active');
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         if(btn) btn.classList.add('active');
         
-        // Close menu on mobile
         document.getElementById('app-sidebar').classList.remove('open');
         document.getElementById('mobile-overlay').classList.remove('active');
     }
@@ -823,14 +826,14 @@
             st.forEach(t => tallies[t] = (tallies[t]||0)+1);
             if (sn === "Allergieën") hasAllergy = true;
             
-            // Match met producten (Dynamisch toevoegen o.b.v vinkjes)
-            if (sn.includes("Energiegebrek") || sn.includes("Concentratieverlies") || sn.includes("Minder aankunnen")) { suggested.add("Lift-Off (Focus & Energie)"); }
-            if (sn.includes("Slechte slaper")) { suggested.add("Night Mode (Betere nachtrust)"); }
-            if (sn.includes("Spierpijn") || sn.includes("Spierkrampen") || sn.includes("Gewrichtspijn")) { suggested.add("H24 Rebuild Strength"); suggested.add("Xtra-Cal"); }
-            if (sn.includes("Stoelgang") || sn.includes("Opgeblazen") || sn.includes("Brandend maagzuur")) { suggested.add("Multivezel Drank"); suggested.add("Microbiotic Max"); }
-            if (sn.includes("Droge huid") || sn.includes("Haarverlies") || sn.includes("Broze nagels")) { suggested.add("Collageen Skin Booster"); }
-            if (sn.includes("Regelmatig verkouden") || sn.includes("Koortsblaasjes")) { suggested.add("Immune Booster"); }
-            if (sn.includes("Zin in zoet") || sn.includes("Honger") || sn.includes("Onzeker zijn")) { suggested.add("Proteïnedrankmix (PDM)"); suggested.add("Proteïne Repen"); }
+            // STRICTE MATCHING ZODAT HET WEGGAAT BIJ UITVINKEN
+            if (sn === "Energiegebrek" || sn === "Concentratieverlies" || sn === "Minder aankunnen") { suggested.add("Lift-Off (Focus & Energie)"); }
+            if (sn === "Slechte slaper") { suggested.add("Night Mode (Betere nachtrust)"); }
+            if (sn === "Spierpijn" || sn === "Spierkrampen" || sn === "Gewrichtspijn") { suggested.add("H24 Rebuild Strength"); suggested.add("Xtra-Cal"); }
+            if (sn === "Stoelgang problemen" || sn === "Brandend maagzuur" || sn === "Vocht vasthouden") { suggested.add("Multivezel Drank"); suggested.add("Microbiotic Max"); }
+            if (sn === "Droge huid / Acné" || sn === "Haarverlies" || sn === "Broze nagels") { suggested.add("Collageen Skin Booster"); }
+            if (sn === "Regelmatig verkouden" || sn === "Koortsblaasjes" || sn === "Ontstekingen") { suggested.add("Immune Booster"); }
+            if (sn === "Zin in zoet" || sn === "Veel dorst/plassen" || sn === "Onzeker zijn") { suggested.add("Proteïnedrankmix (PDM)"); suggested.add("Proteïne Repen"); }
         });
 
         document.getElementById('allergy-box').style.display = hasAllergy ? 'block' : 'none';
@@ -852,11 +855,11 @@
         const name = document.getElementById('eval-name').value.trim();
         if(!name) return alert("Geef minstens de naam van de klant in!");
 
+        const pts = document.querySelectorAll('input.pt:checked').length;
         const symptomList = Array.from(document.querySelectorAll('.sc:checked')).map(c => c.getAttribute('data-name'));
         const extraNotes = document.getElementById('eval-extra-notes').value.trim();
         
         let adviceText = Array.from(document.querySelectorAll('#suggested-products div')).map(d => d.innerText.replace('+ ', '')).join(', ');
-
         let initialNote = "Intake opmerkingen:\n" + extraNotes;
 
         const newId = 'client_' + Date.now();
@@ -867,8 +870,9 @@
             email: document.getElementById('eval-email').value,
             startdate: document.getElementById('eval-date').value,
             why: document.getElementById('eval-why').value,
+            score: pts,
             symptoms: symptomList,
-            advies: adviceText, // Opslaan als apart veld voor de Evaluatie tab in CRM
+            advies: adviceText, 
             active: true, 
             tanita_start: { 
                 gew: document.getElementById('eval-t-gew').value, vet: document.getElementById('eval-t-vet').value, 
@@ -882,6 +886,7 @@
             document.querySelectorAll('.sc').forEach(c => c.checked = false); 
             document.querySelectorAll('.focus-check').forEach(c => c.checked = false); 
             updateAnalysis(); updateScore();
+            
             switchView('view-fu', document.querySelectorAll('.nav-btn')[1]);
             currentClientId = newId; loadClientFiche();
         });
@@ -979,9 +984,13 @@
         document.getElementById('fiche-why').value = why;
         document.getElementById('fiche-notes').value = notes;
         
-        // Vul Intake Tab (Nieuw)
+        // Vul Intake Tab 
+        document.getElementById('crm-eval-score').innerText = c.score !== undefined ? c.score : '?';
         document.getElementById('crm-eval-symptoms').innerHTML = symptomsArr.map(s => `&bull; ${s}`).join('<br>');
         document.getElementById('crm-eval-products').innerHTML = advies.split(', ').map(p => `&bull; <strong>${p}</strong>`).join('<br>');
+        
+        // Vul Week 2 Herinnering
+        document.getElementById('w2-symp-reminder').innerText = (c.symptoms && c.symptoms.length) ? c.symptoms.join(', ') : 'Geen';
 
         document.getElementById('dag1-q1').value = c['d1-q1'] || (c.dag1 && c.dag1.q1) || '';
         document.getElementById('dag1-q2').value = c['d1-q2'] || (c.dag1 && c.dag1.q2) || '';
@@ -1027,6 +1036,10 @@
         } else {
             ['gew', 'vet', 'spier', 'visc', 'lft'].forEach(t => document.getElementById(`disp-t-${t}`).innerText = '-');
         }
+
+        // Zorg dat hij automatisch de Evaluatie tab opent
+        const evalBtn = document.getElementById('tab-btn-eval');
+        if(evalBtn) openTab('tab-evaluatie', evalBtn);
     }
 
     function autoSaveFiche(field) {
