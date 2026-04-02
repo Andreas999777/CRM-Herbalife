@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HBL-Connect</title>
+    <title>HBL-Connect Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -130,16 +130,27 @@
         .product-card { background: white; border-radius: 10px; padding:20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-top: 3px solid var(--theme-color); display: flex; flex-direction: column;}
         .product-cat-label { font-size: 0.75rem; color: var(--hb-green); font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
 
+        /* --- 5. TESTIMONIALS --- */
+        .testi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .testi-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; flex-direction: column;}
+        .testi-header { background: var(--sidebar-dark); color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 1.1rem; }
+        .testi-body { padding: 20px; display: flex; flex-direction: column; gap: 15px; flex: 1; }
+        .testi-box { background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid var(--danger); font-size: 0.9rem; }
+        .testi-box.nu { border-left-color: var(--success); background: #f0fdf4;}
+
         /* --- RESPONSIVE MOBILE FIX --- */
         @media (max-width: 768px) {
             body { flex-direction: column; }
             .mobile-header { display: flex; }
             #app-sidebar { position: fixed; left: -260px; height: 100%; width: 260px; }
             #app-sidebar.open { left: 0; }
+            
+            /* Fix Info-muur op GSM (verhuist naar onder) */
             #view-eval { flex-direction: column; }
-            .info-muur { width: 100%; height: auto; display: flex; flex-wrap: wrap; gap:10px; }
+            .info-muur { width: 100%; height: auto; display: flex; flex-wrap: wrap; gap:10px; order: 2; padding: 20px; }
+            .eval-scroll-area { order: 1; padding: 15px; }
             .info-btn { width: auto; flex: 1 1 45%; }
-            .eval-scroll-area { padding: 15px; }
+            
             .analysis-container { grid-template-columns: 1fr; }
             #view-fu { flex-direction: column; }
             #fu-list-pane { width: 100%; height: 300px; }
@@ -172,6 +183,7 @@
             <li><button class="nav-btn" onclick="switchView('view-fu', this)">👥 Mijn Klanten</button></li>
             <li><button class="nav-btn" onclick="switchView('view-stock', this)">📦 Voorraad & Winst</button></li>
             <li><button class="nav-btn" onclick="switchView('view-catalog', this)">📗 Product Info</button></li>
+            <li><button class="nav-btn" onclick="switchView('view-testimonials', this)">⭐ Testimonials</button></li>
         </ul>
     </div>
 
@@ -329,11 +341,11 @@
 
                     <div style="padding: 15px 40px; background:#fdfdfd; border-bottom:1px solid var(--border); display:flex; gap:30px; font-size:0.9rem;">
                         <div><strong style="color:var(--theme-color);">De "WHY":</strong> <span id="sticky-why"></span></div>
-                        <div><strong style="color:var(--danger);">Start Symptomen:</strong> <span id="sticky-symptoms"></span></div>
                     </div>
 
                     <div class="tabs">
-                        <button class="tab-btn active" onclick="openTab('tab-fiche', this)">Klantfiche</button>
+                        <button class="tab-btn active" onclick="openTab('tab-evaluatie', this)">Evaluatie (Intake)</button>
+                        <button class="tab-btn" onclick="openTab('tab-fiche', this)">Klantfiche</button>
                         <button class="tab-btn" onclick="openTab('tab-d1', this)">Dag 1</button>
                         <button class="tab-btn" onclick="openTab('tab-d3', this)">Dag 3</button>
                         <button class="tab-btn" onclick="openTab('tab-d7', this)">Dag 7</button>
@@ -341,14 +353,18 @@
                         <button class="tab-btn" onclick="openTab('tab-w3', this)">Week 3+</button>
                     </div>
 
-                    <div id="tab-fiche" class="tab-content active">
+                    <div id="tab-evaluatie" class="tab-content active">
                         <div class="card">
-                            <h3>Basisgegevens & Contact</h3>
-                            <div class="form-grid">
-                                <div class="form-group"><label>Naam</label><input type="text" id="fiche-name" oninput="autoSaveFiche('name')"></div>
-                                <div class="form-group"><label>Telefoon</label><input type="text" id="fiche-phone" oninput="autoSaveFiche('phone')"></div>
-                                <div class="form-group"><label>Startdatum (Dag 1)</label><input type="date" id="fiche-startdate" oninput="autoSaveFiche('startdate'); renderClientList()"></div>
-                                <div class="form-group"><label>De "WHY"</label><input type="text" id="fiche-why" oninput="autoSaveFiche('why')"></div>
+                            <h3>Start Resultaten Evaluatie</h3>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div style="background:#fff3cd; padding:15px; border-radius:8px; border-left:4px solid var(--warning);">
+                                    <h4 style="margin:0 0 10px 0;">Symptomen bij Start</h4>
+                                    <p id="crm-eval-symptoms" style="margin:0; font-size:0.9rem; line-height:1.5;">Geen</p>
+                                </div>
+                                <div style="background:#d4edda; padding:15px; border-radius:8px; border-left:4px solid var(--success);">
+                                    <h4 style="margin:0 0 10px 0;">Aangeraden Producten</h4>
+                                    <p id="crm-eval-products" style="margin:0; font-size:0.9rem; line-height:1.5;">Geen</p>
+                                </div>
                             </div>
                         </div>
                         <div class="card">
@@ -362,8 +378,20 @@
                             </div>
                         </div>
                         <div class="card">
-                            <h3>Vrij Notitieveld, Advies & Verkoophistoriek</h3>
-                            <textarea id="fiche-notes" rows="12" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border); font-family:inherit; box-sizing:border-box;" oninput="autoSaveFiche('notes')"></textarea>
+                            <h3>Vrij Notitieveld Intake & Advies</h3>
+                            <textarea id="fiche-notes" rows="8" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border); font-family:inherit; box-sizing:border-box;" oninput="autoSaveFiche('notes')"></textarea>
+                        </div>
+                    </div>
+
+                    <div id="tab-fiche" class="tab-content">
+                        <div class="card">
+                            <h3>Basisgegevens & Contact</h3>
+                            <div class="form-grid">
+                                <div class="form-group"><label>Naam</label><input type="text" id="fiche-name" oninput="autoSaveFiche('name')"></div>
+                                <div class="form-group"><label>Telefoon</label><input type="text" id="fiche-phone" oninput="autoSaveFiche('phone')"></div>
+                                <div class="form-group"><label>Startdatum (Dag 1)</label><input type="date" id="fiche-startdate" oninput="autoSaveFiche('startdate'); renderClientList()"></div>
+                                <div class="form-group"><label>De "WHY"</label><input type="text" id="fiche-why" oninput="autoSaveFiche('why')"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -409,10 +437,6 @@
                     <div id="tab-w2" class="tab-content">
                         <div class="card">
                             <h3 style="color:var(--warning);">Opvolging Week 2</h3>
-                            <div style="background:#fff8e1; border-left:4px solid #f39c12; padding:15px; margin-bottom:15px;">
-                                <h4 style="margin:0 0 5px 0; color:#d35400;">Symptomen Check</h4>
-                                <p style="margin:0; font-size:0.85rem;">Klant gaf bij start aan last te hebben van: <strong id="w2-symp-reminder" style="color:var(--danger);"></strong></p>
-                            </div>
                             <div class="form-group"><label>1. Hoe voel je je nu? Meer energie?</label><textarea id="week2-q1" oninput="autoSaveDag('week2', 'q1')"></textarea></div>
                             <div class="form-group"><label>2. Hoeveel water heb je gedronken?</label><textarea id="week2-q2" oninput="autoSaveDag('week2', 'q2')"></textarea></div>
                             <div class="form-group"><label>3. Heb je vanmorgen gemeten?</label><textarea id="week2-q3" oninput="autoSaveDag('week2', 'q3')"></textarea></div>
@@ -504,11 +528,24 @@
             </div>
         </div>
 
+        <div id="view-testimonials" class="view">
+            <div style="padding: 20px 30px; background: white; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                <h2 style="margin:0; color:var(--theme-color);">⭐ Testimonials (Wall of Fame)</h2>
+                <button class="btn-success" onclick="window.open('Testimonials.pdf', '_blank')">📄 Open Volledige PDF</button>
+            </div>
+            
+            <div style="padding: 30px; overflow-y:auto;">
+                <p style="margin-top:0; color:#666;">Gebruik deze succesverhalen als inspiratie voor je nieuwe klanten. De resultaten spreken voor zich!</p>
+                <div class="testi-grid" id="testi-grid">
+                    </div>
+            </div>
+        </div>
+
     </div>
 
 <script>
     // =========================================================================
-    // 1. DATA CONFIGURATIE (Vragen, Symptomen & Volledige PDF Productlijst)
+    // 1. DATA CONFIGURATIE 
     // =========================================================================
     
     // Toggle Mobile Menu
@@ -545,84 +582,107 @@
         {t: "Veel dorst/plassen", f: ["Stress", "Vezels", "Eiwitten"]}, {t: "Slechte slaper", f: ["Stress", "Vezels", "Water"]}
     ];
 
+    // PRODUCTEN MET DESCRIPTIONS
     const dbProducts = [
-        { cat: "ONTBIJT & DRANKEN", sku: "1188", name: "Herbal Aloe Drank Original 1,9L", vp: 91.10, retail: 190.90 },
-        { cat: "ONTBIJT & DRANKEN", sku: "0006", name: "Herbal Aloë Drank Original 473ml", vp: 24.95, retail: 52.80 },
-        { cat: "ONTBIJT & DRANKEN", sku: "1065", name: "Herbal Aloë Drank Mango 473ml", vp: 24.95, retail: 52.80 },
-        { cat: "ONTBIJT & DRANKEN", sku: "1196", name: "Herbal Aloë Max 473ml", vp: 28.15, retail: 61.70 },
-        { cat: "ONTBIJT & DRANKEN", sku: "166K", name: "Instant Theedrank Original 102g", vp: 34.95, retail: 73.25 },
-        { cat: "ONTBIJT & DRANKEN", sku: "165K", name: "Instant Theedrank Original 51g", vp: 19.95, retail: 38.25 },
-        { cat: "ONTBIJT & DRANKEN", sku: "167K", name: "Instant Theedrank Citroen 51g", vp: 19.95, retail: 38.25 },
-        { cat: "ONTBIJT & DRANKEN", sku: "168K", name: "Instant Theedrank Framboos 51g", vp: 19.95, retail: 38.25 },
-        { cat: "ONTBIJT & DRANKEN", sku: "169K", name: "Instant Theedrank Perzik 51g", vp: 19.95, retail: 38.25 },
-        { cat: "F1 SHAKES", sku: "4462", name: "F1 Shake Bananen Crème 550g", vp: 23.95, retail: 60.90 },
-        { cat: "F1 SHAKES", sku: "4463", name: "F1 Shake Frisse Aardbei 550g", vp: 23.95, retail: 60.90 },
-        { cat: "F1 SHAKES", sku: "4465", name: "F1 Shake Cafè Latte 550g", vp: 23.95, retail: 60.90 },
-        { cat: "F1 SHAKES", sku: "4466", name: "F1 Shake Romige Vanille 550g", vp: 23.95, retail: 60.90 },
-        { cat: "F1 SHAKES", sku: "4467", name: "F1 Shake Cookie Crunch 550g", vp: 23.95, retail: 60.90 },
-        { cat: "F1 SHAKES", sku: "4468", name: "F1 Shake Zachte Chocolade 550g", vp: 23.95, retail: 60.90 },
-        { cat: "F1 SHAKES", sku: "4471", name: "F1 Shake Munt Chocolade 550g", vp: 23.95, retail: 60.90 },
-        { cat: "F1 SHAKES", sku: "4469", name: "F1 Vrij Van Framboos & Witte Choc 500g", vp: 23.95, retail: 60.90 },
-        { cat: "F1 SHAKES", sku: "048K", name: "F1 Shake Romige Vanille 780g", vp: 32.75, retail: 79.85 },
-        { cat: "F1 SHAKES", sku: "053K", name: "F1 Shake 7 zakjes (Vanille/Choco/Cookie)", vp: 10.00, retail: 25.35 },
-        { cat: "F1 SHAKES", sku: "4472", name: "Express Maaltijdreep (7 stuks)", vp: 14.00, retail: 30.70 },
-        { cat: "PROTEÏNE & SNACKS", sku: "528K", name: "Proteïne Bak Mix (PBM)", vp: 26.90, retail: 68.35 },
-        { cat: "PROTEÏNE & SNACKS", sku: "013K", name: "Tri Blend Select Banaan 600g", vp: 37.50, retail: 90.25 },
-        { cat: "PROTEÏNE & SNACKS", sku: "172K", name: "Vegan Proteïnedrankmix Vanille 560g", vp: 31.45, retail: 68.35 },
-        { cat: "PROTEÏNE & SNACKS", sku: "441K", name: "Vegan Proteïnedrankmix Vanille (7 zakjes)", vp: 13.25, retail: 29.90 },
-        { cat: "PROTEÏNE & SNACKS", sku: "012K", name: "High Protein Iced Coffee 308g", vp: 30.55, retail: 72.75 },
-        { cat: "PROTEÏNE & SNACKS", sku: "141K", name: "Proteïne Chips Barbecue (10 stuks)", vp: 11.75, retail: 26.70 },
-        { cat: "PROTEÏNE & SNACKS", sku: "142K", name: "Proteïne Chips Sour Cream (10 stuks)", vp: 11.75, retail: 26.70 },
-        { cat: "PROTEÏNE & SNACKS", sku: "2600", name: "Proteïnedrankmix Vanille 588g", vp: 33.00, retail: 71.75 },
-        { cat: "PROTEÏNE & SNACKS", sku: "0242", name: "F3 Proteïnepoeder 240g", vp: 17.95, retail: 48.90 },
-        { cat: "PROTEÏNE & SNACKS", sku: "3968", name: "Proteïnereep Vanille Amandel", vp: 13.22, retail: 27.80 },
-        { cat: "PROTEÏNE & SNACKS", sku: "3976", name: "Proteïnereep Citroen", vp: 13.22, retail: 27.80 },
-        { cat: "SUPPLEMENTEN", sku: "376K", name: "Herbalife Gels ViewVita", vp: 27.20, retail: 62.60 },
-        { cat: "SUPPLEMENTEN", sku: "378K", name: "Herbalife Gels CoQ10Vita", vp: 23.20, retail: 53.35 },
-        { cat: "SUPPLEMENTEN", sku: "379K", name: "Herbalife Gels MindVita Kids", vp: 20.50, retail: 47.15 },
-        { cat: "SUPPLEMENTEN", sku: "369K", name: "Herbalife Gels NutrientVita Kids", vp: 9.30, retail: 21.50 },
-        { cat: "SUPPLEMENTEN", sku: "282K", name: "Night mode Kamille & Perzik", vp: 31.25, retail: 63.35 },
-        { cat: "SUPPLEMENTEN", sku: "236K", name: "Phyto Complete 42,8g", vp: 38.15, retail: 85.35 },
-        { cat: "SUPPLEMENTEN", sku: "243K", name: "Active Mind Complex", vp: 27.25, retail: 54.90 },
-        { cat: "SUPPLEMENTEN", sku: "173K", name: "Microbiotic Max (20 zakjes)", vp: 27.10, retail: 62.65 },
-        { cat: "SUPPLEMENTEN", sku: "233K", name: "Immune Booster (21 zakjes)", vp: 18.90, retail: 50.65 },
-        { cat: "SUPPLEMENTEN", sku: "0043", name: "Herbalifeline Max", vp: 19.40, retail: 40.70 },
-        { cat: "SUPPLEMENTEN", sku: "2554", name: "Multivezel Drank", vp: 22.95, retail: 43.40 },
-        { cat: "SUPPLEMENTEN", sku: "0267", name: "Beta Heart Vanille 229g", vp: 25.95, retail: 57.20 },
-        { cat: "SUPPLEMENTEN", sku: "2039", name: "F2 Vitaminencomplex VROUWEN", vp: 13.55, retail: 30.95 },
-        { cat: "SUPPLEMENTEN", sku: "1746", name: "F2 Vitaminencomplex MANNEN", vp: 13.55, retail: 30.95 },
-        { cat: "SUPPLEMENTEN", sku: "0020", name: "Xtra-Cal", vp: 10.25, retail: 24.35 },
-        { cat: "SUPPLEMENTEN", sku: "3150", name: "Niteworks", vp: 48.75, retail: 108.65 },
-        { cat: "SUPPLEMENTEN", sku: "3152", name: "Lift Off Citroen (10 tab)", vp: 15.95, retail: 39.95 },
-        { cat: "SUPPLEMENTEN", sku: "076K", name: "SKIN Collageen Booster 171g", vp: 37.10, retail: 83.00 },
-        { cat: "HERBALIFE 24", sku: "488K", name: "H24 Creatine Plus", vp: 15.95, retail: 36.35 },
-        { cat: "HERBALIFE 24", sku: "402K", name: "ProLong Energy gel (10 zakjes)", vp: 13.60, retail: 27.75 },
-        { cat: "HERBALIFE 24", sku: "403K", name: "H24 Rebuild Strength Choco 1000g", vp: 33.55, retail: 78.75 },
-        { cat: "HERBALIFE 24", sku: "486K", name: "H24 Rebuild Strength zakjes", vp: 15.20, retail: 34.45 },
-        { cat: "HERBALIFE 24", sku: "192K", name: "H24 LiftOff Max Grapefruit (10st)", vp: 15.95, retail: 36.90 },
-        { cat: "HERBALIFE 24", sku: "149K", name: "H24 Achieve Repen Cookie Dough", vp: 11.30, retail: 23.65 },
-        { cat: "HERBALIFE 24", sku: "150K", name: "H24 Achieve Repen Pure Choco", vp: 11.30, retail: 23.65 },
-        { cat: "HERBALIFE 24", sku: "1466", name: "CR7 Drive Açai Bessen 540g", vp: 12.50, retail: 26.80 },
-        { cat: "HERBALIFE 24", sku: "1467", name: "CR7 Drive Açai Bessen (10 zakjes)", vp: 8.00, retail: 16.15 },
-        { cat: "HERBALIFE 24", sku: "1433", name: "H24 Hydrate Sinaasappel (20 zakjes)", vp: 17.20, retail: 42.90 },
-        { cat: "SKIN & BODY", sku: "539K", name: "HL/Skin Revitaliserende Nachtcrème", vp: 35.20, retail: 66.00 },
-        { cat: "SKIN & BODY", sku: "508K", name: "HL/Skin 10% Niacinamide Serum", vp: 31.70, retail: 59.40 },
-        { cat: "SKIN & BODY", sku: "511K", name: "HL/Skin Vernieuwende Gel Cleanser", vp: 21.30, retail: 39.95 },
-        { cat: "SKIN & BODY", sku: "513K", name: "HL/Skin Versterkende Crème", vp: 35.20, retail: 66.00 },
-        { cat: "SKIN & BODY", sku: "514K", name: "HL/Skin Voedende Hand/Bodylotion", vp: 15.90, retail: 29.80 },
-        { cat: "SKIN & BODY", sku: "515K", name: "HL/Skin Voedende Oogcrème", vp: 26.70, retail: 50.15 },
-        { cat: "SKIN & BODY", sku: "0765", name: "SKIN Verzachtende Aloë Cleanser", vp: 16.75, retail: 33.70 },
-        { cat: "SKIN & BODY", sku: "0767", name: "SKIN Verfrissende Toner", vp: 12.70, retail: 25.55 },
-        { cat: "SKIN & BODY", sku: "0770", name: "SKIN Verstevigende Ooggel", vp: 26.35, retail: 53.05 },
-        { cat: "SKIN & BODY", sku: "0773", name: "SKIN Zuiverend Kleimasker", vp: 14.20, retail: 28.55 },
-        { cat: "SKIN & BODY", sku: "0827", name: "SKIN Herstellende Nachtcrème", vp: 32.65, retail: 65.70 },
-        { cat: "SKIN & BODY", sku: "0828", name: "SKIN Beschermende Moisturiser SPF 30", vp: 32.65, retail: 65.70 },
-        { cat: "SKIN & BODY", sku: "0829", name: "SKIN Lijn Minimaliserend Serum", vp: 43.35, retail: 87.25 },
-        { cat: "SKIN & BODY", sku: "0830", name: "SKIN Dagelijkse Glow Moisturizer", vp: 32.65, retail: 65.70 },
-        { cat: "SKIN & BODY", sku: "2561", name: "Herbal Aloë Hand & Body Wash", vp: 8.30, retail: 18.60 },
-        { cat: "SKIN & BODY", sku: "2562", name: "Herbal Aloë Soothing Gel", vp: 8.30, retail: 18.00 },
-        { cat: "SKIN & BODY", sku: "2564", name: "Herbal Aloë Strengthening Shampoo", vp: 8.30, retail: 18.40 },
-        { cat: "SKIN & BODY", sku: "2565", name: "Herbal Aloë Strengthening Conditioner", vp: 8.30, retail: 18.40 }
+        { cat: "ONTBIJT & DRANKEN", sku: "1188", name: "Herbal Aloe Drank Original 1,9L", vp: 91.10, retail: 190.90, desc: "Verzacht de maag en bevordert een optimale spijsvertering en opname van voedingsstoffen. Extra grote fles." },
+        { cat: "ONTBIJT & DRANKEN", sku: "0006", name: "Herbal Aloë Drank Original 473ml", vp: 24.95, retail: 52.80, desc: "Verzacht de maag en bevordert de spijsvertering. Ideaal voor hydratatie." },
+        { cat: "ONTBIJT & DRANKEN", sku: "1065", name: "Herbal Aloë Drank Mango 473ml", vp: 24.95, retail: 52.80, desc: "Heerlijke zoete mangosmaak. Verzacht en kalmeert de maag." },
+        { cat: "ONTBIJT & DRANKEN", sku: "1196", name: "Herbal Aloë Max 473ml", vp: 28.15, retail: 61.70, desc: "Bevat maar liefst 97% Aloë Vera sap. De puurste vorm voor maximale hydratatie." },
+        { cat: "ONTBIJT & DRANKEN", sku: "166K", name: "Instant Theedrank Original 102g", vp: 34.95, retail: 73.25, desc: "Kruidendrank die energie geeft en de vetverbranding stimuleert. (Grote pot)" },
+        { cat: "ONTBIJT & DRANKEN", sku: "165K", name: "Instant Theedrank Original 51g", vp: 19.95, retail: 38.25, desc: "Verkwikkende theedrank voor energie en thermogenese (vetverbranding)." },
+        { cat: "ONTBIJT & DRANKEN", sku: "167K", name: "Instant Theedrank Citroen 51g", vp: 19.95, retail: 38.25, desc: "Kruidendrank met frisse citroensmaak. Boost je metabolisme." },
+        { cat: "ONTBIJT & DRANKEN", sku: "168K", name: "Instant Theedrank Framboos 51g", vp: 19.95, retail: 38.25, desc: "Heerlijke fruitige theedrank voor langdurige energie." },
+        { cat: "ONTBIJT & DRANKEN", sku: "169K", name: "Instant Theedrank Perzik 51g", vp: 19.95, retail: 38.25, desc: "Populaire theedrank met zachte perziksmaak. Stimuleert de verbranding." },
+        
+        { cat: "F1 SHAKES", sku: "4462", name: "F1 Shake Bananen Crème 550g", vp: 23.95, retail: 60.90, desc: "Volwaardige maaltijdvervanger vol essentiële voedingsstoffen en eiwitten." },
+        { cat: "F1 SHAKES", sku: "4463", name: "F1 Shake Frisse Aardbei 550g", vp: 23.95, retail: 60.90, desc: "Heerlijke, lichte aardbeiensmaak. Perfect als gezond ontbijt of lunch." },
+        { cat: "F1 SHAKES", sku: "4465", name: "F1 Shake Cafè Latte 550g", vp: 23.95, retail: 60.90, desc: "Voor de koffieliefhebber. Volwaardige maaltijd met heerlijke koffiesmaak." },
+        { cat: "F1 SHAKES", sku: "4466", name: "F1 Shake Romige Vanille 550g", vp: 23.95, retail: 60.90, desc: "De klassieker. Zeer neutraal en perfect om te blenden met fruit." },
+        { cat: "F1 SHAKES", sku: "4467", name: "F1 Shake Cookie Crunch 550g", vp: 23.95, retail: 60.90, desc: "Bevat krokante stukjes. Ideaal voor de zoetekauw als gezonde maaltijd." },
+        { cat: "F1 SHAKES", sku: "4468", name: "F1 Shake Zachte Chocolade 550g", vp: 23.95, retail: 60.90, desc: "Rijke chocoladesmaak, maar toch een 100% verantwoorde, gebalanceerde maaltijd." },
+        { cat: "F1 SHAKES", sku: "4471", name: "F1 Shake Munt Chocolade 550g", vp: 23.95, retail: 60.90, desc: "Verfrissende munt gecombineerd met heerlijke chocolade. Vol vitaminen." },
+        { cat: "F1 SHAKES", sku: "4469", name: "F1 Vrij Van Framboos & Witte Choc 500g", vp: 23.95, retail: 60.90, desc: "Vrij van soja, zuivel en gluten. Perfect voor mensen met allergieën." },
+        { cat: "F1 SHAKES", sku: "048K", name: "F1 Shake Romige Vanille 780g", vp: 32.75, retail: 79.85, desc: "De klassieke Romige Vanille, maar dan in een voordelige XXL pot." },
+        { cat: "F1 SHAKES", sku: "053K", name: "F1 Shake 7 zakjes (Vanille/Choco/Cookie)", vp: 10.00, retail: 25.35, desc: "Handige proefpakketten of on-the-go zakjes met gemixte smaken." },
+        { cat: "F1 SHAKES", sku: "4472", name: "Express Maaltijdreep (7 stuks)", vp: 14.00, retail: 30.70, desc: "Geen tijd om te shaken? Deze reep bevat alle voedingsstoffen van 1 maaltijd." },
+        
+        { cat: "PROTEÏNE & SNACKS", sku: "528K", name: "Proteïne Bak Mix (PBM)", vp: 26.90, retail: 68.35, desc: "Bak gezonde, eiwitrijke pannenkoeken, wafels of muffins zonder toegevoegde suikers." },
+        { cat: "PROTEÏNE & SNACKS", sku: "013K", name: "Tri Blend Select Banaan 600g", vp: 37.50, retail: 90.25, desc: "100% plantaardige, natuurlijke premium eiwitshake. Rijk aan vezels." },
+        { cat: "PROTEÏNE & SNACKS", sku: "172K", name: "Vegan Proteïnedrankmix Vanille 560g", vp: 31.45, retail: 68.35, desc: "De vegan variant van de PDM. Voeg toe aan je F1 voor extra eiwitten en smaak." },
+        { cat: "PROTEÏNE & SNACKS", sku: "441K", name: "Vegan PDM Vanille (7 zakjes)", vp: 13.25, retail: 29.90, desc: "Vegan Proteïnedrankmix in handige meeneemzakjes." },
+        { cat: "PROTEÏNE & SNACKS", sku: "012K", name: "High Protein Iced Coffee 308g", vp: 30.55, retail: 72.75, desc: "Heerlijke ijskoffie met 15g proteïne en slechts 80 calorieën. Ideaal als 10-uurtje." },
+        { cat: "PROTEÏNE & SNACKS", sku: "141K", name: "Proteïne Chips Barbecue (10 stuks)", vp: 11.75, retail: 26.70, desc: "Gezond snacken! Hartige chips met extra proteïne en 50% minder vet." },
+        { cat: "PROTEÏNE & SNACKS", sku: "142K", name: "Proteïne Chips Sour Cream (10 stuks)", vp: 11.75, retail: 26.70, desc: "Lekkere Sour Cream & Onion chips, gebakken (niet gefrituurd) voor verantwoord snacken." },
+        { cat: "PROTEÏNE & SNACKS", sku: "2600", name: "Proteïnedrankmix Vanille 588g", vp: 33.00, retail: 71.75, desc: "PDM: Meng dit met je F1 Shake in plaats van melk voor een voller, eiwitrijk ontbijt." },
+        { cat: "PROTEÏNE & SNACKS", sku: "0242", name: "F3 Proteïnepoeder 240g", vp: 17.95, retail: 48.90, desc: "Smaakloos eiwitpoeder. Perfect om toe te voegen aan sauzen, soep of shakes voor extra verzadiging." },
+        { cat: "PROTEÏNE & SNACKS", sku: "3968", name: "Proteïnereep Vanille Amandel", vp: 13.22, retail: 27.80, desc: "Ideaal 4-uurtje. Stilt de honger, voedt de spieren en helpt tegen zoete trek." },
+        { cat: "PROTEÏNE & SNACKS", sku: "3976", name: "Proteïnereep Citroen", vp: 13.22, retail: 27.80, desc: "Frisse, eiwitrijke snack voor tussendoor om je energie op peil te houden." },
+        
+        { cat: "SUPPLEMENTEN", sku: "376K", name: "Herbalife Gels ViewVita", vp: 27.20, retail: 62.60, desc: "Ondersteunt optimaal zicht en de gezondheid van de ogen." },
+        { cat: "SUPPLEMENTEN", sku: "378K", name: "Herbalife Gels CoQ10Vita", vp: 23.20, retail: 53.35, desc: "Voor celenergie en bescherming tegen oxidatieve stress." },
+        { cat: "SUPPLEMENTEN", sku: "379K", name: "Herbalife Gels MindVita Kids", vp: 20.50, retail: 47.15, desc: "Speciaal geformuleerd voor kinderen ter ondersteuning van hersenfunctie." },
+        { cat: "SUPPLEMENTEN", sku: "369K", name: "Herbalife Gels NutrientVita Kids", vp: 9.30, retail: 21.50, desc: "Aanvullende essentiële vitamines voor opgroeiende kinderen." },
+        { cat: "SUPPLEMENTEN", sku: "282K", name: "Night mode Kamille & Perzik", vp: 31.25, retail: 63.35, desc: "Verbetert de slaapkwaliteit met Saffraan-extract. Zonder melatonine." },
+        { cat: "SUPPLEMENTEN", sku: "236K", name: "Phyto Complete 42,8g", vp: 38.15, retail: 85.35, desc: "Helpt bij buikvetverbranding en ondersteunt een vitaal energieniveau met fytonutriënten." },
+        { cat: "SUPPLEMENTEN", sku: "243K", name: "Active Mind Complex", vp: 27.25, retail: 54.90, desc: "Ondersteunt mentale prestaties, focus en concentratie." },
+        { cat: "SUPPLEMENTEN", sku: "173K", name: "Microbiotic Max (20 zakjes)", vp: 27.10, retail: 62.65, desc: "Pro- en prebiotica voor een optimale darmflora en sterke spijsvertering." },
+        { cat: "SUPPLEMENTEN", sku: "233K", name: "Immune Booster (21 zakjes)", vp: 18.90, retail: 50.65, desc: "Met EpiCor®. Versterkt je immuunsysteem, ideaal in de herfst en winter." },
+        { cat: "SUPPLEMENTEN", sku: "0043", name: "Herbalifeline Max", vp: 19.40, retail: 40.70, desc: "Hoogwaardige Omega-3 vetzuren voor hart, hersenen en gezichtsvermogen." },
+        { cat: "SUPPLEMENTEN", sku: "2554", name: "Multivezel Drank", vp: 22.95, retail: 43.40, desc: "Haver-Appel vezels. Stimuleert de darmwerking en geeft een langdurig vol gevoel." },
+        { cat: "SUPPLEMENTEN", sku: "0267", name: "Beta Heart Vanille 229g", vp: 25.95, retail: 57.20, desc: "Bewezen dat het de cholesterol verlaagt of in balans houdt met haver-bètaglucanen." },
+        { cat: "SUPPLEMENTEN", sku: "2039", name: "F2 Vitaminen VROUWEN", vp: 13.55, retail: 30.95, desc: "Multivitaminencomplex afgestemd op de specifieke behoefte van de vrouw." },
+        { cat: "SUPPLEMENTEN", sku: "1746", name: "F2 Vitaminen MANNEN", vp: 13.55, retail: 30.95, desc: "Multivitaminencomplex afgestemd op de specifieke behoefte van de man." },
+        { cat: "SUPPLEMENTEN", sku: "0020", name: "Xtra-Cal", vp: 10.25, retail: 24.35, desc: "Calciumsupplement ter ondersteuning van sterke botten en tanden." },
+        { cat: "SUPPLEMENTEN", sku: "3150", name: "Niteworks", vp: 48.75, retail: 108.65, desc: "Voor een gezonde bloedcirculatie en cardiovasculair systeem tijdens de nacht." },
+        { cat: "SUPPLEMENTEN", sku: "3152", name: "Lift Off Citroen (10 tab)", vp: 15.95, retail: 39.95, desc: "Bruistablet voor een onmiddellijke suikervrije energieboost en scherpe focus." },
+        { cat: "SUPPLEMENTEN", sku: "076K", name: "SKIN Collageen Booster", vp: 37.10, retail: 83.00, desc: "Vermindert rimpels en verbetert de huidelasticiteit van binnenuit in 4 weken." },
+        
+        { cat: "HERBALIFE 24", sku: "488K", name: "H24 Creatine Plus", vp: 15.95, retail: 36.35, desc: "Verbetert fysieke prestaties tijdens opeenvolgende reeksen korte, hoogintensieve oefeningen." },
+        { cat: "HERBALIFE 24", sku: "402K", name: "ProLong Energy gel", vp: 13.60, retail: 27.75, desc: "Koolhydraten-proteïne gel voor spierondersteuning tijdens langdurige inspanningen." },
+        { cat: "HERBALIFE 24", sku: "403K", name: "H24 Rebuild Strength Choco", vp: 33.55, retail: 78.75, desc: "De ultieme herstelshake met 25g proteïne, ijzer en L-Glutamine na krachttraining." },
+        { cat: "HERBALIFE 24", sku: "486K", name: "H24 Rebuild Strength zakjes", vp: 15.20, retail: 34.45, desc: "Handige meeneemzakjes van de Rebuild Strength choco." },
+        { cat: "HERBALIFE 24", sku: "192K", name: "H24 LiftOff Max Grapefruit", vp: 15.95, retail: 36.90, desc: "Extra sterke pre-workout / energy drink zonder suiker." },
+        { cat: "HERBALIFE 24", sku: "149K", name: "H24 Achieve Repen Cookie Dough", vp: 11.30, retail: 23.65, desc: "Verantwoorde sportreep met 21g proteïne en weinig suiker." },
+        { cat: "HERBALIFE 24", sku: "150K", name: "H24 Achieve Repen Pure Choco", vp: 11.30, retail: 23.65, desc: "Pure chocolade sportreep voor snel spierherstel on-the-go." },
+        { cat: "HERBALIFE 24", sku: "1466", name: "CR7 Drive Açai Bessen 540g", vp: 12.50, retail: 26.80, desc: "Sportdrank (samen met Cristiano Ronaldo) voor optimale hydratatie tijdens uithouding." },
+        { cat: "HERBALIFE 24", sku: "1467", name: "CR7 Drive Açai Bessen (10 zakjes)", vp: 8.00, retail: 16.15, desc: "Handige meeneemzakjes van de CR7 Drive." },
+        { cat: "HERBALIFE 24", sku: "1433", name: "H24 Hydrate Sinaasappel", vp: 17.20, retail: 42.90, desc: "Caloriearme elektrolytendrank. Hydrateert beter dan water alleen." },
+
+        { cat: "SKIN & BODY", sku: "539K", name: "HL/Skin Revitaliserende Nachtcrème", vp: 35.20, retail: 66.00, desc: "Rijke crème die de huid 's nachts helpt herstellen en hydrateren." },
+        { cat: "SKIN & BODY", sku: "508K", name: "HL/Skin 10% Niacinamide Serum", vp: 31.70, retail: 59.40, desc: "Verfijnt poriën en geeft de huid een egale, stralende teint." },
+        { cat: "SKIN & BODY", sku: "511K", name: "HL/Skin Vernieuwende Gel Cleanser", vp: 21.30, retail: 39.95, desc: "Frisse reinigingsgel. Verwijdert onzuiverheden en make-up effectief." },
+        { cat: "SKIN & BODY", sku: "513K", name: "HL/Skin Versterkende Crème", vp: 35.20, retail: 66.00, desc: "Dagcrème voor een versterkte, gehydrateerde en zachte huid." },
+        { cat: "SKIN & BODY", sku: "514K", name: "HL/Skin Hand/Bodylotion", vp: 15.90, retail: 29.80, desc: "Voedende lotion met Aloë Vera. Trekt snel in zonder vet aan te voelen." },
+        { cat: "SKIN & BODY", sku: "515K", name: "HL/Skin Voedende Oogcrème", vp: 26.70, retail: 50.15, desc: "Vermindert donkere kringen en fijne lijntjes rondom de ogen." },
+        { cat: "SKIN & BODY", sku: "0765", name: "SKIN Verzachtende Aloë Cleanser", vp: 16.75, retail: 33.70, desc: "Zachte reiniger voor de normale tot droge huid, kalmeert dankzij Aloë." },
+        { cat: "SKIN & BODY", sku: "0767", name: "SKIN Verfrissende Toner", vp: 12.70, retail: 25.55, desc: "Verfrist de huid en bereidt deze voor op serums en crèmes." },
+        { cat: "SKIN & BODY", sku: "0770", name: "SKIN Verstevigende Ooggel", vp: 26.35, retail: 53.05, desc: "Helpt de elasticiteit van de gevoelige huid rond de ogen te verbeteren." },
+        { cat: "SKIN & BODY", sku: "0773", name: "SKIN Zuiverend Kleimasker", vp: 14.20, retail: 28.55, desc: "Diepreinigend masker met munt. Verwijdert overtollig talg." },
+        { cat: "SKIN & BODY", sku: "0827", name: "SKIN Herstellende Nachtcrème", vp: 32.65, retail: 65.70, desc: "Verdubbelt de hydratatie van je huid binnen acht uur." },
+        { cat: "SKIN & BODY", sku: "0828", name: "SKIN Moisturiser SPF 30", vp: 32.65, retail: 65.70, desc: "Dagcrème met zonnefactor. Beschermt tegen UVA/UVB straling." },
+        { cat: "SKIN & BODY", sku: "0829", name: "SKIN Lijn Minimaliserend Serum", vp: 43.35, retail: 87.25, desc: "Krachtig serum, vermindert zichtbaar fijne lijntjes en rimpels." },
+        { cat: "SKIN & BODY", sku: "0830", name: "SKIN Dagelijkse Glow Moisturizer", vp: 32.65, retail: 65.70, desc: "Laat de huid stralen, zelfs zonder make-up. Diep voedend." },
+        { cat: "SKIN & BODY", sku: "2561", name: "Herbal Aloë Hand & Body Wash", vp: 8.30, retail: 18.60, desc: "Milde zeep met Aloë Vera. Reinigt zonder de huid uit te drogen." },
+        { cat: "SKIN & BODY", sku: "2562", name: "Herbal Aloë Soothing Gel", vp: 8.30, retail: 18.00, desc: "De redding bij zonnebrand of irritatie. Pure, verkoelende Aloë gel." },
+        { cat: "SKIN & BODY", sku: "2564", name: "Herbal Aloë Strengthening Shampoo", vp: 8.30, retail: 18.40, desc: "Versterkt het haar, vermindert haarbreuk en maakt het zachter." },
+        { cat: "SKIN & BODY", sku: "2565", name: "Herbal Aloë Strengthening Conditioner", vp: 8.30, retail: 18.40, desc: "Kleurbehoudende crèmespoeling voor sterk, glad en glanzend haar." }
+    ];
+
+    // TESTIMONIALS (Uit PDF)
+    const dbTestimonials = [
+        { naam: "Marieke", fase: "Hersenletsel, altijd moe", nu: "Energie, geen dutjes meer, -63cm", label: "Energie & Herstel" },
+        { naam: "Huguette", fase: "Maatje 42, snoepverslaving", nu: "Maatje 38, fit & uitgeslapen", label: "Afslanken & Fit" },
+        { naam: "Geert", fase: "Ondergewicht, stressvet", nu: "Spiermassa, dagelijks vitaal", label: "Aankomen & Spiermassa" },
+        { naam: "Tasja", fase: "Zwanger, futloos", nu: "Fitte mama, energie ondanks korte nachten", label: "Fitte Mama" },
+        { naam: "Betty", fase: "Ondergewicht (26j), ongelukkig", nu: "+10kg spiermassa, fitte oma van 6", label: "Aankomen & Vitaliteit" },
+        { naam: "Chella", fase: "Slank maar niet fit, onzeker", nu: "Strong & Fit, geen snoepbehoefte", label: "Spieropbouw & Zelfvertrouwen" },
+        { naam: "Brigitte", fase: "Middagdipjes, enorm overgewicht", nu: "2-3 kledingmaten minder, vitaliteit!", label: "Afslanken & Energie" },
+        { naam: "Mirlande", fase: "Veel diëten, suikerverslaving", nu: "Minder vet/gewicht, geen suikerdip", label: "Gezonde Levensstijl" },
+        { naam: "Lieke", fase: "Emotie-eten, negatief zelfbeeld", nu: "-14kg, emotie-eten onder controle", label: "Balans & Afslanken" },
+        { naam: "Twan", fase: "Geen tijd voor ontbijt, moe", nu: "Bootcamp, windsurfen: Fitte 65+ Opa!", label: "Vitaliteit 60+" },
+        { naam: "Wendy", fase: "Veel gewicht, laag zelfbeeld", nu: "Gehalveerd in vet%, stralend", label: "Vetverlies & Glow" },
+        { naam: "Sam", fase: "Weinig zelfvertrouwen", nu: "Persoonlijke ontwikkeling, bewust lichaam", label: "Mindset & Spieren" },
+        { naam: "Martine", fase: "Vermoeide 50'er", nu: "Fitte 60'er, meer spiermassa", label: "Energie & Fit ouder worden" }
     ];
 
     // =========================================================================
@@ -643,7 +703,6 @@
     let clients = {};
     let currentClientId = null;
     
-    // Stock Data
     let myStock = {};
     let salesHistory = [];
     let personalUse = [];
@@ -659,13 +718,13 @@
         switchCoach();
         document.getElementById('eval-date').valueAsDate = new Date();
         
-        // Zet maandselector standaard op huidige maand
         const now = new Date();
         const yyyy = now.getFullYear();
         const mm = String(now.getMonth() + 1).padStart(2, '0');
         document.getElementById('monthSelector').value = `${yyyy}-${mm}`;
         
         initCatalog();
+        renderTestimonials();
     };
 
     // UI Functies
@@ -684,13 +743,11 @@
         currentCoach = document.getElementById('coach-selector').value;
         document.getElementById('brand-coach').innerText = currentCoach;
         
-        // Themewisseling
         const root = document.documentElement;
         if(currentCoach === 'Andreas') root.style.setProperty('--theme-color', '#3498db');
         else if(currentCoach === 'Silvia') root.style.setProperty('--theme-color', '#f39c12');
         else root.style.setProperty('--theme-color', '#7AC142');
         
-        // Reset view
         currentClientId = null;
         document.getElementById('fu-content').style.display = 'none';
         document.getElementById('fu-empty').style.display = 'flex';
@@ -754,7 +811,6 @@
         const checked = document.querySelectorAll('.sc:checked');
         let tallies = {}; let names = []; let hasAllergy = false;
         
-        // Product Suggesties Logica
         let suggested = new Set();
         suggested.add("F1 Shake (Ideaal Basis Ontbijt)");
         suggested.add("Instant Theedrank (Energie & Verbranding)");
@@ -767,9 +823,9 @@
             st.forEach(t => tallies[t] = (tallies[t]||0)+1);
             if (sn === "Allergieën") hasAllergy = true;
             
-            // Match met producten
-            if (sn.includes("Energiegebrek") || sn.includes("Concentratieverlies") || sn.includes("Minder aankunnen")) { suggested.add("Lift-Off"); }
-            if (sn.includes("Slechte slaper")) { suggested.add("Night Mode"); }
+            // Match met producten (Dynamisch toevoegen o.b.v vinkjes)
+            if (sn.includes("Energiegebrek") || sn.includes("Concentratieverlies") || sn.includes("Minder aankunnen")) { suggested.add("Lift-Off (Focus & Energie)"); }
+            if (sn.includes("Slechte slaper")) { suggested.add("Night Mode (Betere nachtrust)"); }
             if (sn.includes("Spierpijn") || sn.includes("Spierkrampen") || sn.includes("Gewrichtspijn")) { suggested.add("H24 Rebuild Strength"); suggested.add("Xtra-Cal"); }
             if (sn.includes("Stoelgang") || sn.includes("Opgeblazen") || sn.includes("Brandend maagzuur")) { suggested.add("Multivezel Drank"); suggested.add("Microbiotic Max"); }
             if (sn.includes("Droge huid") || sn.includes("Haarverlies") || sn.includes("Broze nagels")) { suggested.add("Collageen Skin Booster"); }
@@ -777,10 +833,7 @@
             if (sn.includes("Zin in zoet") || sn.includes("Honger") || sn.includes("Onzeker zijn")) { suggested.add("Proteïnedrankmix (PDM)"); suggested.add("Proteïne Repen"); }
         });
 
-        // Allergie waarschuwing
         document.getElementById('allergy-box').style.display = hasAllergy ? 'block' : 'none';
-        
-        // Vitamine waarschuwing (>= 5 symptomen)
         if (checked.length >= 5) {
             document.getElementById('vitamin-warning').style.display = 'block';
         } else {
@@ -791,8 +844,7 @@
         const sorted = Object.entries(tallies).sort((a,b) => b[1]-a[1]);
         document.getElementById('tally-results').innerHTML = sorted.map(r => `<div>${r[0]}: ${r[1]}x</div>`).join('') || "...";
         
-        // Render Suggested Products
-        let suggestedHTML = Array.from(suggested).map(s => `<div><span style="color:var(--success); font-weight:bold;">+</span> ${s}</div>`).join('');
+        let suggestedHTML = Array.from(suggested).map(s => `<div style="padding:4px 0;"><span style="color:var(--success); font-weight:bold;">+</span> ${s}</div>`).join('');
         document.getElementById('suggested-products').innerHTML = suggestedHTML;
     }
 
@@ -803,13 +855,9 @@
         const symptomList = Array.from(document.querySelectorAll('.sc:checked')).map(c => c.getAttribute('data-name'));
         const extraNotes = document.getElementById('eval-extra-notes').value.trim();
         
-        // Voorgestelde producten vangen
         let adviceText = Array.from(document.querySelectorAll('#suggested-products div')).map(d => d.innerText.replace('+ ', '')).join(', ');
 
-        // Genereer de startnotitie inclusief advies en extra opmerkingen
-        let initialNote = "Evaluatie opgeslagen op " + new Date().toLocaleDateString() + "\n";
-        initialNote += "Aangeraden Producten: " + adviceText + "\n";
-        if (extraNotes) initialNote += "\n--- Extra Opmerkingen Intake ---\n" + extraNotes + "\n";
+        let initialNote = "Intake opmerkingen:\n" + extraNotes;
 
         const newId = 'client_' + Date.now();
         
@@ -820,7 +868,8 @@
             startdate: document.getElementById('eval-date').value,
             why: document.getElementById('eval-why').value,
             symptoms: symptomList,
-            active: true,
+            advies: adviceText, // Opslaan als apart veld voor de Evaluatie tab in CRM
+            active: true, 
             tanita_start: { 
                 gew: document.getElementById('eval-t-gew').value, vet: document.getElementById('eval-t-vet').value, 
                 spier: document.getElementById('eval-t-spier').value, visc: document.getElementById('eval-t-visc').value, 
@@ -829,12 +878,10 @@
             notes: initialNote
         }).then(() => {
             alert("Klantendossier aangemaakt!");
-            // Reset fields
             ['eval-name','eval-phone','eval-email','eval-why','eval-t-gew','eval-t-vet','eval-t-spier','eval-t-visc','eval-t-lft', 'eval-eet-ontbijt', 'eval-eet-middag', 'eval-eet-avond', 'eval-eet-tussen', 'eval-eet-water', 'eval-eet-drank', 'eval-extra-notes'].forEach(id => document.getElementById(id).value = '');
             document.querySelectorAll('.sc').forEach(c => c.checked = false); 
             document.querySelectorAll('.focus-check').forEach(c => c.checked = false); 
             updateAnalysis(); updateScore();
-            // Go to CRM
             switchView('view-fu', document.querySelectorAll('.nav-btn')[1]);
             currentClientId = newId; loadClientFiche();
         });
@@ -918,6 +965,9 @@
         const startdate = c.startdate || (c.fiche && c.fiche.startdate) || '';
         const why = c.why || (c.fiche && c.fiche.why) || '';
         const notes = c.notes || (c.fiche && c.fiche.notes) || '';
+        
+        const advies = c.advies || 'Geen advies geregistreerd.';
+        const symptomsArr = c.symptoms && c.symptoms.length ? c.symptoms : ['Geen symptomen geselecteerd'];
 
         document.getElementById('header-client-name').innerText = name;
         document.getElementById('header-client-phone').innerText = phone;
@@ -928,6 +978,10 @@
         document.getElementById('fiche-startdate').value = startdate;
         document.getElementById('fiche-why').value = why;
         document.getElementById('fiche-notes').value = notes;
+        
+        // Vul Intake Tab (Nieuw)
+        document.getElementById('crm-eval-symptoms').innerHTML = symptomsArr.map(s => `&bull; ${s}`).join('<br>');
+        document.getElementById('crm-eval-products').innerHTML = advies.split(', ').map(p => `&bull; <strong>${p}</strong>`).join('<br>');
 
         document.getElementById('dag1-q1').value = c['d1-q1'] || (c.dag1 && c.dag1.q1) || '';
         document.getElementById('dag1-q2').value = c['d1-q2'] || (c.dag1 && c.dag1.q2) || '';
@@ -965,8 +1019,6 @@
         document.getElementById('week3-notes').value = c['w3-notes'] || (c.week3 && c.week3.notes) || '';
 
         document.getElementById('sticky-why').innerText = why || '-';
-        document.getElementById('sticky-symptoms').innerText = (c.symptoms && c.symptoms.length) ? c.symptoms.join(', ') : 'Geen';
-        document.getElementById('w2-symp-reminder').innerText = (c.symptoms && c.symptoms.length) ? c.symptoms.join(', ') : 'Geen';
 
         if(c.tanita_start) {
             ['gew', 'vet', 'spier', 'visc', 'lft'].forEach(t => {
@@ -1227,10 +1279,37 @@
             card.innerHTML = `
                 <div class="product-info-cat">
                     <div class="product-cat-label">${p.cat}</div>
-                    <h4 style="margin:0 0 10px 0; color:#2C3E50;">${p.name}</h4>
-                    <p style="margin: 0 0 5px 0; font-size:0.85rem; color:#666;"><strong>SKU:</strong> ${p.sku}</p>
-                    <p style="margin: 0 0 5px 0; font-size:0.85rem; color:#666;"><strong>VP:</strong> ${p.vp.toFixed(2)}</p>
-                    <p style="margin: 0 0 15px 0; font-size:0.9rem; color:var(--theme-color); font-weight:bold;">${formatMoney(p.retail)}</p>
+                    <h4 style="margin:0 0 5px 0; color:#2C3E50;">${p.name}</h4>
+                    <p style="margin: 0 0 10px 0; font-size:0.8rem; color:#666; font-style:italic;">${p.desc}</p>
+                    <p style="margin: 0 0 5px 0; font-size:0.85rem; color:#888;"><strong>SKU:</strong> ${p.sku} | <strong>VP:</strong> ${p.vp.toFixed(2)}</p>
+                    <p style="margin: 0 0 0 0; font-size:0.95rem; color:var(--theme-color); font-weight:bold;">${formatMoney(p.retail)}</p>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // =========================================================================
+    // 7. TESTIMONIALS (NIEUWE MODULE)
+    // =========================================================================
+    function renderTestimonials() {
+        const grid = document.getElementById('testi-grid');
+        grid.innerHTML = "";
+        
+        dbTestimonials.forEach(t => {
+            let card = document.createElement('div');
+            card.className = "testi-card";
+            card.innerHTML = `
+                <div class="testi-header">${t.naam} <span style="font-size:0.8rem; font-weight:normal; display:block; color:#bdc3c7;">${t.label}</span></div>
+                <div class="testi-body">
+                    <div class="testi-box">
+                        <strong style="color:var(--danger)">VOORHEEN:</strong><br>
+                        ${t.fase}
+                    </div>
+                    <div class="testi-box nu">
+                        <strong style="color:var(--success)">NU:</strong><br>
+                        ${t.nu}
+                    </div>
                 </div>
             `;
             grid.appendChild(card);
