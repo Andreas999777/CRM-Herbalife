@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HBL-Connect</title>
+    <title>HBL-Connect Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -38,9 +38,10 @@
         #main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         .view { display: none; width: 100%; height: 100%; overflow-y: auto; }
         
-        /* DESKTOP EVALUATIE LAYOUT */
-        #view-eval.active { display: flex; flex-direction: row; }
-        .view.active:not(#view-eval) { display: flex; flex-direction: column; }
+        /* FIX VOOR DESKTOP LAYOUTS (Eval én CRM netjes in rijen naast elkaar) */
+        .view.active { display: flex; flex-direction: column; } /* Standaard is onder elkaar */
+        #view-eval.active { display: flex; flex-direction: row; } /* Eval heeft muur ernaast */
+        #view-fu.active { display: flex; flex-direction: row; } /* CRM heeft lijst links, werkruimte rechts */
 
         /* --- SHARED CARDS --- */
         .card { background: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid var(--border); }
@@ -85,7 +86,6 @@
         .analysis-box { padding: 15px; border-radius: 10px; background: #fdfdfd; border: 1px solid #eee; font-size: 0.85rem; }
 
         /* --- 2. FOLLOW-UP VIEW --- */
-        #view-fu { flex-direction: row; height: 100%; }
         #fu-list-pane { width: 320px; background: var(--sidebar-dark); color: white; display: flex; flex-direction: column; }
         
         /* KLANTENLIJST FIX: Badge netjes naast de naam */
@@ -159,16 +159,19 @@
             #app-sidebar { position: fixed; left: -260px; height: 100%; width: 260px; }
             #app-sidebar.open { left: 0; }
             
-            /* Fix Info-muur op GSM (verhuist nu 100% zeker naar onder, native scrolling) */
+            /* Fix Evaluatie view op GSM */
             #view-eval.active { display: block; overflow-y: auto; padding: 0; }
             .eval-scroll-area { padding: 15px; overflow: visible; display: block; height: auto; }
             .info-muur { width: 100%; height: auto; display: flex; flex-wrap: wrap; gap:10px; padding: 20px; background: var(--sidebar-dark); border-top: 2px solid var(--border); box-shadow: none;}
             .info-btn { width: auto; flex: 1 1 45%; }
             
             .analysis-container { grid-template-columns: 1fr; }
-            #view-fu { flex-direction: column; }
+            
+            /* Fix CRM view op GSM (onder elkaar klappen) */
+            #view-fu.active { flex-direction: column; }
             #fu-list-pane { width: 100%; height: 300px; }
             .client-header { flex-direction: column; align-items: flex-start; gap: 10px; padding: 15px; }
+            
             .stock-header { flex-direction: column; align-items: flex-start; }
             .stock-layout { grid-template-columns: 1fr; }
         }
@@ -974,7 +977,7 @@
             const li = document.createElement('li');
             li.className = 'client-item' + (c.id === currentClientId ? ' active' : '') + (!isActive ? ' client-inactive' : '');
             
-            /* GECORRIGEERDE STRUCTUUR VOOR DE NAAM EN BADGE */
+            // STRUCTUUR FIX: Badge wordt netjes in de row naast de naam geplaatst.
             li.innerHTML = `<div class="client-info-row"><span class="client-name">${displayName}</span> ${badge}</div>`;
             
             li.onclick = () => { currentClientId = c.id; loadClientFiche(); renderClientList(); 
