@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HBL-Connect</title>
+    <title>HBL-Connect Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -842,946 +842,352 @@
         {t: "Snel geïrriteerd", f: ["Stress", "Vezels", "Vetten", "Eiwitten", "Water"]}, {t: "Zin in zoet", f: ["Stress", "Vezels", "Eiwitten", "Water"]},
         {t: "Ontstekingen", f: ["Stress", "Vezels", "Vetten", "Eiwitten", "Water"]}, {t: "Gewrichtspijn", f: ["Stress", "Vezels", "Vetten", "Eiwitten", "Water"]},
         {t: "Hartkloppingen", f: ["Stress", "Vetten", "Eiwitten", "Water"]}, {t: "Droge huid / Acné", f: ["Stress", "Vetten", "Eiwitten", "Water"]},
-        {t: "Trage wondgenezing", f: ["Stress", "Vezels"]}, {t: "Haarverlies", f: ["Vezels"]},
-        {t: "Wazig zicht", f: ["Stress", "Vezels", "Vetten", "Water"]}, {t: "Broze nagels", f: ["Vezels"]},
-        {t: "Schimmelinfectie", f: ["Stress", "Vezels", "Water"]}, {t: "Allergieën", f: ["Vezels"]},
-        {t: "Bloedend tandvlees", f: ["Eiwitten"]}, {t: "Koortsblaasjes", f: ["Weerstand"]},
-        {t: "Veel dorst/plassen", f: ["Stress", "Vezels", "Eiwitten"]}, {t: "Slechte slaper", f: ["Stress", "Vezels", "Water"]}
+        {t: "Trage wondgenezing", f: ["Stress", "Vezels"]}, {t: "Haarverlies", f: ["Stress", "Eiwitten", "Water"]}
     ];
 
-    const dbProducts = [
-        { cat: "ONTBIJT & DRANKEN", sku: "1188", name: "Herbal Aloe Drank Original 1,9L", vp: 91.10, retail: 190.90, desc: "Verzacht de maag en bevordert een optimale spijsvertering en opname van voedingsstoffen. Extra grote fles.", benefits: ["Gemaakt met hoogwaardig Aloë Vera sap", "Ondersteunt een gezonde spijsvertering", "Helpt bij de opname van voedingsstoffen", "Caloriearm, een gezond alternatief voor suikerrijke dranken"], usage: "Meng 3 dopjes (15 ml) met 120 ml water. Om een liter te bereiden, meng je 120 ml met 1 liter water." },
-        { cat: "ONTBIJT & DRANKEN", sku: "0006", name: "Herbal Aloë Drank Original 473ml", vp: 24.95, retail: 52.80, desc: "Verzacht de maag en bevordert de spijsvertering. Ideaal voor hydratatie.", benefits: ["Gemaakt met hoogwaardig Aloë Vera sap", "Ondersteunt een gezonde spijsvertering", "Helpt bij de opname van voedingsstoffen", "Caloriearm, een gezond alternatief voor suikerrijke dranken"], usage: "Meng 3 dopjes (15 ml) met 120 ml water. Om een liter te bereiden, meng je 120 ml met 1 liter water." },
-        { cat: "ONTBIJT & DRANKEN", sku: "1065", name: "Herbal Aloë Drank Mango 473ml", vp: 24.95, retail: 52.80, desc: "Heerlijke zoete mangosmaak. Verzacht en kalmeert de maag.", benefits: ["Gemaakt met hoogwaardig Aloë Vera sap", "Ondersteunt een gezonde spijsvertering", "Natuurlijke mangosmaak, zonder kunstmatige zoetstoffen", "Caloriearm, perfect voor dagelijkse hydratatie"], usage: "Meng 3 dopjes (15 ml) met 120 ml water. Om een liter te bereiden, meng je 120 ml met 1 liter water." },
-        { cat: "ONTBIJT & DRANKEN", sku: "1196", name: "Herbal Aloë Max 473ml", vp: 28.15, retail: 61.70, desc: "Bevat maar liefst 97% Aloë Vera sap. De puurste vorm voor maximale hydratatie.", benefits: ["Bevat 97% puur Aloë Vera-sap", "Zonder kunstmatige kleur-, smaak- of zoetstoffen", "Ondersteunt een optimale spijsvertering en hydratatie", "Gecertificeerd door het International Aloe Science Council"], usage: "Meng 3 dopjes (15 ml) met 120 ml water. Om een liter te bereiden, meng je 120 ml met 1 liter water." },
-        { cat: "ONTBIJT & DRANKEN", sku: "166K", name: "Instant Theedrank Original 102g", vp: 34.95, retail: 73.25, desc: "Kruidendrank die energie geeft en de vetverbranding stimuleert. (Grote pot)", benefits: ["Slechts 6 kcal per portie", "Verhoogt de alertheid en concentratie (cafeïne)", "Stimuleert het metabolisme en de vetverbranding", "Zowel koud als warm heerlijk om te drinken"], usage: "Meng een halve theelepel (ongeveer 1,7g) met 250 ml heet of koud water. Drink het 's ochtends of in de namiddag voor een energieboost." },
-        { cat: "ONTBIJT & DRANKEN", sku: "165K", name: "Instant Theedrank Original 51g", vp: 19.95, retail: 38.25, desc: "Verkwikkende theedrank voor energie en thermogenese (vetverbranding).", benefits: ["Slechts 6 kcal per portie", "Verhoogt de alertheid en concentratie (cafeïne)", "Stimuleert het metabolisme en de vetverbranding", "Zowel koud als warm heerlijk om te drinken"], usage: "Meng een halve theelepel (ongeveer 1,7g) met 250 ml heet of koud water. Drink het 's ochtends of in de namiddag voor een energieboost." },
-        { cat: "ONTBIJT & DRANKEN", sku: "167K", name: "Instant Theedrank Citroen 51g", vp: 19.95, retail: 38.25, desc: "Kruidendrank met frisse citroensmaak. Boost je metabolisme.", benefits: ["Slechts 6 kcal per portie", "Verhoogt de alertheid en concentratie", "Frisse citroensmaak", "Stimuleert de thermogenese"], usage: "Meng een halve theelepel (ongeveer 1,7g) met 250 ml heet of koud water." },
-        { cat: "ONTBIJT & DRANKEN", sku: "168K", name: "Instant Theedrank Framboos 51g", vp: 19.95, retail: 38.25, desc: "Heerlijke fruitige theedrank voor langdurige energie.", benefits: ["Slechts 6 kcal per portie", "Verhoogt de alertheid en concentratie", "Lekkere, zoete frambozensmaak", "Ondersteunt je stofwisseling"], usage: "Meng een halve theelepel (ongeveer 1,7g) met 250 ml heet of koud water." },
-        { cat: "ONTBIJT & DRANKEN", sku: "169K", name: "Instant Theedrank Perzik 51g", vp: 19.95, retail: 38.25, desc: "Populaire theedrank met zachte perziksmaak. Stimuleert de verbranding.", benefits: ["Slechts 6 kcal per portie", "Verhoogt de alertheid en concentratie", "Populaire, zachte perziksmaak", "Ideaal alternatief voor suikerhoudende frisdranken"], usage: "Meng een halve theelepel (ongeveer 1,7g) met 250 ml heet of koud water." },
-        { cat: "F1 SHAKES", sku: "4462", name: "F1 Shake Bananen Crème 550g", vp: 23.95, retail: 60.90, desc: "Volwaardige maaltijdvervanger vol essentiële voedingsstoffen en eiwitten.", benefits: ["Veganistische ingrediënten, glutenvrij", "25 vitaminen en mineralen", "Hoog proteïnegehalte ter ondersteuning van spiermassa", "Heerlijke, romige bananensmaak"], usage: "Meng twee eetlepels (26g) poeder met 250 ml koude, halfvolle melk (of plantaardige variant). Voor vegan: meng met 250 ml verrijkte sojadrank." },
-        { cat: "F1 SHAKES", sku: "4463", name: "F1 Shake Frisse Aardbei 550g", vp: 23.95, retail: 60.90, desc: "Heerlijke, lichte aardbeiensmaak. Perfect als gezond ontbijt of lunch.", benefits: ["Veganistische ingrediënten, glutenvrij", "Ondersteunt gewichtsbeheersing en energie", "Rijk aan eiwitten (18g per portie bij bereiding met melk)"], usage: "Meng 2 maatlepels (26g) met 250ml (plantaardige) melk. Goed shaken!" },
-        { cat: "F1 SHAKES", sku: "4465", name: "F1 Shake Cafè Latte 550g", vp: 23.95, retail: 60.90, desc: "Voor de koffieliefhebber. Volwaardige maaltijd met heerlijke koffiesmaak.", benefits: ["Bevat écht koffie-extract voor de perfecte smaak", "Glutenvrij en vegan (mits bereid met sojadrank)", "Complete maaltijd in 1 glas"], usage: "Meng 2 scheppen (26g) in 250ml vloeistof. Liefst blenden met een paar ijsblokjes!" },
-        { cat: "F1 SHAKES", sku: "4466", name: "F1 Shake Romige Vanille 550g", vp: 23.95, retail: 60.90, desc: "De klassieker. Zeer neutraal en perfect om te blenden met fruit.", benefits: ["De meest veelzijdige smaak voor eigen creaties", "Boordevol 25 vitamines en mineralen", "Ideaal als gezond en snel ontbijt"], usage: "De perfecte basis! Meng 2 eetlepels poeder met 250 ml vloeistof. Voeg naar wens vers fruit toe en blend glad." },
-        { cat: "F1 SHAKES", sku: "4467", name: "F1 Shake Cookie Crunch 550g", vp: 23.95, retail: 60.90, desc: "Bevat krokante stukjes. Ideaal voor de zoetekauw als gezonde maaltijd.", benefits: ["Heerlijke krokante cookie-stukjes (zonder schuldgevoel)", "Ondersteunt je doelen voor gewichtsbeheersing", "Volledig vegan (indien juist bereid) en vol proteïne"], usage: "Meng 2 scheppen (26g) met 250ml melk of water (indien je PDM toevoegt). Goed schudden." },
-        { cat: "F1 SHAKES", sku: "4468", name: "F1 Shake Zachte Chocolade 550g", vp: 23.95, retail: 60.90, desc: "Rijke chocoladesmaak, maar toch een 100% verantwoorde, gebalanceerde maaltijd.", benefits: ["Rijke, volle chocoladesmaak zonder overtollig suiker", "18g eiwitten per portie ter ondersteuning van de spieren", "Perfect voor het stillen van chocoladetrek"], usage: "Meng 2 eetlepels poeder met 250ml (plantaardige) melk." },
-        { cat: "F1 SHAKES", sku: "4471", name: "F1 Shake Munt Chocolade 550g", vp: 23.95, retail: 60.90, desc: "Verfrissende munt gecombineerd met heerlijke chocolade. Vol vitaminen.", benefits: ["Unieke, frisse smaakcombinatie", "Complete maaltijdvervanger", "Glutenvrij en veganistisch"], usage: "Meng 2 scheppen (26g) met 250ml koude (plantaardige) melk." },
-        { cat: "F1 SHAKES", sku: "4469", name: "F1 Vrij Van Framboos & Witte Choc 500g", vp: 23.95, retail: 60.90, desc: "Vrij van soja, zuivel en gluten. Perfect voor mensen met allergieën.", benefits: ["Vrij van soja, zuivel en gluten (bij gebruik met aangepaste vloeistof)", "Erwtenproteïne in plaats van soja", "Lekkere, unieke smaakcombinatie"], usage: "Meng 2 eetlepels poeder met 250 ml van je favoriete hypoallergene drank (bijv. rijst- of amandeldrink)." },
-        { cat: "F1 SHAKES", sku: "048K", name: "F1 Shake Romige Vanille 780g", vp: 32.75, retail: 79.85, desc: "De klassieke Romige Vanille, maar dan in een voordelige XXL pot.", benefits: ["Voordeliger per portie", "Langere gebruiksduur (ideaal voor 2 shakes per dag)", "Dezelfde hoogwaardige voeding en vitaminen"], usage: "Meng 2 eetlepels (26g) poeder met 250 ml vloeistof naar keuze." },
-        { cat: "F1 SHAKES", sku: "053K", name: "F1 Shake 7 zakjes (Vanille/Choco/Cookie)", vp: 10.00, retail: 25.35, desc: "Handige proefpakketten of on-the-go zakjes met gemixte smaken.", benefits: ["Super handig om mee te nemen naar het werk of op vakantie", "Perfect proefpakket om smaken te testen", "Individueel verpakt, altijd de juiste dosering"], usage: "Gooi 1 zakje in je shaker, voeg 250ml melk (of water+PDM) toe en shake it!" },
-        { cat: "F1 SHAKES", sku: "4472", name: "Express Maaltijdreep (7 stuks)", vp: 14.00, retail: 30.70, desc: "Geen tijd om te shaken? Deze reep bevat alle voedingsstoffen van 1 maaltijd.", benefits: ["Complete maaltijd in een handige reep", "Rijk aan vezels en eiwitten", "Bevat 25 vitamines en mineralen", "Slechts 207 calorieën per reep"], usage: "Eet 1 reep als vervanging voor 1 maaltijd, of snij hem in kleine stukjes als verantwoorde snacks door de dag heen." },
-        { cat: "PROTEÏNE & SNACKS", sku: "528K", name: "Proteïne Bak Mix (PBM)", vp: 26.90, retail: 68.35, desc: "Bak gezonde, eiwitrijke pannenkoeken, wafels of muffins zonder toegevoegde suikers.", benefits: ["Ontwikkeld om mee te bakken (hittebestendig)", "Vrij van kunstmatige kleur- en zoetstoffen", "Glutenvrij en geschikt voor vegetariërs", "Hoog in eiwitten en vezels"], usage: "Meng met je favoriete F1 smaak en wat water of melk om heerlijk beslag te maken. Bak in de pan of in het wafelijzer." },
-        { cat: "PROTEÏNE & SNACKS", sku: "013K", name: "Tri Blend Select Banaan 600g", vp: 37.50, retail: 90.25, desc: "100% plantaardige, natuurlijke premium eiwitshake. Rijk aan vezels.", benefits: ["100% veganistische ingrediënten (erwt, quinoa, lijnzaad)", "20g proteïne per portie", "Geen kunstmatige kleurstoffen, aroma's of zoetstoffen", "Hoog in vezels (6g per portie)"], usage: "Meng 3 eetlepels (40g) met 250 ml water, vruchtensap of plantaardige melk. Ideaal als post-workout of voedzaam tussendoortje." },
-        { cat: "PROTEÏNE & SNACKS", sku: "172K", name: "Vegan Proteïnedrankmix Vanille 560g", vp: 31.45, retail: 68.35, desc: "De vegan variant van de PDM. Voeg toe aan je F1 voor extra eiwitten en smaak.", benefits: ["100% Vegan (vrij van zuivel)", "Ideaal om te mengen met water (in plaats van melk)", "Verhoogt de eiwitinname aanzienlijk", "Lekkere, romige vanillesmaak"], usage: "Voeg 1 of 2 scheppen Vegan PDM toe aan je F1 Shake en meng simpelweg met water. Perfect voor onderweg!" },
-        { cat: "PROTEÏNE & SNACKS", sku: "441K", name: "Vegan PDM Vanille (7 zakjes)", vp: 13.25, retail: 29.90, desc: "Vegan Proteïnedrankmix in handige meeneemzakjes.", benefits: ["Makkelijk mee te nemen porties", "100% Vegan (vrij van zuivel)", "Ideaal om te mengen met water", "Verhoogt eiwitten en romigheid van je shake"], usage: "1 zakje Vegan PDM + 2 scheppen F1 Shake + 250ml water. Shake and go!" },
-        { cat: "PROTEÏNE & SNACKS", sku: "012K", name: "High Protein Iced Coffee 308g", vp: 30.55, retail: 72.75, desc: "Heerlijke ijskoffie met 15g proteïne en slechts 80 calorieën. Ideaal als 10-uurtje.", benefits: ["15g whey-eiwitten per portie", "Met 100% Robusta espresso koffiebonen", "Zonder toegevoegde suikers (bevat Stevia)", "Slechts 80 kcal per portie"], usage: "Voeg 2 scheppen toe aan 250 ml koud water. Voeg ijsblokjes toe en shake krachtig in een shakerbeker." },
-        { cat: "PROTEÏNE & SNACKS", sku: "141K", name: "Proteïne Chips Barbecue (10 stuks)", vp: 11.75, retail: 26.70, desc: "Gezond snacken! Hartige chips met extra proteïne en 50% minder vet.", benefits: ["11g plantaardige (erwten)eiwitten per zakje", "50% minder vet dan gefrituurde chips", "Gepopt, niet gefrituurd", "Geschikt voor veganisten"], usage: "Eet als een heerlijk, verantwoord tussendoortje wanneer je zin hebt in iets hartigs." },
-        { cat: "PROTEÏNE & SNACKS", sku: "142K", name: "Proteïne Chips Sour Cream (10 stuks)", vp: 11.75, retail: 26.70, desc: "Lekkere Sour Cream & Onion chips, gebakken (niet gefrituurd) voor verantwoord snacken.", benefits: ["12g eiwitten per zakje", "Gepopt, niet gefrituurd", "Geschikt voor vegetariërs", "Heerlijke, rijke Sour Cream en Onion smaak"], usage: "Perfect als gezonde hartige snack voor onderweg of 's avonds op de bank." },
-        { cat: "PROTEÏNE & SNACKS", sku: "2600", name: "Proteïnedrankmix Vanille 588g", vp: 33.00, retail: 71.75, desc: "PDM: Meng dit met je F1 Shake in plaats van melk voor een voller, eiwitrijk ontbijt.", benefits: ["Maakt melk overbodig (meng met water)", "15g extra proteïne per portie", "Maakt je shake dikker en romiger", "Bevat ook extra vitaminen B en C"], usage: "De ultieme combo: Meng 2 scheppen F1 + 1 of 2 scheppen PDM met 250ml-300ml water." },
-        { cat: "PROTEÏNE & SNACKS", sku: "0242", name: "F3 Proteïnepoeder 240g", vp: 17.95, retail: 48.90, desc: "Smaakloos eiwitpoeder. Perfect om toe te voegen aan sauzen, soep of shakes voor extra verzadiging.", benefits: ["Rijk aan soja- en wei-eiwitten", "Bouwt spiermassa op en behoudt deze", "Helpt je langer verzadigd te blijven", "Volledig smaakloos, dus mengbaar in warme en koude gerechten"], usage: "Voeg 1 tot 3 afgestreken eetlepels toe aan shakes, yoghurt, saus of soep." },
-        { cat: "PROTEÏNE & SNACKS", sku: "3968", name: "Proteïnereep Vanille Amandel", vp: 13.22, retail: 27.80, desc: "Ideaal 4-uurtje. Stilt de honger, voedt de spieren en helpt tegen zoete trek.", benefits: ["Ongeveer 140 kcal per reep", "10 gram hoogwaardige eiwitten", "Rijk aan vitamine B1, B2 en B6", "Ideaal om de zoete trek te stillen"], usage: "Eet 1 of 2 repen per dag als gezond tussendoortje." },
-        { cat: "PROTEÏNE & SNACKS", sku: "3976", name: "Proteïnereep Citroen", vp: 13.22, retail: 27.80, desc: "Frisse, eiwitrijke snack voor tussendoor om je energie op peil te houden.", benefits: ["Ongeveer 140 kcal per reep", "10 gram eiwitten voor spierherstel", "Frisse citroensmaak met een heerlijke bite", "Past perfect in een gewichtsbeheersingsprogramma"], usage: "Eet als gezond tussendoortje tussen je maaltijden door." },
-        { cat: "SUPPLEMENTEN", sku: "376K", name: "Herbalife Gels ViewVita", vp: 27.20, retail: 62.60, desc: "Ondersteunt optimaal zicht en de gezondheid van de ogen.", benefits: ["Bevat DHA en EPA omega-3 vetzuren", "Ondersteunt een normaal gezichtsvermogen", "Rijk aan Luteïne en Zeaxanthine", "Ideaal voor mensen die veel achter schermen werken"], usage: "Neem dagelijks 1 softgel capsule in met water, bij voorkeur tijdens de maaltijd." },
-        { cat: "SUPPLEMENTEN", sku: "378K", name: "Herbalife Gels CoQ10Vita", vp: 23.20, retail: 53.35, desc: "Voor celenergie en bescherming tegen oxidatieve stress.", benefits: ["Ondersteunt de energieproductie op cellulair niveau", "Helpt cellen beschermen tegen oxidatieve stress", "Speciaal geformuleerd voor optimale opname"], usage: "Neem dagelijks 1 capsule in, bij voorkeur bij de maaltijd." },
-        { cat: "SUPPLEMENTEN", sku: "379K", name: "Herbalife Gels MindVita Kids", vp: 20.50, retail: 47.15, desc: "Speciaal geformuleerd voor kinderen ter ondersteuning van hersenfunctie.", benefits: ["Bevat essentiële Omega-3 voor de hersenontwikkeling", "Kindvriendelijke kauwbare of doorslikbare capsule", "Ondersteunt focus en concentratie bij opgroeiende kinderen"], usage: "1 softgel per dag. Geschikt voor kinderen. Raadpleeg de verpakking voor de exacte dosering op leeftijd." },
-        { cat: "SUPPLEMENTEN", sku: "369K", name: "Herbalife Gels NutrientVita Kids", vp: 9.30, retail: 21.50, desc: "Aanvullende essentiële vitamines voor opgroeiende kinderen.", benefits: ["Dagelijkse aanvulling van belangrijke vitamines", "Ondersteunt de groei en een gezond immuunsysteem", "Lekkere, makkelijk inneembare vorm voor kinderen"], usage: "Dagelijks 1 capsule in de ochtend. Raadpleeg het etiket." },
-        { cat: "SUPPLEMENTEN", sku: "282K", name: "Night mode Kamille & Perzik", vp: 31.25, retail: 63.35, desc: "Verbetert de slaapkwaliteit met Saffraan-extract. Zonder melatonine.", benefits: ["Verbetert de slaapkwaliteit na slechts 7 dagen", "Bevat wetenschappelijk bewezen Saffraan-extract", "Zonder melatonine (niet verslavend)", "Heerlijke, rustgevende Kamille-Perzik smaak"], usage: "Meng 1 maatschep (6g) met een half kopje koud of warm water. Drink ongeveer één uur voor het slapengaan." },
-        { cat: "SUPPLEMENTEN", sku: "236K", name: "Phyto Complete 42,8g", vp: 38.15, retail: 85.35, desc: "Helpt bij buikvetverbranding en ondersteunt een vitaal energieniveau met fytonutriënten.", benefits: ["Bevat Fiit-NS™ (wetenschappelijk bewezen formule)", "Ondersteunt de vermindering van buikvet en tailleomvang", "Boordevol fytonutriënten uit citrus, guarana en druiven", "Geeft een natuurlijke energieboost"], usage: "Neem tweemaal daags 1 capsule bij de maaltijd. Ideaal in combinatie met een gezond dieet en beweging." },
-        { cat: "SUPPLEMENTEN", sku: "243K", name: "Active Mind Complex", vp: 27.25, retail: 54.90, desc: "Ondersteunt mentale prestaties, focus en concentratie.", benefits: ["Bevat Neumentix™, wetenschappelijk bewezen om werkgeheugen te ondersteunen", "Verbetert focus en concentratie", "Rijk aan Vitamine B6 en B12 voor het zenuwstelsel", "Perfect voor drukke werk- of studiedagen"], usage: "Neem dagelijks 2 capsules, bij voorkeur bij de maaltijd in de ochtend of vroege middag." },
-        { cat: "SUPPLEMENTEN", sku: "173K", name: "Microbiotic Max (20 zakjes)", vp: 27.10, retail: 62.65, desc: "Pro- en prebiotica voor een optimale darmflora en sterke spijsvertering.", benefits: ["Levert 2 miljard levende bacteriën per portie", "Combineert probiotica EN prebiotische vezels", "Ondersteunt de darmgezondheid", "Glutenvrij en subtiele vanillesmaak"], usage: "Meng 1 zakje door 100 ml water of voeg het toe aan je favoriete F1 Shake (na het blenden, om de bacteriën in leven te houden)." },
-        { cat: "SUPPLEMENTEN", sku: "233K", name: "Immune Booster (21 zakjes)", vp: 18.90, retail: 50.65, desc: "Met EpiCor®. Versterkt je immuunsysteem, ideaal in de herfst en winter.", benefits: ["Bevat het gepatenteerde EpiCor®-ingrediënt", "Rijk aan Vitamine C, D, Selenium en Zink", "Lekkere bessensmaak", "Verhoogt de natuurlijke weerstand"], usage: "Meng dagelijks 1 zakje (3.7g) in 150 ml koud или warm water. Perfect bij de lunch." },
-        { cat: "SUPPLEMENTEN", sku: "0043", name: "Herbalifeline Max", vp: 19.40, retail: 40.70, desc: "Hoogwaardige Omega-3 vetzuren voor hart, hersenen en gezichtsvermogen.", benefits: ["Hoog gedoseerd met essentiële EPA en DHA vetzuren", "Ondersteunt een normaal hart- en hersenfunctioneren", "Ondersteunt een normaal gezichtsvermogen", "Makkelijk slikbare capsules zonder vis-smaak of oprispingen"], usage: "Neem 1, 4 of 5 capsules per dag, afhankelijk van de voordelen die je wenst te bereiken. (Lees de verpakking)" },
-        { cat: "SUPPLEMENTEN", sku: "2554", name: "Multivezel Drank", vp: 22.95, retail: 43.40, desc: "Haver-Appel vezels. Stimuleert de darmwerking en geeft een langdurig vol gevoel.", benefits: ["5g hoogwaardige vezels per portie", "Slechts 18 kcal per portie", "Mix van oplosbare en onoplosbare vezels uit 6 bronnen", "Heerlijke zachte appelsmaak"], usage: "Meng 1 maatschep in water of voeg het direct toe aan je F1 Ontbijtshake voor een extra vullend ontbijt." },
-        { cat: "SUPPLEMENTEN", sku: "0267", name: "Beta Heart Vanille 229g", vp: 25.95, retail: 57.20, desc: "Bewezen dat het de cholesterol verlaagt of in balans houdt met haver-bètaglucanen.", benefits: ["Wetenschappelijk bewezen om cholesterol te verlagen (OatWell)", "Rijk aan vezels (3g per schep)", "Bron van eiwitten", "Zonder toegevoegde suikers"], usage: "Voor cholesterolverlaging: 2 scheppen per dag. Voor behoud: 1 schep per dag. Meng met water of voeg toe aan je shake." },
-        { cat: "SUPPLEMENTEN", sku: "2039", name: "F2 Vitaminen VROUWEN", vp: 13.55, retail: 30.95, desc: "Multivitaminencomplex afgestemd op de specifieke behoefte van de vrouw.", benefits: ["Ontwikkeld door voedingsdeskundigen specifiek voor vrouwen", "Ondersteunt hormonale activiteit (Vit B6)", "Ondersteunt huid, haar en nagels (Zink, Biotine)", "Ondersteunt de botten (Calcium)"], usage: "Neem 2 tabletten per dag bij de maaltijden. Neem je ook al een F1 shake? Dan volstaat 1 tablet per dag." },
-        { cat: "SUPPLEMENTEN", sku: "1746", name: "F2 Vitaminen MANNEN", vp: 13.55, retail: 30.95, desc: "Multivitaminencomplex afgestemd op de specifieke behoefte van de man.", benefits: ["Ontwikkeld door voedingsdeskundigen specifiek voor mannen", "Ondersteunt immuunsysteem (Vit A & C)", "Ondersteunt spierfunctie (Magnesium)", "Ondersteunt mentale prestaties (Pantotheenzuur)"], usage: "Neem 2 tabletten per dag bij de maaltijden. Neem je ook al een F1 shake? Dan volstaat 1 tablet per dag." },
-        { cat: "SUPPLEMENTEN", sku: "0020", name: "Xtra-Cal", vp: 10.25, retail: 24.35, desc: "Calciumsupplement ter ondersteuning van sterke botten en tanden.", benefits: ["Rijk aan Calcium (nodig voor behoud van normale botten/tanden)", "Bevat Vitamine D voor een betere opname van calcium", "Bevat magnesium", "Ideaal voor sporters (tegen spierkrampen) en actieve mensen"], usage: "Neem 1 tot 3 tabletten per dag, verdeeld over de dag bij de maaltijden." },
-        { cat: "SUPPLEMENTEN", sku: "3150", name: "Niteworks", vp: 48.75, retail: 108.65, desc: "Voor een gezonde bloedcirculatie en cardiovasculair systeem tijdens de nacht.", benefits: ["Ontwikkeld met Nobelprijswinnaar Dr. Lou Ignarro", "Verhoogt de stikstofmonoxide productie in het bloed", "Ondersteunt de bloedsomloop en doorbloeding", "Ideaal voor of na het sporten, of voor het slapengaan"], usage: "Meng 2 maatlepels met 250ml water of bruiswater. Drink dit vlak voor het slapengaan." },
-        { cat: "SUPPLEMENTEN", sku: "3152", name: "Lift Off Citroen (10 tab)", vp: 15.95, retail: 39.95, desc: "Bruistablet voor een onmiddellijke suikervrije energieboost en scherpe focus.", benefits: ["Slechts 10 kcal per portie, 0% suiker", "100% van de ADH Vitamine C en B-vitaminen", "Geformuleerd met Guarana en 75mg cafeïne", "Helpt concentratie en alertheid te verhogen"], usage: "Los 1 bruistablet op in 250ml koud water. Een perfecte vervanger voor ongezonde energiedranken!" },
-        { cat: "SUPPLEMENTEN", sku: "076K", name: "SKIN Collageen Booster", vp: 37.10, retail: 83.00, desc: "Vermindert rimpels en verbetert de huidelasticiteit van binnenuit in 4 weken.", benefits: ["Bevat wetenschappelijk bewezen Verisol® P collageenpeptiden", "Verbetert de elasticiteit van de huid na 4 weken", "Helpt rimpels rond de ogen te verminderen", "Rijk aan 9 vitaminen en mineralen voor huid, haar en nagels"], usage: "Meng 1 maatlepel met 250ml water. Geniet dagelijks van deze heerlijke aardbei-citroen drank, bij voorkeur bij het ontbijt." },
-        { cat: "HERBALIFE 24", sku: "488K", name: "H24 Creatine Plus", vp: 15.95, retail: 36.35, desc: "Verbetert fysieke prestaties tijdens opeenvolgende reeksen korte, hoogintensieve oefeningen.", benefits: ["Zuivere Creapure® creatine", "Helpt om explosieve kracht en spiergroei te verhogen", "Bevat vitamine B en C voor een sneller herstel", "Smaakloos, dus makkelijk toe te voegen aan je shake"], usage: "Los 1 afgestreken maatschep (5g) op in je pre-workout drank of herstelshake." },
-        { cat: "HERBALIFE 24", sku: "402K", name: "ProLong Energy gel", vp: 13.60, retail: 27.75, desc: "Koolhydraten-proteïne gel voor spierondersteuning tijdens langdurige inspanningen.", benefits: ["Dubbele bron van koolhydraten voor snelle én langdurige energie", "Bevat extra eiwitten om spierafbraak tijdens duursport te voorkomen", "Makkelijk in te nemen tijdens het lopen of fietsen"], usage: "Consumeer 1 zakje per uur tijdens langdurige inspanningen (zoals marathons of lange fietstochten)." },
-        { cat: "HERBALIFE 24", sku: "403K", name: "H24 Rebuild Strength Choco", vp: 33.55, retail: 78.75, desc: "De ultieme herstelshake met 25g proteïne, ijzer en L-Glutamine na krachttraining.", benefits: ["25g hoogwaardige wei- en caseïne eiwitten", "Bevat ijzer ter ondersteuning van het zuurstoftransport", "L-Glutamine ter ondersteuning van spierherstel", "Geen kunstmatige kleur- of smaakstoffen"], usage: "Meng 5 afgestreken maatscheppen (50g) met 250 ml water en shake krachtig. Consumeer binnen 30 minuten na de training." },
-        { cat: "HERBALIFE 24", sku: "486K", name: "H24 Rebuild Strength zakjes", vp: 15.20, retail: 34.45, desc: "Handige meeneemzakjes van de Rebuild Strength choco.", benefits: ["Perfect geportioneerd in handige zakjes", "Gooi makkelijk in je sporttas", "Alle voordelen van Rebuild Strength, maar dan voor onderweg"], usage: "Meng 1 zakje met 250 ml water. Drink binnen 30 minuten na je zware training." },
-        { cat: "HERBALIFE 24", sku: "192K", name: "H24 LiftOff Max Grapefruit", vp: 15.95, retail: 36.90, desc: "Extra sterke pre-workout / energy drink zonder suiker.", benefits: ["Suikervrij, 13 kcal per portie", "180 mg cafeïne (uit Guarana en cafeïnepoeder)", "Frisse Grapefruit smaak", "Informed Sports gecertificeerd (Dopingvrij)"], usage: "Los 1 zakje op in 250 ml water. Drink als pre-workout of wanneer je een stevige focus nodig hebt." },
-        { cat: "HERBALIFE 24", sku: "149K", name: "H24 Achieve Repen Cookie Dough", vp: 11.30, retail: 23.65, desc: "Verantwoorde sportreep met 21g proteïne en weinig suiker.", benefits: ["Maar liefst 21g proteïne per reep", "Zeer laag in suikers (slechts 2g per reep)", "Ondersteunt spieropbouw na de training", "Heerlijke Cookie Dough smaak met krokante stukjes"], usage: "Eet direct na het sporten of als stevig, eiwitrijk tussendoortje door de dag." },
-        { cat: "HERBALIFE 24", sku: "150K", name: "H24 Achieve Repen Pure Choco", vp: 11.30, retail: 23.65, desc: "Pure chocolade sportreep voor snel spierherstel on-the-go.", benefits: ["21g proteïne per reep", "Helpt de opbouw en het behoud van spiermassa", "Volle en rijke smaak van pure chocolade", "Slechts 2g suiker per reep"], usage: "Eet direct na het sporten of als een eiwitrijk vier-uurtje." },
-        { cat: "HERBALIFE 24", sku: "1466", name: "CR7 Drive Açai Bessen 540g", vp: 12.50, retail: 26.80, desc: "Sportdrank (samen met Cristiano Ronaldo) voor optimale hydratatie tijdens uithouding.", benefits: ["Verbetert de wateropname tijdens fysieke inspanningen", "Zonder kunstmatige smaakstoffen of zoetstoffen", "Levert koolhydraten voor een snel herstel van spierfunctie", "Vitamine B12 draagt bij tot een normaal energieleverend metabolisme"], usage: "Meng 2 scheppen met 500 ml water. Drink tijdens inspanning (lopen, fietsen, voetbal, etc)." },
-        { cat: "HERBALIFE 24", sku: "1467", name: "CR7 Drive Açai Bessen (10 zakjes)", vp: 8.00, retail: 16.15, desc: "Handige meeneemzakjes van de CR7 Drive.", benefits: ["Verbetert hydratatie en uithoudingsvermogen", "Individueel verpakt, ideaal voor in je bidon onderweg", "Heerlijke subtiele Açai-bessen smaak"], usage: "Giet 1 zakje leeg in 500 ml water. Drink tijdens het sporten." },
-        { cat: "HERBALIFE 24", sku: "1433", name: "H24 Hydrate Sinaasappel", vp: 17.20, retail: 42.90, desc: "Caloriearme elektrolytendrank. Hydrateert beter dan water alleen.", benefits: ["Slechts 12 kcal per portie", "Ondersteunt een optimale vochtbalans", "Levert 100% van de ADH Vitamine C ter bescherming tegen oxidatieve stress", "Ideaal voor sporters of als dagelijkse hydratatie bij warm weer"], usage: "Meng 1 zakje in 500 ml water en shake krachtig. Kan op elk moment van de dag gedronken worden." },
-        { cat: "SKIN & BODY", sku: "539K", name: "HL/Skin Revitaliserende Nachtcrème", vp: 35.20, retail: 66.00, desc: "Rijke crème die de huid 's nachts helpt herstellen en hydrateren.", benefits: ["Verdubbelt de vochtigheidsgraad van de huid gedurende 8 uur", "Helpt het verschijnen van fijne lijntjes en rimpels in 7 dagen te verminderen", "Getest door dermatologen", "Geen toegevoegde parabenen"], usage: "Aanbrengen op gezicht en hals voor het slapengaan, ná de reiniger, toner en het serum." },
-        { cat: "SKIN & BODY", sku: "508K", name: "HL/Skin 10% Niacinamide Serum", vp: 31.70, retail: 59.40, desc: "Verfijnt poriën en geeft de huid een egale, stralende teint.", benefits: ["Helpt om roodheid, vlekjes en oneffenheden te verminderen", "Minimaliseert zichtbaar poriën", "Bevat 10% Niacinamide (Vitamine B3)", "Geschikt voor alle huidtypes"], usage: "Breng een paar druppels aan op een gereinigde huid, laat intrekken en breng daarna je dag- of nachtcrème aan." },
-        { cat: "SKIN & BODY", sku: "511K", name: "HL/Skin Vernieuwende Gel Cleanser", vp: 21.30, retail: 39.95, desc: "Frisse reinigingsgel. Verwijdert onzuiverheden en make-up effectief.", benefits: ["Milde maar diepgaande reiniging", "Bevat sinaasappelolie voor een heerlijk frisse geur", "Verwijdert overtollig talg zonder uit te drogen"], usage: "Met ronddraaiende bewegingen zachtjes inmasseren op een vochtige huid. Daarna afspoelen met lauwwarm water." },
-        { cat: "SKIN & BODY", sku: "513K", name: "HL/Skin Versterkende Crème", vp: 35.20, retail: 66.00, desc: "Dagcrème voor een versterkte, gehydrateerde en zachte huid.", benefits: ["Bevat kalmerende kruidenextracten en vitaminen", "Biedt langdurige hydratatie", "Laat de huid soepel en zacht aanvoelen", "Geen toegevoegde parabenen"], usage: "Na de toner en serum aanbrengen op gezicht en hals in de ochtend." },
-        { cat: "SKIN & BODY", sku: "514K", name: "HL/Skin Hand/Bodylotion", vp: 15.90, retail: 29.80, desc: "Voedende lotion met Aloë Vera. Trekt snel in zonder vet aan te voelen.", benefits: ["Helpt een droge huid te voeden en te hydrateren", "Klinisch bewezen dat het de vochtigheidsgraad van de huid de hele dag verhoogt", "Geformuleerd met Aloë Vera, Afrikaanse Shea Boter en verzachtende kruiden"], usage: "Breng dagelijks royaal aan op de huid voor een zachte en gehydrateerde body." },
-        { cat: "SKIN & BODY", sku: "515K", name: "HL/Skin Voedende Oogcrème", vp: 26.70, retail: 50.15, desc: "Vermindert donkere kringen en fijne lijntjes rondom de ogen.", benefits: ["Minimaliseert wallen en donkere kringen zichtbaar", "Helpt rimpels en lijntjes rondom de ogen te verminderen in 7 dagen", "Ondersteunt de kwetsbare huid rond de ogen"], usage: "Dep voorzichtig een kleine hoeveelheid onder en rond de ogen ('s ochtends en 's avonds)." },
-        { cat: "SKIN & BODY", sku: "0765", name: "SKIN Verzachtende Aloë Cleanser", vp: 16.75, retail: 33.70, desc: "Zachte reiniger voor de normale tot droge huid, kalmeert dankzij Aloë.", benefits: ["Op basis van Aloë Vera met een lichte, zachte geur", "Reinigt mild maar effectief", "Laat de huid zacht en fris achter zonder trekkerig gevoel"], usage: "Masseer in op een vochtige huid, goed afspoelen met water." },
-        { cat: "SKIN & BODY", sku: "0767", name: "SKIN Verfrissende Toner", vp: 12.70, retail: 25.55, desc: "Verfrist de huid en bereidt deze voor op serums en crèmes.", benefits: ["Aloë Vera-gebaseerde, alcoholvrije toner", "Geeft een snelle vochtboost aan de vermoeide huid", "Verwijdert de laatste restjes vuil na de cleanser"], usage: "Spray lichtjes op je gezicht of breng het aan met een wattenschijfje." },
-        { cat: "SKIN & BODY", sku: "0770", name: "SKIN Verstevigende Ooggel", vp: 26.35, retail: 53.05, desc: "Helpt de elasticiteit van de gevoelige huid rond de ogen te verbeteren.", benefits: ["Bevat revitaliserend komkommerextract", "Helpt de huid te verstevigen en te liften", "Biedt een onmiddellijk verkoelend en kalmerend effect"], usage: "Breng de gel 's ochtends lichtjes kloppend aan rond de ogen (boven en onder)." },
-        { cat: "SKIN & BODY", sku: "0773", name: "SKIN Zuiverend Kleimasker", vp: 14.20, retail: 28.55, desc: "Diepreinigend masker met munt. Verwijdert overtollig talg.", benefits: ["Rijk aan klei om onzuiverheden op te nemen", "Klinisch bewezen dat het de poriën verfijnt in slechts één gebruik", "Bereidt de huid voor op een betere opname van crèmes"], usage: "1 tot 3 keer per week aanbrengen op een gereinigde huid. Na 10-15 minuten verwijderen met warm water." },
-        { cat: "SKIN & BODY", sku: "0827", name: "SKIN Herstellende Nachtcrème", vp: 32.65, retail: 65.70, desc: "Verdubbelt de hydratatie van je huid binnen acht uur.", benefits: ["Ondersteunt celvernieuwing tijdens de slaap", "Zichtbaar minder lijntjes na 7 dagen", "Voelt heerlijk rijk en zacht aan"], usage: "Royaal aanbrengen voor het slapengaan als laatste stap in je verzorgingsroutine." },
-        { cat: "SKIN & BODY", sku: "0828", name: "SKIN Beschermende Moisturiser SPF 30", vp: 32.65, retail: 65.70, desc: "Dagcrème met zonnefactor. Beschermt tegen UVA/UVB straling.", benefits: ["Essentiële SPF30 bescherming tegen huidveroudering door de zon", "Verdubbelt de hydratatie gedurende 8 uur", "Ideaal voor dagelijks gebruik"], usage: "In de ochtend rijkelijk aanbrengen op het gezicht, zo'n 15 minuten voor je naar buiten gaat." },
-        { cat: "SKIN & BODY", sku: "0829", name: "SKIN Lijn Minimaliserend Serum", vp: 43.35, retail: 87.25, desc: "Krachtig serum, vermindert zichtbaar fijne lijntjes en rimpels.", benefits: ["Zichtbare verbetering van rimpels in slechts 7 dagen", "Klinisch getest om te helpen de zachtheid en glans te herstellen", "Te gebruiken in de ochtend én avond"], usage: "Aanbrengen ná de reiniger en toner, en vóór je moisturiser (crème)." },
-        { cat: "SKIN & BODY", sku: "0830", name: "SKIN Dagelijkse Glow Moisturizer", vp: 32.65, retail: 65.70, desc: "Laat de huid stralen, zelfs zonder make-up. Diep voedend.", benefits: ["Klinisch getest om de huid te laten stralen en gloeien in 7 dagen", "Ideaal voor als je geen make-up wilt dragen maar er wél fris uit wilt zien", "Lichte structuur, niet vettig"], usage: "Gebruik 's ochtends over het gehele gezicht." },
-        { cat: "SKIN & BODY", sku: "2561", name: "Herbal Aloë Hand & Body Wash", vp: 8.30, retail: 18.60, desc: "Milde zeep met Aloë Vera. Reinigt zonder de huid uit te drogen.", benefits: ["Zonder sulfaten en toegevoegde parabenen", "Bevat verzachtende botanische extracten", "Perfect voor dagelijks gebruik in de douche"], usage: "Royaal gebruiken tijdens het douchen. Spoel goed af." },
-        { cat: "SKIN & BODY", sku: "2562", name: "Herbal Aloë Soothing Gel", vp: 8.30, retail: 18.00, desc: "De redding bij zonnebrand of irritatie. Pure, verkoelende Aloë gel.", benefits: ["Ongeparfumeerd en verrijkt met pure Aloë Vera", "Absorbeert snel en kalmeert direct", "Helpt de huid herstellen na een lange dag in de zon of na het scheren"], usage: "Smeer direct op een rode, geïrriteerde of verbrande huid. Kan meermaals per dag." },
-        { cat: "SKIN & BODY", sku: "2564", name: "Herbal Aloë Strengthening Shampoo", vp: 8.30, retail: 18.40, desc: "Versterkt het haar, vermindert haarbreuk en maakt het zachter.", benefits: ["Maakt je haar 10x sterker na één keer wassen", "Vermindert haarbreuk tot wel 90%", "Plantaardige micro-eiwitten voeden van binnenuit"], usage: "Inmasseren op nat haar, goed uitspoelen." },
-        { cat: "SKIN & BODY", sku: "2565", name: "Herbal Aloë Strengthening Conditioner", vp: 8.30, retail: 18.40, desc: "Kleurbehoudende crèmespoeling voor sterk, glad en glanzend haar.", benefits: ["Perfecte aanvulling op de Aloë Shampoo", "Bevat tarwe-eiwit om het haar zacht en sterk te maken", "Vrij van parabenen en toegevoegde sulfaten"], usage: "Verdeel over de haarpunten, laat tot 3 minuten inwerken en spoel goed uit." }
+    // Basis productendatabase (Catalogus & Voorraad)
+    const catalogData = [
+        { sku: "0146", name: "F1 Romige Vanille", category: "Basisvoeding", vp: 23.95, price: 54.00, desc: "De nummer 1 maaltijdvervangende shake in de wereld.", benefits: ["Rijk aan eiwitten (18g)", "25 vitaminen & mineralen", "Vegan ingrediënten"], usage: "Meng 2 maatlepels (26g) met 250 ml halfvolle melk of plantaardige drank." },
+        { sku: "0242", name: "F1 Zachte Chocolade", category: "Basisvoeding", vp: 23.95, price: 54.00, desc: "Heerlijke chocoladesmaak voor de perfecte start van de dag.", benefits: ["Rijk aan eiwitten", "Glutenvrij", "Vezelrijk"], usage: "Meng 2 maatlepels met 250 ml vloeistof." },
+        { sku: "026K", name: "Protein Drink Mix (PDM)", category: "Eiwitten", vp: 34.00, price: 62.00, desc: "Ideale eiwitboost om te mengen met je F1 shake of met water als tussendoortje.", benefits: ["15g extra eiwit", "Romige textuur", "Suikerarm"], usage: "Voeg 1 of 2 scheppen toe aan je F1 shake of meng met water." },
+        { sku: "011K", name: "Aloë Mango", category: "Hydratatie", vp: 24.95, price: 45.00, desc: "Verfrissende drank op basis van Aloë Vera om je spijsvertering te ondersteunen.", benefits: ["Ondersteunt spijsvertering", "Suikervrij", "Verfrissend"], usage: "Meng 3 dopjes (15ml) met 120ml water." },
+        { sku: "014K", name: "Kruidendrank Original (50g)", category: "Energie", vp: 19.95, price: 34.00, desc: "Koolhydraatarme kruidendrank met groene en zwarte thee-extracten.", benefits: ["Energieboost", "85mg cafeïne per portie", "Verbrandt calorieën"], usage: "Meng een halve theelepel (1,7g) met 250ml heet of koud water." }
     ];
 
-    const dbTestimonials = [
-        { naam: "Marieke", fase: "Hersenletsel, altijd moe", nu: "Energie, geen dutjes meer, -63cm", label: "Energie & Herstel" },
-        { naam: "Huguette", fase: "Maatje 42, snoepverslaving", nu: "Maatje 38, fit & uitgeslapen", label: "Afslanken & Fit" },
-        { naam: "Geert", fase: "Ondergewicht, stressvet", nu: "Spiermassa, dagelijks vitaal", label: "Aankomen & Spiermassa" },
-        { naam: "Tasja", fase: "Zwanger, futloos", nu: "Fitte mama, energie ondanks korte nachten", label: "Fitte Mama" },
-        { naam: "Betty", fase: "Ondergewicht (26j), ongelukkig", nu: "+10kg spiermassa, fitte oma van 6", label: "Aankomen & Vitaliteit" },
-        { naam: "Chella", fase: "Slank maar niet fit, onzeker", nu: "Strong & Fit, geen snoepbehoefte", label: "Spieropbouw & Zelfvertrouwen" },
-        { naam: "Brigitte", fase: "Middagdipjes, enorm overgewicht", nu: "2-3 kledingmaten minder, vitaliteit!", label: "Afslanken & Energie" },
-        { naam: "Mirlande", fase: "Veel diëten, suikerverslaving", nu: "Minder vet/gewicht, geen suikerdip", label: "Gezonde Levensstijl" },
-        { naam: "Lieke", fase: "Emotie-eten, negatief zelfbeeld", nu: "-14kg, emotie-eten onder controle", label: "Balans & Afslanken" },
-        { naam: "Twan", fase: "Geen tijd voor ontbijt, moe", nu: "Bootcamp, windsurfen: Fitte 65+ Opa!", label: "Vitaliteit 60+" },
-        { naam: "Wendy", fase: "Veel gewicht, laag zelfbeeld", nu: "Gehalveerd in vet%, stralend", label: "Vetverlies & Glow" },
-        { naam: "Sam", fase: "Weinig zelfvertrouwen", nu: "Persoonlijke ontwikkeling, bewust lichaam", label: "Mindset & Spieren" },
-        { naam: "Martine", fase: "Vermoeide 50'er", nu: "Fitte 60'er, meer spiermassa", label: "Energie & Fit ouder worden" }
-    ];
+    // Lokale Opslag Variabelen
+    let clients = JSON.parse(localStorage.getItem('hbl_clients')) || [];
+    let activeClientId = null;
 
     // =========================================================================
-    // 2. FIREBASE & GLOBALS
+    // 2. INITIALISATIE & UI LOGICA
     // =========================================================================
-    const firebaseConfig = {
-        apiKey: "AIzaSyD9xhQuLnjgbaMHZI_vWp4FoUUjTNbA0tM",
-        authDomain: "follow-up-coaches.firebaseapp.com",
-        projectId: "follow-up-coaches",
-        storageBucket: "follow-up-coaches.firebasestorage.app",
-        messagingSenderId: "273305831461",
-        appId: "1:273305831461:web:4471b563a5d0da164457cc"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
 
-    let currentCoach = 'Andreas';
-    let clients = {};
-    let currentClientId = null;
-    
-    let myStock = {};
-    let salesHistory = [];
-    let personalUse = [];
-    let collapsedCats = {};
-    let currentCatFilter = "Alles";
-    
-    let unsubClients, unsubStock;
-
-    const formatMoney = (amt) => "€ " + parseFloat(amt).toFixed(2).replace('.', ',');
-
-    window.onload = () => {
-        buildEvalForm();
+    document.addEventListener("DOMContentLoaded", () => {
+        initChecklist();
+        initSymptoms();
+        renderCatalog();
+        renderClientList();
         switchCoach();
-        document.getElementById('eval-date').valueAsDate = new Date();
-        
-        const now = new Date();
-        const yyyy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, '0');
-        document.getElementById('monthSelector').value = `${yyyy}-${mm}`;
-        
-        initCatalog();
-        renderTestimonials();
-    };
+    });
 
-    function switchView(viewId, btn) {
+    // Wissel van menu view
+    function switchView(viewId, btnElement) {
         document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-        document.getElementById(viewId).classList.add('active');
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        if(btn) btn.classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
         
-        document.getElementById('app-sidebar').classList.remove('open');
-        document.getElementById('mobile-overlay').classList.remove('active');
-
-        // Update ToDo list als je naar de tab navigeert
-        if(viewId === 'view-todo') renderToDoList();
+        document.getElementById(viewId).classList.add('active');
+        if(btnElement) btnElement.classList.add('active');
+        
+        if (window.innerWidth <= 768) {
+            toggleMenu(); // Sluit mobiel menu na klik
+        }
     }
 
     function switchCoach() {
-        currentCoach = document.getElementById('coach-selector').value;
-        document.getElementById('brand-coach').innerText = currentCoach;
-        
-        const root = document.documentElement;
-        if(currentCoach === 'Andreas') root.style.setProperty('--theme-color', '#3498db');
-        else if(currentCoach === 'Silvia') root.style.setProperty('--theme-color', '#f39c12');
-        else root.style.setProperty('--theme-color', '#7AC142');
-        
-        currentClientId = null;
-        document.getElementById('fu-content').style.display = 'none';
-        document.getElementById('fu-empty').style.display = 'flex';
-        loadFirebaseData();
-    }
-
-    function loadFirebaseData() {
-        if(unsubClients) unsubClients();
-        if(unsubStock) unsubStock();
-
-        const coachRef = db.collection('coaches').doc(currentCoach);
-
-        unsubClients = coachRef.collection('clients').onSnapshot(snap => {
-            clients = {};
-            snap.forEach(doc => { clients[doc.id] = doc.data(); });
-            renderClientList();
-            updateClientLinkDropdown();
-            renderToDoList();
-            if(currentClientId && clients[currentClientId]) loadClientFiche();
-        });
-
-        unsubStock = coachRef.collection('inventory').doc('data').onSnapshot(doc => {
-            if (doc.exists) {
-                const d = doc.data();
-                myStock = d.stock || {};
-                salesHistory = d.sales || [];
-                personalUse = d.personal || [];
-            } else {
-                myStock = {}; salesHistory = []; personalUse = [];
-            }
-            renderStockTable();
-            renderHistoryLists();
-            renderToDoList(); 
-        });
+        const coach = document.getElementById('coach-selector').value;
+        document.getElementById('brand-coach').innerText = coach;
     }
 
     // =========================================================================
     // 3. EVALUATIE LOGICA
     // =========================================================================
-    function buildEvalForm() {
-        const cl = document.getElementById('check-list');
-        evalQuestions.forEach((q, i) => {
-            cl.innerHTML += `<tr><td>${i+1}. ${q.q}</td>
-                <td class="col-option"><input type="radio" name="q${i}" class="${q.val==='NEE'?'pt':''}" onchange="updateScore()"></td>
-                <td class="col-option"><input type="radio" name="q${i}" class="${q.val==='JA'?'pt':''}" onchange="updateScore()"></td></tr>`;
-        });
-        
-        const sl = document.getElementById('symp-list');
-        evalSymptoms.forEach((s, i) => {
-            sl.innerHTML += `<label class="symp-item"><input type="checkbox" class="sc" data-tags="${s.f.join(',')}" data-name="${s.t}" onchange="updateAnalysis()"> ${s.t}</label>`;
+
+    function initChecklist() {
+        const tbody = document.getElementById('check-list');
+        tbody.innerHTML = '';
+        evalQuestions.forEach((q, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${q.q}</td>
+                <td class="col-option"><input type="radio" name="q${index}" value="NEE" onchange="calcScore()"></td>
+                <td class="col-option"><input type="radio" name="q${index}" value="JA" onchange="calcScore()"></td>
+            `;
+            tbody.appendChild(tr);
         });
     }
 
-    function updateScore() {
-        const pts = document.querySelectorAll('input.pt:checked').length;
-        document.getElementById('score-num').innerText = pts;
+    function calcScore() {
+        let score = 0;
+        evalQuestions.forEach((q, index) => {
+            const selected = document.querySelector(`input[name="q${index}"]:checked`);
+            if (selected && selected.value === q.val) score++;
+        });
+        
+        document.getElementById('score-num').innerText = score;
         const fill = document.getElementById('score-fill');
-        fill.style.width = (pts/15*100) + "%";
-        fill.style.backgroundColor = pts <= 7 ? "#e74c3c" : (pts <= 11 ? "#f1c40f" : "#2ecc71");
+        fill.style.width = `${(score / 15) * 100}%`;
+        
+        if (score >= 12) fill.style.backgroundColor = 'var(--success)';
+        else if (score >= 8) fill.style.backgroundColor = 'var(--warning)';
+        else fill.style.backgroundColor = 'var(--danger)';
     }
 
-    function updateAnalysis() {
-        const checked = document.querySelectorAll('.sc:checked');
-        let tallies = {}; let names = []; let hasAllergy = false;
-        
-        let suggested = new Set();
-        suggested.add("F1 Shake (Ideaal Basis Ontbijt)");
-        suggested.add("Instant Theedrank (Energie & Verbranding)");
-        suggested.add("Herbal Aloë Drank (Spijsvertering & Hydratatie)");
-
-        checked.forEach(c => {
-            const sn = c.getAttribute('data-name');
-            const st = c.getAttribute('data-tags').split(',');
-            names.push(`&bull; ${sn}`);
-            st.forEach(t => tallies[t] = (tallies[t]||0)+1);
-            if (sn === "Allergieën") hasAllergy = true;
-            
-            if (sn === "Energiegebrek" || sn === "Concentratieverlies" || sn === "Minder aankunnen") { suggested.add("Lift-Off (Focus & Energie)"); }
-            if (sn === "Slechte slaper") { suggested.add("Night Mode (Betere nachtrust)"); }
-            if (sn === "Spierpijn" || sn === "Spierkrampen" || sn === "Gewrichtspijn") { suggested.add("H24 Rebuild Strength"); suggested.add("Xtra-Cal"); }
-            if (sn === "Stoelgang problemen" || sn === "Brandend maagzuur" || sn === "Vocht vasthouden") { suggested.add("Multivezel Drank"); suggested.add("Microbiotic Max"); }
-            if (sn === "Droge huid / Acné" || sn === "Haarverlies" || sn === "Broze nagels") { suggested.add("Collageen Skin Booster"); }
-            if (sn === "Regelmatig verkouden" || sn === "Koortsblaasjes" || sn === "Ontstekingen") { suggested.add("Immune Booster"); }
-            if (sn === "Zin in zoet" || sn === "Veel dorst/plassen" || sn === "Onzeker zijn") { suggested.add("Proteïnedrankmix (PDM)"); suggested.add("Proteïne Repen"); }
+    function initSymptoms() {
+        const container = document.getElementById('symp-list');
+        container.innerHTML = '';
+        evalSymptoms.forEach((s, i) => {
+            const lbl = document.createElement('label');
+            lbl.className = 'symp-item';
+            lbl.innerHTML = `<input type="checkbox" value="${i}" onchange="tallySymptoms()"> ${s.t}`;
+            container.appendChild(lbl);
         });
+    }
 
-        document.getElementById('allergy-box').style.display = hasAllergy ? 'block' : 'none';
-        if (checked.length >= 5) {
-            document.getElementById('vitamin-warning').style.display = 'block';
-        } else {
+    function tallySymptoms() {
+        const checked = document.querySelectorAll('#symp-list input:checked');
+        const detailsDiv = document.getElementById('symp-details');
+        const tallyDiv = document.getElementById('tally-results');
+        const productsDiv = document.getElementById('suggested-products');
+        
+        if (checked.length === 0) {
+            detailsDiv.innerHTML = '-';
+            tallyDiv.innerHTML = '-';
+            productsDiv.innerHTML = '-';
             document.getElementById('vitamin-warning').style.display = 'none';
+            return;
         }
 
-        document.getElementById('symp-details').innerHTML = names.join('<br>') || "...";
-        const sorted = Object.entries(tallies).sort((a,b) => b[1]-a[1]);
-        document.getElementById('tally-results').innerHTML = sorted.map(r => `<div>${r[0]}: ${r[1]}x</div>`).join('') || "...";
+        document.getElementById('vitamin-warning').style.display = checked.length >= 5 ? 'block' : 'none';
+
+        let sympNames = [];
+        let shortages = { "Water": 0, "Eiwitten": 0, "Vetten": 0, "Vezels": 0, "Stress": 0 };
         
-        let suggestedHTML = Array.from(suggested).map(s => `<div style="padding:4px 0;"><span style="color:var(--success); font-weight:bold;">+</span> ${s}</div>`).join('');
-        document.getElementById('suggested-products').innerHTML = suggestedHTML;
+        checked.forEach(cb => {
+            const s = evalSymptoms[cb.value];
+            sympNames.push(s.t);
+            s.f.forEach(factor => shortages[factor]++);
+        });
+
+        detailsDiv.innerHTML = sympNames.join('<br>');
+        
+        let sortedShortages = Object.entries(shortages)
+            .filter(item => item[1] > 0)
+            .sort((a, b) => b[1] - a[1]);
+            
+        tallyDiv.innerHTML = sortedShortages.map(item => `<strong>${item[0]}:</strong> ${item[1]}x`).join('<br>');
+        
+        // Simpele product suggestie logica
+        let suggestions = ["F1 Voedingsshake", "Aloë / Kruidendrank"];
+        if (shortages["Eiwitten"] > 2) suggestions.push("Protein Drink Mix (PDM)");
+        if (shortages["Vezels"] > 1) suggestions.push("Haver Appel Vezeldrank");
+        if (shortages["Vetten"] > 1) suggestions.push("Herbalifeline MAX (Omega 3)");
+        if (checked.length >= 5) suggestions.push("Formula 2 Vitaminencomplex");
+        
+        productsDiv.innerHTML = `<ul><li>${suggestions.join('</li><li>')}</li></ul>`;
     }
 
     function saveEvaluatie() {
-        const name = document.getElementById('eval-name').value.trim();
-        if(!name) return alert("Geef minstens de naam van de klant in!");
+        const name = document.getElementById('eval-name').value;
+        if (!name) return alert('Naam is verplicht!');
 
-        const pts = document.querySelectorAll('input.pt:checked').length;
-        const symptomList = Array.from(document.querySelectorAll('.sc:checked')).map(c => c.getAttribute('data-name'));
-        const extraNotes = document.getElementById('eval-extra-notes').value.trim();
-        
-        let adviceText = Array.from(document.querySelectorAll('#suggested-products div')).map(d => d.innerText.replace('+ ', '')).join(', ');
-        
-        const focusList = Array.from(document.querySelectorAll('.focus-check:checked')).map(c => c.value);
-        const eetgewoonten = {
-            ontbijt: document.getElementById('eval-eet-ontbijt').value,
-            middag: document.getElementById('eval-eet-middag').value,
-            avond: document.getElementById('eval-eet-avond').value,
-            tussen: document.getElementById('eval-eet-tussen').value,
-            water: document.getElementById('eval-eet-water').value,
-            drank: document.getElementById('eval-eet-drank').value
-        };
-
-        let initialNote = "Intake opmerkingen:\n" + extraNotes;
-
-        const newId = 'client_' + Date.now();
-        
-        db.collection('coaches').doc(currentCoach).collection('clients').doc(newId).set({
+        const client = {
+            id: Date.now().toString(),
+            active: true,
             name: name,
             phone: document.getElementById('eval-phone').value,
             email: document.getElementById('eval-email').value,
             startdate: document.getElementById('eval-date').value,
             birthdate: document.getElementById('eval-birthdate').value,
             why: document.getElementById('eval-why').value,
-            score: pts,
-            symptoms: symptomList,
-            advies: adviceText, 
-            focus: focusList,
-            eetgewoonten: eetgewoonten,
-            active: true, 
-            tanita_start: { 
-                gew: document.getElementById('eval-t-gew').value, vet: document.getElementById('eval-t-vet').value, 
-                spier: document.getElementById('eval-t-spier').value, visc: document.getElementById('eval-t-visc').value, 
-                lft: document.getElementById('eval-t-lft').value 
+            score: document.getElementById('score-num').innerText,
+            tanita: {
+                gew: document.getElementById('eval-t-gew').value,
+                vet: document.getElementById('eval-t-vet').value,
+                spier: document.getElementById('eval-t-spier').value,
+                visc: document.getElementById('eval-t-visc').value,
+                lft: document.getElementById('eval-t-lft').value
             },
-            notes: initialNote,
-            purchases: [] 
-        }).then(() => {
-            alert("Klantendossier aangemaakt!");
-            ['eval-name','eval-phone','eval-email','eval-why','eval-t-gew','eval-t-vet','eval-t-spier','eval-t-visc','eval-t-lft', 'eval-eet-ontbijt', 'eval-eet-middag', 'eval-eet-avond', 'eval-eet-tussen', 'eval-eet-water', 'eval-eet-drank', 'eval-extra-notes', 'eval-birthdate'].forEach(id => document.getElementById(id).value = '');
-            document.querySelectorAll('.sc').forEach(c => c.checked = false); 
-            document.querySelectorAll('.focus-check').forEach(c => c.checked = false); 
-            updateAnalysis(); updateScore();
-            
-            switchView('view-fu', document.querySelectorAll('.nav-btn')[1]);
-            currentClientId = newId; loadClientFiche();
-        });
+            answers: {},
+            notes: document.getElementById('eval-extra-notes').value || ""
+        };
+
+        clients.push(client);
+        localStorage.setItem('hbl_clients', JSON.stringify(clients));
+        
+        alert('Klant opgeslagen!');
+        document.querySelectorAll('input[type="text"], input[type="date"], input[type="email"], textarea').forEach(el => el.value = '');
+        document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(el => el.checked = false);
+        document.getElementById('score-num').innerText = '0';
+        document.getElementById('score-fill').style.width = '0%';
+        tallySymptoms();
+        
+        renderClientList();
+        selectClient(client.id);
+        switchView('view-fu', document.querySelector('.nav-btn:nth-child(2)'));
     }
 
     // =========================================================================
-    // 4. FOLLOW-UP LOGICA (CRM)
+    // 4. KLANTENDOSSIER LOGICA (FOLLOW-UP)
     // =========================================================================
+
     function renderClientList() {
-        const q = document.getElementById('search-client').value.toLowerCase();
-        const list = document.getElementById('client-list');
-        list.innerHTML = '';
+        const query = document.getElementById('search-client')?.value.toLowerCase() || '';
+        const ul = document.getElementById('client-list');
+        ul.innerHTML = '';
         
-        let clientArray = Object.keys(clients).map(id => ({id: id, ...clients[id]}));
-        
-        clientArray.sort((a, b) => {
-            const aActive = a.active !== false;
-            const bActive = b.active !== false;
-            if (aActive && !bActive) return -1;
-            if (!aActive && bActive) return 1;
-            return b.id.localeCompare(a.id); 
-        });
-
-        const today = new Date();
-        const todayMonth = today.getMonth();
-        const todayDate = today.getDate();
-
-        clientArray.forEach(c => {
-            const displayName = c.name || (c.fiche && c.fiche.name) || 'Onbekend';
-            if(q && !displayName.toLowerCase().includes(q)) return;
-
-            const isActive = c.active !== false;
-            let badge = '';
-            let milestoneBadge = '';
-            
-            if (isActive) {
-                const sDate = c.startdate || (c.fiche && c.fiche.startdate);
-                if(sDate) {
-                    let diff = Math.round((new Date().setHours(0,0,0,0) - new Date(sDate).setHours(0,0,0,0)) / 86400000);
-                    if([1,3,7,14,21].includes(diff)) badge = `<span class="badge-alert">Dag ${diff}</span>`;
-                    if(diff === 30) milestoneBadge = `<span class="badge-milestone">🎉 1 Maand!</span>`;
-                }
-
-                const bDate = c.birthdate || (c.fiche && c.fiche.birthdate);
-                if(bDate) {
-                    const birthD = new Date(bDate);
-                    if (birthD.getMonth() === todayMonth && birthD.getDate() === todayDate) {
-                        milestoneBadge = `<span class="badge-milestone" style="background:#9b59b6;">🎉 Jarig!</span>`;
-                    }
-                }
+        clients
+            .filter(c => c.name.toLowerCase().includes(query))
+            .sort((a, b) => b.active - a.active) // Actieve klanten bovenaan
+            .forEach(c => {
+                const li = document.createElement('li');
+                li.className = `client-item ${c.active ? '' : 'client-inactive'} ${c.id === activeClientId ? 'active' : ''}`;
+                li.onclick = () => selectClient(c.id);
                 
-                // Check reorder alert
-                if (c.purchases && c.purchases.length > 0) {
-                    let needsReorder = false;
-                    c.purchases.forEach(pur => {
-                        const pDate = new Date(pur.date);
-                        let diffDays = Math.round((today - pDate) / 86400000);
-                        if(diffDays >= 21 && diffDays <= 25 && pur.sku.startsWith("44") || pur.sku.startsWith("048") || pur.sku.startsWith("2600")) {
-                            needsReorder = true;
-                        }
-                    });
-                    if (needsReorder) badge = `<span class="badge-alert" style="background:var(--warning);">⚠️ Shake op?</span>`;
-                }
-
-            } else {
-                badge = `<span class="badge-alert" style="background:#888;">Inactief</span>`;
-            }
-
-            const li = document.createElement('li');
-            li.className = 'client-item' + (c.id === currentClientId ? ' active' : '') + (!isActive ? ' client-inactive' : '');
-            
-            li.innerHTML = `<div class="client-info-row"><span class="client-name">${displayName}</span> ${badge} ${milestoneBadge}</div>`;
-            
-            li.onclick = () => { 
-                currentClientId = c.id; 
-                loadClientFiche(); 
-                renderClientList(); 
-                if(window.innerWidth <= 768) {
-                    document.getElementById('fu-workspace').scrollIntoView({behavior: "smooth"});
-                }
-            };
-            list.appendChild(li);
-        });
+                li.innerHTML = `
+                    <div class="client-info-row">
+                        <span class="client-name">${c.name}</span>
+                        ${!c.active ? '<span class="badge-alert" style="background:#7f8c8d; animation:none;">Inactief</span>' : ''}
+                    </div>
+                `;
+                ul.appendChild(li);
+            });
     }
 
-    function toggleActiveStatus() {
-        if(!currentClientId || !clients[currentClientId]) return;
-        const currentStatus = clients[currentClientId].active !== false; 
-        
-        db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).set({
-            active: !currentStatus
-        }, { merge: true });
-    }
+    function selectClient(id) {
+        activeClientId = id;
+        const c = clients.find(cl => cl.id === id);
+        if(!c) return;
 
-    function loadClientFiche() {
-        if(!currentClientId || !clients[currentClientId]) return;
-        const c = clients[currentClientId];
-        
+        renderClientList();
         document.getElementById('fu-empty').style.display = 'none';
         document.getElementById('fu-content').style.display = 'flex';
 
-        const isActive = c.active !== false;
-        const btnToggle = document.getElementById('btn-toggle-active');
-        if (isActive) {
-            btnToggle.innerText = "Zet Inactief";
-            btnToggle.style.background = "var(--warning)";
-        } else {
-            btnToggle.innerText = "Zet Actief";
-            btnToggle.style.background = "var(--theme-color)";
-        }
+        // Header vullen
+        document.getElementById('header-client-name').innerText = c.name;
+        document.getElementById('header-client-phone').innerText = c.phone || 'Geen telefoonnummer';
+        document.getElementById('sticky-why').innerText = c.why || 'Niet ingevuld';
+        document.getElementById('btn-toggle-active').innerText = c.active ? 'Zet Inactief' : 'Zet Actief';
 
-        const name = c.name || (c.fiche && c.fiche.name) || 'Geen Naam';
-        const phone = c.phone || (c.fiche && c.fiche.phone) || 'Geen Tel.';
-        const startdate = c.startdate || (c.fiche && c.fiche.startdate) || '';
-        const birthdate = c.birthdate || (c.fiche && c.fiche.birthdate) || '';
-        const why = c.why || (c.fiche && c.fiche.why) || '';
-        const notes = c.notes || (c.fiche && c.fiche.notes) || '';
-        
-        const advies = c.advies || 'Geen advies geregistreerd.';
-        const symptomsArr = c.symptoms && c.symptoms.length ? c.symptoms : ['Geen symptomen geselecteerd'];
-        const focusArr = c.focus && c.focus.length ? c.focus : ['Geen focus geselecteerd'];
-        const eet = c.eetgewoonten || {};
+        // Intake Tab Data
+        document.getElementById('crm-eval-score').innerText = c.score || '?';
+        document.getElementById('disp-t-gew').innerText = c.tanita?.gew || '-';
+        document.getElementById('disp-t-vet').innerText = c.tanita?.vet || '-';
+        document.getElementById('disp-t-spier').innerText = c.tanita?.spier || '-';
+        document.getElementById('disp-t-visc').innerText = c.tanita?.visc || '-';
+        document.getElementById('disp-t-lft').innerText = c.tanita?.lft || '-';
+        document.getElementById('fiche-notes').value = c.notes || '';
 
-        document.getElementById('header-client-name').innerText = name;
-        document.getElementById('header-client-phone').innerText = phone;
-        document.getElementById('wa-btn').style.display = (phone.length > 8) ? 'inline-block' : 'none';
+        // Klantfiche Tab Data
+        document.getElementById('fiche-name').value = c.name;
+        document.getElementById('fiche-phone').value = c.phone;
+        document.getElementById('fiche-startdate').value = c.startdate;
+        document.getElementById('fiche-birthdate').value = c.birthdate;
+        document.getElementById('fiche-why').value = c.why;
 
-        document.getElementById('fiche-name').value = name;
-        document.getElementById('fiche-phone').value = phone;
-        document.getElementById('fiche-startdate').value = startdate;
-        document.getElementById('fiche-birthdate').value = birthdate;
-        document.getElementById('fiche-why').value = why;
-        document.getElementById('fiche-notes').value = notes;
-        
-        document.getElementById('crm-eval-score').innerText = c.score !== undefined ? c.score : '?';
-        document.getElementById('crm-eval-symptoms').innerHTML = symptomsArr.map(s => `&bull; ${s}`).join('<br>');
-        document.getElementById('crm-eval-products').innerHTML = advies.split(', ').map(p => `&bull; <strong>${p}</strong>`).join('<br>');
-        
-        document.getElementById('crm-eval-focus').innerHTML = focusArr.map(f => `&bull; ${f}`).join('<br>');
-        document.getElementById('crm-eet-ontbijt').innerText = eet.ontbijt || '-';
-        document.getElementById('crm-eet-middag').innerText = eet.middag || '-';
-        document.getElementById('crm-eet-avond').innerText = eet.avond || '-';
-        document.getElementById('crm-eet-tussen').innerText = eet.tussen || '-';
-        document.getElementById('crm-eet-water').innerText = eet.water || '-';
-        document.getElementById('crm-eet-drank').innerText = eet.drank || '-';
-        
-        document.getElementById('w2-symp-reminder').innerText = (c.symptoms && c.symptoms.length) ? c.symptoms.join(', ') : 'Geen';
-
-        document.getElementById('dag1-q1').value = c['d1-q1'] || (c.dag1 && c.dag1.q1) || '';
-        document.getElementById('dag1-q2').value = c['d1-q2'] || (c.dag1 && c.dag1.q2) || '';
-        document.getElementById('dag1-q3').value = c['d1-q3'] || (c.dag1 && c.dag1.q3) || '';
-        document.getElementById('dag1-q4').value = c['d1-q4'] || (c.dag1 && c.dag1.q4) || '';
-        document.getElementById('dag1-q5').value = c['d1-q5'] || (c.dag1 && c.dag1.q5) || '';
-        document.getElementById('dag1-q6').value = c['d1-q6'] || (c.dag1 && c.dag1.q6) || '';
-        document.getElementById('dag1-q7').value = c['d1-q7'] || (c.dag1 && c.dag1.q7) || '';
-        document.getElementById('dag1-q8').value = c['d1-q8'] || (c.dag1 && c.dag1.q8) || '';
-        document.getElementById('dag1-notes').value = c['d1-notes'] || (c.dag1 && c.dag1.notes) || '';
-
-        document.getElementById('dag3-q1').value = c['d3-q1'] || (c.dag3 && c.dag3.q1) || '';
-        document.getElementById('dag3-q2').value = c['d3-q2'] || (c.dag3 && c.dag3.q2) || '';
-        document.getElementById('dag3-q3').value = c['d3-q3'] || (c.dag3 && c.dag3.q3) || '';
-        document.getElementById('dag3-q4').value = c['d3-q4'] || (c.dag3 && c.dag3.q4) || '';
-        document.getElementById('dag3-q5').value = c['d3-q5'] || (c.dag3 && c.dag3.q5) || '';
-        document.getElementById('dag3-notes').value = c['d3-notes'] || (c.dag3 && c.dag3.notes) || '';
-
-        document.getElementById('dag7-q1').value = c['d7-q1'] || (c.dag7 && c.dag7.q1) || '';
-        document.getElementById('dag7-q2').value = c['d7-q2'] || (c.dag7 && c.dag7.q2) || '';
-        document.getElementById('dag7-q3').value = c['d7-q3'] || (c.dag7 && c.dag7.q3) || '';
-        document.getElementById('dag7-q4').value = c['d7-q4'] || (c.dag7 && c.dag7.q4) || '';
-        document.getElementById('dag7-q5').value = c['d7-q5'] || (c.dag7 && c.dag7.q5) || '';
-        document.getElementById('dag7-notes').value = c['d7-notes'] || (c.dag7 && c.dag7.notes) || '';
-
-        document.getElementById('week2-q1').value = c['w2-q1'] || (c.week2 && c.week2.q1) || '';
-        document.getElementById('week2-q2').value = c['w2-q2'] || (c.week2 && c.week2.q2) || '';
-        document.getElementById('week2-q3').value = c['w2-q3'] || (c.week2 && c.week2.q3) || '';
-        document.getElementById('week2-notes').value = c['w2-notes'] || (c.week2 && c.week2.notes) || '';
-
-        document.getElementById('week3-q1').value = c['w3-q1'] || (c.week3 && c.week3.q1) || '';
-        document.getElementById('week3-q2').value = c['w3-q2'] || (c.week3 && c.week3.q2) || '';
-        document.getElementById('week3-q3').value = c['w3-q3'] || (c.week3 && c.week3.q3) || '';
-        document.getElementById('week3-q4').value = c['w3-q4'] || (c.week3 && c.week3.q4) || '';
-        document.getElementById('week3-notes').value = c['w3-notes'] || (c.week3 && c.week3.notes) || '';
-
-        document.getElementById('sticky-why').innerText = why || '-';
-
-        if(c.tanita_start) {
-            ['gew', 'vet', 'spier', 'visc', 'lft'].forEach(t => {
-                document.getElementById(`disp-t-${t}`).innerText = c.tanita_start[t] || '-';
+        // Dagen laden
+        const fields = ['q1','q2','q3','q4','q5','q6','q7','q8','notes'];
+        ['dag1', 'dag3', 'dag7', 'week2', 'week3'].forEach(dag => {
+            fields.forEach(f => {
+                const el = document.getElementById(`${dag}-${f}`);
+                if(el) el.value = c.answers && c.answers[dag] && c.answers[dag][f] ? c.answers[dag][f] : '';
             });
-        } else {
-            ['gew', 'vet', 'spier', 'visc', 'lft'].forEach(t => document.getElementById(`disp-t-${t}`).innerText = '-');
-        }
+        });
 
-        const evalBtn = document.getElementById('tab-btn-eval');
-        if(evalBtn) openTab('tab-evaluatie', evalBtn);
-    }
-
-    function autoSaveFiche(field) {
-        if(!currentClientId) return;
-        const el = document.getElementById(`fiche-${field}`);
-        db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).set({ [field]: el.value }, { merge: true });
-        if(field === 'name') { document.getElementById('header-client-name').innerText = el.value; renderClientList(); updateClientLinkDropdown(); }
-    }
-
-    function autoSaveDag(sectie, field) {
-        if(!currentClientId) return;
-        const el = document.getElementById(`${sectie}-${field}`);
-        db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).set({ 
-            [`${sectie.replace('week', 'w').replace('dag', 'd')}-${field}`]: el.value 
-        }, { merge: true });
-    }
-
-    function openWA() {
-        const c = clients[currentClientId];
-        let p = (c.phone || (c.fiche && c.fiche.phone) || '').replace(/\D/g,'');
-        if(p.startsWith('0')) p = '32' + p.substring(1);
-        window.open(`https://wa.me/${p}`, '_blank');
-    }
-
-    function deleteClient() {
-        if(confirm("Dossier permanent verwijderen?")) {
-            db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).delete();
-            currentClientId = null; document.getElementById('fu-content').style.display = 'none'; document.getElementById('fu-empty').style.display = 'flex';
-        }
+        openTab('tab-evaluatie', document.getElementById('tab-btn-eval'));
     }
 
     function openTab(tabId, btn) {
-        document.querySelectorAll('#fu-content .tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('#fu-content .tab-btn').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
-        btn.classList.add('active');
+        if(btn) btn.classList.add('active');
     }
 
-    // =========================================================================
-    // 5. STOCK, WINST & HISTORIEK LOGICA
-    // =========================================================================
-    function updateClientLinkDropdown() {
-        const sel = document.getElementById('link-client-select');
-        sel.innerHTML = '<option value="">-- Koppel verkoop aan klant --</option>';
-        Object.keys(clients).forEach(id => { 
-            const isActive = clients[id].active !== false;
-            if(isActive) {
-                const n = clients[id].name || (clients[id].fiche && clients[id].fiche.name) || 'Klant';
-                sel.innerHTML += `<option value="${id}">${n}</option>`; 
-            }
-        });
-    }
-
-    function renderStockTable() {
-        const tbody = document.getElementById('stockTableBody');
-        const disc = parseFloat(document.getElementById('discountSelect').value) / 100;
-        const search = document.getElementById('searchStock').value.toLowerCase();
-        tbody.innerHTML = '';
-        
-        let cCat = ''; let tVP = 0; let tBuy = 0; let tRet = 0; let tProf = 0;
-
-        dbProducts.forEach(p => {
-            if (search && !p.name.toLowerCase().includes(search) && !p.sku.toLowerCase().includes(search)) return;
-            const count = myStock[p.sku] || 0;
-            
-            const buyPrice = p.retail * (1 - disc);
-            const sellPrice = p.retail; 
-            const profit = sellPrice - buyPrice;
-
-            if(count > 0) { tVP += (p.vp * count); tBuy += (buyPrice * count); tRet += (sellPrice * count); tProf += (profit * count); }
-            
-            if (p.cat !== cCat) {
-                tbody.innerHTML += `<tr class="cat-row" onclick="collapsedCats['${p.cat}']=!collapsedCats['${p.cat}'];renderStockTable()"><td colspan="7">${p.cat} <span style="float:right;">${collapsedCats[p.cat]?'►':'▼'}</span></td></tr>`;
-                cCat = p.cat;
-            }
-            if (collapsedCats[p.cat]) return;
-
-            let sC = count === 0 ? 'st-0' : (count === 1 ? 'st-1' : (count === 2 ? 'st-2' : 'st-3'));
-            tbody.innerHTML += `
-                <tr>
-                    <td><strong>${p.name}</strong><br><small style="color:#888;">SKU: ${p.sku}</small></td>
-                    <td>${p.vp.toFixed(1)}</td>
-                    <td class="nowrap">${formatMoney(sellPrice)}</td>
-                    <td class="nowrap">${formatMoney(buyPrice)}</td>
-                    <td class="profit-green nowrap">${formatMoney(profit)}</td>
-                    <td>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <button class="btn-qty" onclick="updateStockCount('${p.sku}', ${count - 1})">-</button>
-                            <div class="${sC}" style="width:30px; text-align:center; font-weight:bold; padding:4px; border-radius:4px; border:1px solid var(--border);">${count}</div>
-                            <button class="btn-qty" onclick="updateStockCount('${p.sku}', ${count + 1})">+</button>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="actie-cel">
-                            <select id="cdisc-${p.sku}" style="padding:4px; border-radius:4px; border:1px solid #ccc; font-size:0.75rem;">
-                                <option value="0">0%</option>
-                                <option value="5">5%</option>
-                                <option value="10">10%</option>
-                                <option value="15">15%</option>
-                                <option value="20">20%</option>
-                            </select>
-                            <button class="btn-primary" style="padding:6px 12px; font-size:0.8rem;" onclick="sellProduct('${p.sku}')" ${count===0?'disabled':''}>Verkoop</button>
-                            <button class="btn-danger" style="padding:6px 12px; font-size:0.8rem;" onclick="usePersonal('${p.sku}')" ${count===0?'disabled':''}>Demo</button>
-                        </div>
-                    </td>
-                </tr>`;
-        });
-
-        document.getElementById('dash-vp').innerText = tVP.toFixed(2);
-        document.getElementById('dash-inkoop').innerText = formatMoney(tBuy);
-        document.getElementById('dash-verkoop').innerText = formatMoney(tRet);
-        document.getElementById('dash-winst').innerText = formatMoney(tProf);
-    }
-
-    function saveInventory() {
-        db.collection('coaches').doc(currentCoach).collection('inventory').doc('data').set({ stock: myStock, sales: salesHistory, personal: personalUse });
-    }
-
-    function updateStockCount(sku, val) { 
-        myStock[sku] = Math.max(0, parseInt(val) || 0); 
-        saveInventory(); 
-    }
-
-    function sellProduct(sku) {
-        const p = dbProducts.find(x => x.sku === sku);
-        if (p && (myStock[sku] || 0) > 0) {
-            const coachDisc = parseFloat(document.getElementById('discountSelect').value) / 100;
-            const custDiscSelect = document.getElementById(`cdisc-${sku}`);
-            const custDisc = custDiscSelect ? parseFloat(custDiscSelect.value) / 100 : 0;
-            
-            const buyPrice = p.retail * (1 - coachDisc);
-            const sellPrice = p.retail * (1 - custDisc);
-            const profit = sellPrice - buyPrice;
-
-            myStock[sku] -= 1;
-            
-            const sale = { id: Date.now(), sku: p.sku, name: p.name, profit: profit, date: new Date().toISOString() };
-            salesHistory.unshift(sale); 
-            
-            const linkedId = document.getElementById('link-client-select').value;
-            if(linkedId && clients[linkedId]) {
-                const n = `[${new Date().toLocaleDateString()}] Gekocht: 1x ${p.name} (${custDisc*100}% korting)\n`;
-                const oldNotes = clients[linkedId].notes || (clients[linkedId].fiche && clients[linkedId].fiche.notes) || "";
-                
-                // SAVE STRUCTURED PURCHASE FOR REORDER ALERTS
-                let clientPurchases = clients[linkedId].purchases || [];
-                clientPurchases.push({ sku: p.sku, name: p.name, date: new Date().toISOString() });
-
-                db.collection('coaches').doc(currentCoach).collection('clients').doc(linkedId).set({ 
-                    notes: n + oldNotes,
-                    purchases: clientPurchases
-                }, { merge: true });
-                
-                document.getElementById('link-client-select').value = ""; 
-            }
-            saveInventory();
-            renderHistoryLists();
+    function autoSaveFiche(field) {
+        if(!activeClientId) return;
+        const c = clients.find(cl => cl.id === activeClientId);
+        if(c) {
+            if(field === 'notes') c.notes = document.getElementById('fiche-notes').value;
+            else c[field] = document.getElementById(`fiche-${field}`).value;
+            localStorage.setItem('hbl_clients', JSON.stringify(clients));
         }
     }
 
-    function usePersonal(sku) {
-        const p = dbProducts.find(x => x.sku === sku);
-        if (p && (myStock[sku] || 0) > 0) {
-            myStock[sku] -= 1;
-            personalUse.push({ id: Date.now(), name: p.name, date: new Date().toLocaleDateString() });
-            saveInventory();
-            renderHistoryLists();
+    function autoSaveDag(dag, field) {
+        if(!activeClientId) return;
+        const c = clients.find(cl => cl.id === activeClientId);
+        if(c) {
+            if(!c.answers) c.answers = {};
+            if(!c.answers[dag]) c.answers[dag] = {};
+            c.answers[dag][field] = document.getElementById(`${dag}-${field}`).value;
+            localStorage.setItem('hbl_clients', JSON.stringify(clients));
         }
     }
 
-    function renderHistoryLists() {
-        const selectedMonth = document.getElementById('monthSelector').value; 
-        if (!selectedMonth) return;
-
-        const dateObj = new Date(selectedMonth + "-01");
-        const monthYearStr = dateObj.toLocaleString('nl-NL', { month: 'long', year: 'numeric' });
-        document.getElementById('month-title-display').innerText = "📈 Winst (" + monthYearStr.charAt(0).toUpperCase() + monthYearStr.slice(1) + ")";
-
-        let mProfit = 0;
-        const filteredSales = salesHistory.filter(s => s.date.startsWith(selectedMonth));
-        filteredSales.forEach(s => { mProfit += s.profit; });
-        document.getElementById('current-month-profit').innerText = formatMoney(mProfit);
-
-        const sList = document.getElementById('sales-history-list');
-        sList.innerHTML = filteredSales.length ? '' : '<li class="history-item">Geen verkopen in deze maand.</li>';
-        filteredSales.slice(0, 15).forEach(s => {
-            sList.innerHTML += `<li class="history-item">
-                <div><strong>${s.name}</strong><br><small style="color:#888">${new Date(s.date).toLocaleString()}</small></div>
-                <div style="text-align:right;"><span class="profit-green">+ ${formatMoney(s.profit)}</span><br><button class="btn-undo" onclick="undoSale(${s.id}, '${s.sku}')">Undo</button></div>
-            </li>`;
-        });
-
-        const pList = document.getElementById('personal-use-list');
-        pList.innerHTML = personalUse.length ? '' : '<li class="history-item">Geen actieve producten.</li>';
-        personalUse.forEach(p => {
-            pList.innerHTML += `<li class="history-item">
-                <div><strong>${p.name}</strong><br><small style="color:#888">Sinds: ${p.date}</small></div>
-                <button class="btn-success" style="font-size:0.7rem;" onclick="finishPersonal(${p.id})">Is op!</button>
-            </li>`;
-        });
+    function toggleActiveStatus() {
+        const c = clients.find(cl => cl.id === activeClientId);
+        if(c) {
+            c.active = !c.active;
+            localStorage.setItem('hbl_clients', JSON.stringify(clients));
+            renderClientList();
+            selectClient(activeClientId);
+        }
     }
 
-    function undoSale(id, sku) {
-        salesHistory = salesHistory.filter(s => s.id !== id);
-        myStock[sku] = (myStock[sku] || 0) + 1;
-        saveInventory();
-        renderHistoryLists();
-        renderStockTable();
+    function openWA() {
+        const c = clients.find(cl => cl.id === activeClientId);
+        if(c && c.phone) {
+            let number = c.phone.replace(/[^0-9]/g, '');
+            if (number.startsWith('0')) number = '32' + number.substring(1); // Default BE code
+            window.open(`https://wa.me/${number}`, '_blank');
+        } else {
+            alert("Geen geldig telefoonnummer gevonden.");
+        }
     }
 
-    function finishPersonal(id) {
-        personalUse = personalUse.filter(p => p.id !== id);
-        saveInventory();
-        renderHistoryLists();
+    function deleteClient() {
+        if(confirm("Weet je zeker dat je deze klant definitief wilt verwijderen?")) {
+            clients = clients.filter(cl => cl.id !== activeClientId);
+            localStorage.setItem('hbl_clients', JSON.stringify(clients));
+            activeClientId = null;
+            document.getElementById('fu-content').style.display = 'none';
+            document.getElementById('fu-empty').style.display = 'flex';
+            renderClientList();
+        }
     }
 
     // =========================================================================
-    // 6. PRODUCT CATALOGUS (MODAL INTERACTIE)
+    // 5. CATALOGUS LOGICA
     // =========================================================================
-    function initCatalog() {
-        const cats = ["Alles", ...new Set(dbProducts.map(p => p.cat))];
-        const filterContainer = document.getElementById('catalog-filters');
-        filterContainer.innerHTML = "";
-        
-        cats.forEach(c => {
-            let btn = document.createElement('button');
-            btn.className = `filter-btn ${c === currentCatFilter ? 'active' : ''}`;
-            btn.innerText = c;
-            btn.onclick = () => {
-                currentCatFilter = c;
-                document.querySelectorAll('#catalog-filters .filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                renderCatalog();
-            };
-            filterContainer.appendChild(btn);
-        });
-        renderCatalog();
-    }
 
     function renderCatalog() {
-        const search = document.getElementById('search-catalog').value.toLowerCase();
         const grid = document.getElementById('catalog-grid');
-        grid.innerHTML = "";
-
-        let filtered = dbProducts.filter(p => {
-            let matchesSearch = p.name.toLowerCase().includes(search) || p.sku.toLowerCase().includes(search);
-            let matchesCat = currentCatFilter === "Alles" || p.cat === currentCatFilter;
-            return matchesSearch && matchesCat;
-        });
-
-        if(filtered.length === 0) {
-            grid.innerHTML = "<p>Geen producten gevonden met deze zoekopdracht.</p>";
-            return;
-        }
-
-        filtered.forEach(p => {
-            let card = document.createElement('div');
-            card.className = "product-card";
-            card.onclick = () => openProductModal(p.sku);
-            
-            card.innerHTML = `
-                <div class="product-img">
-                    <img src="${p.sku}.jpg" alt="${p.name}" onerror="this.style.display='none'">
-                </div>
-                <div class="product-info-cat">
-                    <div class="product-cat-label">${p.cat}</div>
-                    <h4 style="margin:0 0 5px 0; color:#2C3E50;">${p.name}</h4>
-                    <p style="margin: 0 0 10px 0; font-size:0.8rem; color:#666; font-style:italic;">${p.desc}</p>
-                    <p style="margin: 0 0 5px 0; font-size:0.85rem; color:#888;"><strong>SKU:</strong> ${p.sku} | <strong>VP:</strong> ${p.vp.toFixed(2)}</p>
-                    <p style="margin: 0 0 0 0; font-size:0.95rem; color:var(--theme-color); font-weight:bold;">${formatMoney(p.retail)}</p>
+        const query = document.getElementById('search-catalog')?.value.toLowerCase() || '';
+        grid.innerHTML = '';
+        
+        catalogData.filter(p => p.name.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query)).forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'product-card';
+            div.onclick = () => openProductModal(p.sku);
+            div.innerHTML = `
+                <div class="product-cat-label">${p.category}</div>
+                <h3 style="margin:0 0 10px 0; color:#333; font-size:1.1rem;">${p.name}</h3>
+                <p style="font-size:0.85rem; color:#777; flex:1;">${p.desc.substring(0,60)}...</p>
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
+                    <div style="font-size:0.8rem; color:#aaa;">SKU: ${p.sku}</div>
+                    <div style="font-weight:bold; color:var(--theme-color);">€ ${p.price.toFixed(2)}</div>
                 </div>
             `;
-            grid.appendChild(card);
+            grid.appendChild(div);
         });
     }
 
     function openProductModal(sku) {
-        const p = dbProducts.find(x => x.sku === sku);
+        const p = catalogData.find(item => item.sku === sku);
         if(!p) return;
-
-        document.getElementById('modal-img').src = p.sku + '.jpg';
-        document.getElementById('modal-img').style.display = 'block';
-        document.getElementById('modal-cat').innerText = p.cat;
+        
+        document.getElementById('modal-cat').innerText = p.category;
         document.getElementById('modal-title').innerText = p.name;
         document.getElementById('modal-sku').innerText = p.sku;
-        document.getElementById('modal-vp').innerText = p.vp.toFixed(2);
-        document.getElementById('modal-price').innerText = formatMoney(p.retail);
+        document.getElementById('modal-vp').innerText = p.vp;
+        document.getElementById('modal-price').innerText = `€ ${p.price.toFixed(2)}`;
         document.getElementById('modal-desc').innerText = p.desc;
+        document.getElementById('modal-usage').innerText = p.usage;
         
         const benefitsList = document.getElementById('modal-benefits');
-        benefitsList.innerHTML = "";
-        if (p.benefits && p.benefits.length > 0) {
-            p.benefits.forEach(b => {
-                benefitsList.innerHTML += `<li>${b}</li>`;
-            });
-        } else {
-            benefitsList.innerHTML = "<li>Geen specifieke voordelen geregistreerd.</li>";
-        }
-
-        document.getElementById('modal-usage').innerText = p.usage || "Lees de instructies op de verpakking.";
+        benefitsList.innerHTML = p.benefits.map(b => `<li>${b}</li>`).join('');
+        
         document.getElementById('product-modal').classList.add('active');
-    }
-
-    // =========================================================================
-    // 7. TESTIMONIALS 
-    // =========================================================================
-    function renderTestimonials() {
-        const grid = document.getElementById('testi-grid');
-        grid.innerHTML = "";
-        
-        dbTestimonials.forEach(t => {
-            let card = document.createElement('div');
-            card.className = "testi-card";
-            card.innerHTML = `
-                <div class="testi-header">${t.naam} <span style="font-size:0.8rem; font-weight:normal; display:block; color:#bdc3c7;">${t.label}</span></div>
-                <div class="testi-body">
-                    <div class="testi-box">
-                        <strong style="color:var(--danger)">VOORHEEN:</strong><br>
-                        ${t.fase}
-                    </div>
-                    <div class="testi-box nu">
-                        <strong style="color:var(--success)">NU:</strong><br>
-                        ${t.nu}
-                    </div>
-                </div>
-            `;
-            grid.appendChild(card);
-        });
-    }
-
-    // =========================================================================
-    // 8. TO-DO LIJST (NIEUW)
-    // =========================================================================
-    function renderToDoList() {
-        const listFollowups = document.getElementById('todo-followups');
-        const listReorders = document.getElementById('todo-reorders');
-        const listMilestones = document.getElementById('todo-milestones');
-        
-        listFollowups.innerHTML = "";
-        listReorders.innerHTML = "";
-        listMilestones.innerHTML = "";
-
-        let hasFollowups = false;
-        let hasReorders = false;
-        let hasMilestones = false;
-
-        const today = new Date();
-        const todayMonth = today.getMonth();
-        const todayDate = today.getDate();
-
-        let clientArray = Object.keys(clients).map(id => ({id: id, ...clients[id]}));
-
-        clientArray.forEach(c => {
-            if (c.active === false) return; // Skip inactieve
-
-            const displayName = c.name || (c.fiche && c.fiche.name) || 'Onbekend';
-            
-            // 1. Follow-ups (Dagen 1, 3, 7, 14, 21)
-            const sDate = c.startdate || (c.fiche && c.fiche.startdate);
-            if(sDate) {
-                let diff = Math.round((new Date().setHours(0,0,0,0) - new Date(sDate).setHours(0,0,0,0)) / 86400000);
-                if([1,3,7,14,21].includes(diff)) {
-                    hasFollowups = true;
-                    listFollowups.innerHTML += `
-                        <li class="todo-item" onclick="openClientFromTodo('${c.id}')">
-                            <span><strong>${displayName}</strong></span>
-                            <span class="badge-alert">Dag ${diff}</span>
-                        </li>
-                    `;
-                }
-                // 2. Mijlpalen (Exact 30 dagen)
-                if(diff === 30) {
-                    hasMilestones = true;
-                    listMilestones.innerHTML += `
-                        <li class="todo-item" onclick="openClientFromTodo('${c.id}')">
-                            <span><strong>${displayName}</strong> is exact 1 maand bezig!</span>
-                            <span>🎉</span>
-                        </li>
-                    `;
-                }
-            }
-
-            // 3. Verjaardagen
-            const bDate = c.birthdate || (c.fiche && c.fiche.birthdate);
-            if(bDate) {
-                const birthD = new Date(bDate);
-                if (birthD.getMonth() === todayMonth && birthD.getDate() === todayDate) {
-                    hasMilestones = true;
-                    listMilestones.innerHTML += `
-                        <li class="todo-item" onclick="openClientFromTodo('${c.id}')">
-                            <span><strong>${displayName}</strong> is vandaag jarig!</span>
-                            <span>🎂</span>
-                        </li>
-                    `;
-                }
-            }
-
-            // 4. Reorders (F1 Shakes en PDM gekocht tussen 21 en 25 dagen geleden)
-            if (c.purchases && c.purchases.length > 0) {
-                c.purchases.forEach(pur => {
-                    const pDate = new Date(pur.date);
-                    let diffDays = Math.round((today - pDate) / 86400000);
-                    // Check of het een F1 of PDM is (Start met 44, 048 of 2600)
-                    if(diffDays >= 21 && diffDays <= 25 && (pur.sku.startsWith("44") || pur.sku.startsWith("048") || pur.sku.startsWith("2600"))) {
-                        hasReorders = true;
-                        listReorders.innerHTML += `
-                            <li class="todo-item" onclick="openClientFromTodo('${c.id}')">
-                                <span><strong>${displayName}</strong> kocht 3 weken geleden ${pur.name}</span>
-                                <span class="badge-alert" style="background:var(--warning);">⚠️</span>
-                            </li>
-                        `;
-                    }
-                });
-            }
-        });
-
-        if(!hasFollowups) listFollowups.innerHTML = "<div class="todo-empty">Geen opvolgingen voor vandaag.</div>";
-        if(!hasReorders) listReorders.innerHTML = "<div class="todo-empty">Geen actuele herbestellingen.</div>";
-        if(!hasMilestones) listMilestones.innerHTML = "<div class="todo-empty">Geen verjaardagen of mijlpalen vandaag.</div>";
-    }
-
-    function openClientFromTodo(clientId) {
-        switchView('view-fu', document.querySelectorAll('.nav-btn')[1]); // Ga naar CRM tab
-        currentClientId = clientId; 
-        loadClientFiche(); 
-        renderClientList();
     }
 
 </script>
