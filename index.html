@@ -38,7 +38,6 @@
         #main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         .view { display: none; width: 100%; height: 100%; overflow-y: auto; }
         
-        /* FIX VOOR DESKTOP LAYOUTS */
         .view.active { display: flex; flex-direction: column; } 
         #view-eval.active { display: flex; flex-direction: row; } 
         #view-fu.active { display: flex; flex-direction: row; } 
@@ -89,7 +88,8 @@
         #fu-list-pane { width: 320px; background: var(--sidebar-dark); color: white; display: flex; flex-direction: column; }
         
         #client-list { flex: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
-        .client-item { padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; display: block; }
+        .client-item { padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; display: block; transition:0.2s;}
+        .client-item:hover { background: rgba(255,255,255,0.05); }
         .client-info-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; width: 100%; }
         .client-name { font-weight: 600; color: #ecf0f1; word-break: break-word; }
         .client-item.active { background: var(--theme-color); }
@@ -97,6 +97,7 @@
         .client-inactive { opacity: 0.5; background: rgba(0,0,0,0.2); }
         .client-inactive.active { background: #555; opacity: 1; }
         .badge-alert { background: var(--danger); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; white-space: nowrap; animation: pulse 2s infinite;}
+        .badge-milestone { background: var(--warning); color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; white-space: nowrap;}
         
         #fu-workspace { flex: 1; background: white; overflow-y: auto; display: flex; flex-direction: column; }
         .client-header { padding: 20px 40px; background: #fff; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index:10;}
@@ -169,6 +170,26 @@
         .testi-box { background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid var(--danger); font-size: 0.9rem; }
         .testi-box.nu { border-left-color: var(--success); background: #f0fdf4;}
 
+        /* --- 6. TO-DO LIJST --- */
+        .todo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 30px; }
+        .todo-card { background: white; border-radius: 12px; padding: 20px; border-top: 4px solid var(--theme-color); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .todo-card.milestone { border-top-color: var(--warning); }
+        .todo-card.alert { border-top-color: var(--danger); }
+        .todo-list { list-style: none; padding: 0; margin: 0; }
+        .todo-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; cursor: pointer; transition: 0.2s; }
+        .todo-item:hover { background: #fdfdfd; padding-left: 5px; }
+        .todo-item:last-child { border-bottom: none; }
+        .todo-empty { padding: 20px 0; color: #888; font-style: italic; text-align: center; }
+
+        /* --- 7. RECEPTEN --- */
+        .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 30px; }
+        .recipe-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 5px solid var(--hb-green);}
+        .recipe-card h3 { color: var(--sidebar-dark); margin: 0 0 15px 0; font-size: 1.2rem;}
+        .recipe-section { margin-bottom: 15px; }
+        .recipe-section h4 { color: var(--theme-color); margin: 0 0 5px 0; font-size: 0.9rem;}
+        .recipe-section ul { margin: 0; padding-left: 20px; font-size: 0.85rem; color: #555; line-height: 1.5; }
+        .recipe-section p { margin: 0; font-size: 0.85rem; color: #555; line-height: 1.6; }
+
         /* --- RESPONSIVE MOBILE FIX --- */
         @media (max-width: 768px) {
             body { flex-direction: column; }
@@ -224,8 +245,7 @@
                 
                 <div class="modal-section">
                     <h4 style="color:var(--success);">✨ Belangrijkste Voordelen</h4>
-                    <ul id="modal-benefits">
-                        </ul>
+                    <ul id="modal-benefits"></ul>
                 </div>
                 
                 <div class="modal-section" style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
@@ -253,6 +273,8 @@
             <li><button class="nav-btn" onclick="switchView('view-stock', this)">📦 Voorraad & Winst</button></li>
             <li><button class="nav-btn" onclick="switchView('view-catalog', this)">📗 Product Info</button></li>
             <li><button class="nav-btn" onclick="switchView('view-testimonials', this)">⭐ Testimonials</button></li>
+            <li><button class="nav-btn" onclick="switchView('view-todo', this)">✅ To-Do Lijst</button></li>
+            <li><button class="nav-btn" onclick="switchView('view-recipes', this)">🥗 Recepten</button></li>
         </ul>
     </div>
 
@@ -269,7 +291,8 @@
                         <h2>1. Algemene Gegevens</h2>
                         <div class="form-grid">
                             <div class="form-group"><label>Naam Klant</label><input type="text" id="eval-name" placeholder="Verplicht"></div>
-                            <div class="form-group"><label>Datum</label><input type="date" id="eval-date"></div>
+                            <div class="form-group"><label>Start Datum</label><input type="date" id="eval-date"></div>
+                            <div class="form-group"><label>Geboortedatum (Optioneel)</label><input type="date" id="eval-birthdate"></div>
                             <div class="form-group"><label>Telefoonnummer</label><input type="text" id="eval-phone"></div>
                             <div class="form-group"><label>E-mailadres</label><input type="email" id="eval-email"></div>
                         </div>
@@ -483,7 +506,8 @@
                             <div class="form-grid">
                                 <div class="form-group"><label>Naam</label><input type="text" id="fiche-name" oninput="autoSaveFiche('name')"></div>
                                 <div class="form-group"><label>Telefoon</label><input type="text" id="fiche-phone" oninput="autoSaveFiche('phone')"></div>
-                                <div class="form-group"><label>Startdatum (Dag 1)</label><input type="date" id="fiche-startdate" oninput="autoSaveFiche('startdate'); renderClientList()"></div>
+                                <div class="form-group"><label>Startdatum (Dag 1)</label><input type="date" id="fiche-startdate" oninput="autoSaveFiche('startdate'); renderClientList(); renderToDoList();"></div>
+                                <div class="form-group"><label>Geboortedatum</label><input type="date" id="fiche-birthdate" oninput="autoSaveFiche('birthdate'); renderClientList(); renderToDoList();"></div>
                                 <div class="form-group"><label>De "WHY"</label><input type="text" id="fiche-why" oninput="autoSaveFiche('why')"></div>
                             </div>
                         </div>
@@ -492,10 +516,10 @@
                     <div id="tab-d1" class="tab-content">
                         <div class="card">
                             <h3>Opvolging Dag 1</h3>
-                            <div class="form-group"><label>1. Hoe smaakte de shake? Lekker?</label><textarea id="dag1-q1" oninput="autoSaveDag('dag1', 'q1')"></textarea><div class="coach-note">Laat ze vertellen - heel belangrijk!</div></div>
-                            <div class="form-group"><label>2. Hoe heb je de shake gemaakt?</label><textarea id="dag1-q2" oninput="autoSaveDag('dag1', 'q2')"></textarea><div class="coach-note">Blender is lekkerst. Check hoeveelheid scheppen en vloeistof.</div></div>
-                            <div class="form-group"><label>3. Heb je gemeten toen je opstond?</label><textarea id="dag1-q3" oninput="autoSaveDag('dag1', 'q3')"></textarea><div class="coach-note">Centimeters noteren. Altijd nuchter meten.</div></div>
-                            <div class="form-group"><label>4. Hoeveel water heb je gedronken?</label><textarea id="dag1-q4" oninput="autoSaveDag('dag1', 'q4')"></textarea><div class="coach-note">Focus: 1 liter per 30kg lichaamsgewicht.</div></div>
+                            <div class="form-group"><label>1. Hoe smaakte de shake? Lekker?</label><textarea id="dag1-q1" oninput="autoSaveDag('dag1', 'q1')"></textarea></div>
+                            <div class="form-group"><label>2. Hoe heb je de shake gemaakt?</label><textarea id="dag1-q2" oninput="autoSaveDag('dag1', 'q2')"></textarea></div>
+                            <div class="form-group"><label>3. Heb je gemeten toen je opstond?</label><textarea id="dag1-q3" oninput="autoSaveDag('dag1', 'q3')"></textarea></div>
+                            <div class="form-group"><label>4. Hoeveel water heb je gedronken?</label><textarea id="dag1-q4" oninput="autoSaveDag('dag1', 'q4')"></textarea></div>
                             <div class="form-group"><label>5. Heb je de vezels al genomen?</label><textarea id="dag1-q5" oninput="autoSaveDag('dag1', 'q5')"></textarea></div>
                             <div class="form-group"><label>6. Hoe voel je je? (Stoelgang, hoofdpijn?)</label><textarea id="dag1-q6" oninput="autoSaveDag('dag1', 'q6')"></textarea></div>
                             <div class="form-group"><label>7. Heb je honger gehad?</label><textarea id="dag1-q7" oninput="autoSaveDag('dag1', 'q7')"></textarea></div>
@@ -522,7 +546,7 @@
                             <div class="form-group"><label>1. Hoe voel je je? Meer energie?</label><textarea id="dag7-q1" oninput="autoSaveDag('dag7', 'q1')"></textarea></div>
                             <div class="form-group"><label>2. Hoeveel water heb je gedronken?</label><textarea id="dag7-q2" oninput="autoSaveDag('dag7', 'q2')"></textarea></div>
                             <div class="form-group"><label>3. Heb je vanmorgen gemeten?</label><textarea id="dag7-q3" oninput="autoSaveDag('dag7', 'q3')"></textarea></div>
-                            <div class="form-group"><label>4. Ben je per ongeluk op de weegschaal terecht gekomen?</label><textarea id="dag7-q4" oninput="autoSaveDag('dag7', 'q4')"></textarea><div class="coach-note">Spieren zijn zwaarder dan vet. Focus op centimeters!</div></div>
+                            <div class="form-group"><label>4. Ben je per ongeluk op de weegschaal terecht gekomen?</label><textarea id="dag7-q4" oninput="autoSaveDag('dag7', 'q4')"></textarea></div>
                             <div class="form-group"><label>5. Heeft iemand al iets gezegd?</label><textarea id="dag7-q5" oninput="autoSaveDag('dag7', 'q5')"></textarea></div>
                             <div class="form-group"><label>Extra opmerkingen (Dag 7)</label><textarea id="dag7-notes" oninput="autoSaveDag('dag7', 'notes')"></textarea></div>
                         </div>
@@ -531,12 +555,10 @@
                     <div id="tab-w2" class="tab-content">
                         <div class="card">
                             <h3 style="color:var(--warning);">Opvolging Week 2</h3>
-                            
                             <div style="background:#fff8e1; border-left:4px solid #f39c12; padding:15px; margin-bottom:15px;">
                                 <h4 style="margin:0 0 5px 0; color:#d35400;">Symptomen Check</h4>
                                 <p style="margin:0; font-size:0.85rem;">Klant gaf bij start aan last te hebben van: <strong id="w2-symp-reminder" style="color:var(--danger);"></strong></p>
                             </div>
-                            
                             <div class="form-group"><label>1. Hoe voel je je nu? Meer energie?</label><textarea id="week2-q1" oninput="autoSaveDag('week2', 'q1')"></textarea></div>
                             <div class="form-group"><label>2. Hoeveel water heb je gedronken?</label><textarea id="week2-q2" oninput="autoSaveDag('week2', 'q2')"></textarea></div>
                             <div class="form-group"><label>3. Heb je vanmorgen gemeten?</label><textarea id="week2-q3" oninput="autoSaveDag('week2', 'q3')"></textarea></div>
@@ -547,7 +569,7 @@
                     <div id="tab-w3" class="tab-content">
                         <div class="card">
                             <h3>Verdere Opvolging (Week 3+)</h3>
-                            <div class="form-group"><label>Afspraak / Producten</label><textarea id="week3-q1" oninput="autoSaveDag('week3', 'q1')"></textarea><div class="coach-note">Zorg dat ze op tijd bestellen.</div></div>
+                            <div class="form-group"><label>Afspraak / Producten</label><textarea id="week3-q1" oninput="autoSaveDag('week3', 'q1')"></textarea></div>
                             <div class="form-group"><label>Dankbaarheidsvragen / Referenties</label><textarea id="week3-q2" oninput="autoSaveDag('week3', 'q2')"></textarea></div>
                             <div class="form-group"><label>Eventueel VIP-Klant worden?</label><textarea id="week3-q3" oninput="autoSaveDag('week3', 'q3')"></textarea></div>
                             <div class="form-group"><label>Lange termijn notities</label><textarea id="week3-q4" oninput="autoSaveDag('week3', 'q4')"></textarea></div>
@@ -641,6 +663,147 @@
             </div>
         </div>
 
+        <div id="view-todo" class="view">
+            <div style="padding: 20px 30px; background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index:20;">
+                <h2 style="margin:0; color:var(--theme-color);">✅ Vandaag's To-Do Lijst</h2>
+                <p style="margin: 5px 0 0 0; color: #666; font-size: 0.9rem;">Wie heeft er vandaag jouw aandacht nodig?</p>
+            </div>
+            <div class="todo-grid">
+                <div class="todo-card">
+                    <h3 style="margin-top: 0; color: var(--theme-color);">📌 Opvolging Vandaag</h3>
+                    <ul class="todo-list" id="todo-followups"></ul>
+                </div>
+                <div class="todo-card alert">
+                    <h3 style="margin-top: 0; color: var(--danger);">📦 Herbestellingen F1 Shake</h3>
+                    <ul class="todo-list" id="todo-reorders"></ul>
+                </div>
+                <div class="todo-card milestone">
+                    <h3 style="margin-top: 0; color: var(--warning);">🎉 Verjaardagen & Mijlpalen</h3>
+                    <ul class="todo-list" id="todo-milestones"></ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-recipes" class="view">
+            <div style="padding: 20px 30px; background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index:20;">
+                <h2 style="margin:0; color:var(--theme-color);">🥗 Gezonde Recepten</h2>
+                <p style="margin: 5px 0 0 0; color: #666; font-size: 0.9rem;">Deel deze heerlijke Herbalife creaties met je klanten!</p>
+            </div>
+            <div class="recipe-grid">
+                
+                <div class="recipe-card">
+                    <h3>🥧 Frangipanetaart</h3>
+                    <div class="recipe-section">
+                        <h4>Boodschappenlijst</h4>
+                        <ul>
+                            <li>Bladerdeeg</li>
+                            <li>Suikervrije abrikozenkonfituur</li>
+                            <li>250 ml water</li>
+                            <li>2 scheppen F1 Vanille</li>
+                            <li>2 scheppen PDM</li>
+                            <li>6 scheppen amandelmeel</li>
+                            <li>1 ei</li>
+                        </ul>
+                    </div>
+                    <div class="recipe-section">
+                        <h4>Bereiding</h4>
+                        <p>1. Leg het bladerdeeg in een taartvorm.<br>2. Bestrijk de bodem met abrikozenkonfituur.<br>3. Maak van de andere ingrediënten een glad beslag en vul de taartvorm hiermee.<br>4. Bak gedurende 15 minuten op 180°C.</p>
+                    </div>
+                </div>
+
+                <div class="recipe-card">
+                    <h3>🍰 Gezonde Cake</h3>
+                    <div class="recipe-section">
+                        <h4>Boodschappenlijst</h4>
+                        <ul>
+                            <li>160g boter (lichtjes gesmolten)</li>
+                            <li>5 grote eieren</li>
+                            <li>150g rietsuiker & 1 lepel vanillesuiker</li>
+                            <li>250g amandelmeel</li>
+                            <li>2 scheppen PDM</li>
+                            <li>Klein beetje bakpoeder</li>
+                        </ul>
+                    </div>
+                    <div class="recipe-section">
+                        <h4>Bereiding</h4>
+                        <p>1. Voeg suiker toe aan de gesmolten boter.<br>2. Eigelen erbij doen en goed kloppen.<br>3. Amandelmeel en rest eronder heffen.<br>4. Vorm invetten, deeg erin (voeg ev. appeltjes of pure choco toe).<br>5. 1 uur bakken op 175°C.</p>
+                    </div>
+                </div>
+
+                <div class="recipe-card">
+                    <h3>🧇 Krokante Bewaarwafeltjes</h3>
+                    <div class="recipe-section">
+                        <h4>Boodschappenlijst</h4>
+                        <ul>
+                            <li>170g F1 Vanille</li>
+                            <li>80g Proteïne Bakmix (PBM)</li>
+                            <li>100g Zusto of Stevia</li>
+                            <li>125g Kokosolie (gesmolten)</li>
+                            <li>1 ei & 75ml melk</li>
+                            <li>Snuifje zout</li>
+                        </ul>
+                    </div>
+                    <div class="recipe-section">
+                        <h4>Bereiding</h4>
+                        <p>1. Wafelijzer opwarmen (niet te heet).<br>2. Meng droge ingrediënten. Meng natte ingrediënten apart en voeg samen.<br>3. Breng hoopje deeg in het ijzer.<br>4. Bak 4 à 5 minuten. Laat afkoelen op een rooster. Bewaar in een blikken doos.</p>
+                    </div>
+                </div>
+
+                <div class="recipe-card">
+                    <h3>🍫 Chocopudding Delight</h3>
+                    <div class="recipe-section">
+                        <h4>Boodschappenlijst</h4>
+                        <ul>
+                            <li>1 liter sojamelk choco</li>
+                            <li>10 scheppen F1 Choco</li>
+                            <li>10 scheppen H24 Rebuild Strength</li>
+                        </ul>
+                    </div>
+                    <div class="recipe-section">
+                        <h4>Bereiding</h4>
+                        <p>1. Warm de sojamelk choco op.<br>2. Voeg de poeders toe en mix goed door.<br>3. Giet in kommetjes en dek af met folie.<br>4. Laat 1 uur opstijven in de diepvries, en daarna 3 uur in de ijskast.<br><em>Tip: serveer met kokosschilfers!</em></p>
+                    </div>
+                </div>
+
+                <div class="recipe-card">
+                    <h3>🥤 Snickers Shake</h3>
+                    <div class="recipe-section">
+                        <h4>Boodschappenlijst</h4>
+                        <ul>
+                            <li>250 ml (plantaardige) melk</li>
+                            <li>2 scheppen F1 Zachte Chocolade</li>
+                            <li>1 schep PDM (optioneel)</li>
+                            <li>1 eetlepel 100% pure pindakaas</li>
+                            <li>Paar ijsblokjes</li>
+                        </ul>
+                    </div>
+                    <div class="recipe-section">
+                        <h4>Bereiding</h4>
+                        <p>Doe de melk, de poeders, de pindakaas en het ijs in de blender. Mix op hoge snelheid tot een heerlijk romige en vullende Snickers-vervanger! Perfect voor zoetekauwen.</p>
+                    </div>
+                </div>
+
+                <div class="recipe-card">
+                    <h3>🍎 Appeltaart Shake</h3>
+                    <div class="recipe-section">
+                        <h4>Boodschappenlijst</h4>
+                        <ul>
+                            <li>250 ml (plantaardige) melk</li>
+                            <li>2 scheppen F1 Romige Vanille</li>
+                            <li>1 theelepel kaneelpoeder</li>
+                            <li>Halve frisse appel (in stukjes)</li>
+                            <li>Paar ijsblokjes</li>
+                        </ul>
+                    </div>
+                    <div class="recipe-section">
+                        <h4>Bereiding</h4>
+                        <p>Doe alles in de blender en mix lang genoeg zodat de appelstukjes helemaal glad zijn. Het smaakt letterlijk naar vloeibare appeltaart!</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
     </div>
 
 <script>
@@ -686,7 +849,6 @@
         {t: "Veel dorst/plassen", f: ["Stress", "Vezels", "Eiwitten"]}, {t: "Slechte slaper", f: ["Stress", "Vezels", "Water"]}
     ];
 
-    // VOLLEDIGE PRODUCT INFO DATABASE
     const dbProducts = [
         { cat: "ONTBIJT & DRANKEN", sku: "1188", name: "Herbal Aloe Drank Original 1,9L", vp: 91.10, retail: 190.90, desc: "Verzacht de maag en bevordert een optimale spijsvertering en opname van voedingsstoffen. Extra grote fles.", benefits: ["Gemaakt met hoogwaardig Aloë Vera sap", "Ondersteunt een gezonde spijsvertering", "Helpt bij de opname van voedingsstoffen", "Caloriearm, een gezond alternatief voor suikerrijke dranken"], usage: "Meng 3 dopjes (15 ml) met 120 ml water. Om een liter te bereiden, meng je 120 ml met 1 liter water." },
         { cat: "ONTBIJT & DRANKEN", sku: "0006", name: "Herbal Aloë Drank Original 473ml", vp: 24.95, retail: 52.80, desc: "Verzacht de maag en bevordert de spijsvertering. Ideaal voor hydratatie.", benefits: ["Gemaakt met hoogwaardig Aloë Vera sap", "Ondersteunt een gezonde spijsvertering", "Helpt bij de opname van voedingsstoffen", "Caloriearm, een gezond alternatief voor suikerrijke dranken"], usage: "Meng 3 dopjes (15 ml) met 120 ml water. Om een liter te bereiden, meng je 120 ml met 1 liter water." },
@@ -727,7 +889,7 @@
         { cat: "SUPPLEMENTEN", sku: "236K", name: "Phyto Complete 42,8g", vp: 38.15, retail: 85.35, desc: "Helpt bij buikvetverbranding en ondersteunt een vitaal energieniveau met fytonutriënten.", benefits: ["Bevat Fiit-NS™ (wetenschappelijk bewezen formule)", "Ondersteunt de vermindering van buikvet en tailleomvang", "Boordevol fytonutriënten uit citrus, guarana en druiven", "Geeft een natuurlijke energieboost"], usage: "Neem tweemaal daags 1 capsule bij de maaltijd. Ideaal in combinatie met een gezond dieet en beweging." },
         { cat: "SUPPLEMENTEN", sku: "243K", name: "Active Mind Complex", vp: 27.25, retail: 54.90, desc: "Ondersteunt mentale prestaties, focus en concentratie.", benefits: ["Bevat Neumentix™, wetenschappelijk bewezen om werkgeheugen te ondersteunen", "Verbetert focus en concentratie", "Rijk aan Vitamine B6 en B12 voor het zenuwstelsel", "Perfect voor drukke werk- of studiedagen"], usage: "Neem dagelijks 2 capsules, bij voorkeur bij de maaltijd in de ochtend of vroege middag." },
         { cat: "SUPPLEMENTEN", sku: "173K", name: "Microbiotic Max (20 zakjes)", vp: 27.10, retail: 62.65, desc: "Pro- en prebiotica voor een optimale darmflora en sterke spijsvertering.", benefits: ["Levert 2 miljard levende bacteriën per portie", "Combineert probiotica EN prebiotische vezels", "Ondersteunt de darmgezondheid", "Glutenvrij en subtiele vanillesmaak"], usage: "Meng 1 zakje door 100 ml water of voeg het toe aan je favoriete F1 Shake (na het blenden, om de bacteriën in leven te houden)." },
-        { cat: "SUPPLEMENTEN", sku: "233K", name: "Immune Booster (21 zakjes)", vp: 18.90, retail: 50.65, desc: "Met EpiCor®. Versterkt je immuunsysteem, ideaal in de herfst en winter.", benefits: ["Bevat het gepatenteerde EpiCor®-ingrediënt", "Rijk aan Vitamine C, D, Selenium en Zink", "Lekkere bessensmaak", "Verhoogt de natuurlijke weerstand"], usage: "Meng dagelijks 1 zakje (3.7g) in 150 ml koud of warm water. Perfect bij de lunch." },
+        { cat: "SUPPLEMENTEN", sku: "233K", name: "Immune Booster (21 zakjes)", vp: 18.90, retail: 50.65, desc: "Met EpiCor®. Versterkt je immuunsysteem, ideaal in de herfst en winter.", benefits: ["Bevat het gepatenteerde EpiCor®-ingrediënt", "Rijk aan Vitamine C, D, Selenium en Zink", "Lekkere bessensmaak", "Verhoogt de natuurlijke weerstand"], usage: "Meng dagelijks 1 zakje (3.7g) in 150 ml koud или warm water. Perfect bij de lunch." },
         { cat: "SUPPLEMENTEN", sku: "0043", name: "Herbalifeline Max", vp: 19.40, retail: 40.70, desc: "Hoogwaardige Omega-3 vetzuren voor hart, hersenen en gezichtsvermogen.", benefits: ["Hoog gedoseerd met essentiële EPA en DHA vetzuren", "Ondersteunt een normaal hart- en hersenfunctioneren", "Ondersteunt een normaal gezichtsvermogen", "Makkelijk slikbare capsules zonder vis-smaak of oprispingen"], usage: "Neem 1, 4 of 5 capsules per dag, afhankelijk van de voordelen die je wenst te bereiken. (Lees de verpakking)" },
         { cat: "SUPPLEMENTEN", sku: "2554", name: "Multivezel Drank", vp: 22.95, retail: 43.40, desc: "Haver-Appel vezels. Stimuleert de darmwerking en geeft een langdurig vol gevoel.", benefits: ["5g hoogwaardige vezels per portie", "Slechts 18 kcal per portie", "Mix van oplosbare en onoplosbare vezels uit 6 bronnen", "Heerlijke zachte appelsmaak"], usage: "Meng 1 maatschep in water of voeg het direct toe aan je F1 Ontbijtshake voor een extra vullend ontbijt." },
         { cat: "SUPPLEMENTEN", sku: "0267", name: "Beta Heart Vanille 229g", vp: 25.95, retail: 57.20, desc: "Bewezen dat het de cholesterol verlaagt of in balans houdt met haver-bètaglucanen.", benefits: ["Wetenschappelijk bewezen om cholesterol te verlagen (OatWell)", "Rijk aan vezels (3g per schep)", "Bron van eiwitten", "Zonder toegevoegde suikers"], usage: "Voor cholesterolverlaging: 2 scheppen per dag. Voor behoud: 1 schep per dag. Meng met water of voeg toe aan je shake." },
@@ -833,6 +995,9 @@
         
         document.getElementById('app-sidebar').classList.remove('open');
         document.getElementById('mobile-overlay').classList.remove('active');
+
+        // Update ToDo list als je naar de tab navigeert
+        if(viewId === 'view-todo') renderToDoList();
     }
 
     function switchCoach() {
@@ -861,6 +1026,7 @@
             snap.forEach(doc => { clients[doc.id] = doc.data(); });
             renderClientList();
             updateClientLinkDropdown();
+            renderToDoList();
             if(currentClientId && clients[currentClientId]) loadClientFiche();
         });
 
@@ -875,11 +1041,12 @@
             }
             renderStockTable();
             renderHistoryLists();
+            renderToDoList(); 
         });
     }
 
     // =========================================================================
-    // 3. EVALUATIE LOGICA & SLIMME VOORSTELLEN (FASE 5)
+    // 3. EVALUATIE LOGICA
     // =========================================================================
     function buildEvalForm() {
         const cl = document.getElementById('check-list');
@@ -972,6 +1139,7 @@
             phone: document.getElementById('eval-phone').value,
             email: document.getElementById('eval-email').value,
             startdate: document.getElementById('eval-date').value,
+            birthdate: document.getElementById('eval-birthdate').value,
             why: document.getElementById('eval-why').value,
             score: pts,
             symptoms: symptomList,
@@ -984,10 +1152,11 @@
                 spier: document.getElementById('eval-t-spier').value, visc: document.getElementById('eval-t-visc').value, 
                 lft: document.getElementById('eval-t-lft').value 
             },
-            notes: initialNote
+            notes: initialNote,
+            purchases: [] 
         }).then(() => {
             alert("Klantendossier aangemaakt!");
-            ['eval-name','eval-phone','eval-email','eval-why','eval-t-gew','eval-t-vet','eval-t-spier','eval-t-visc','eval-t-lft', 'eval-eet-ontbijt', 'eval-eet-middag', 'eval-eet-avond', 'eval-eet-tussen', 'eval-eet-water', 'eval-eet-drank', 'eval-extra-notes'].forEach(id => document.getElementById(id).value = '');
+            ['eval-name','eval-phone','eval-email','eval-why','eval-t-gew','eval-t-vet','eval-t-spier','eval-t-visc','eval-t-lft', 'eval-eet-ontbijt', 'eval-eet-middag', 'eval-eet-avond', 'eval-eet-tussen', 'eval-eet-water', 'eval-eet-drank', 'eval-extra-notes', 'eval-birthdate'].forEach(id => document.getElementById(id).value = '');
             document.querySelectorAll('.sc').forEach(c => c.checked = false); 
             document.querySelectorAll('.focus-check').forEach(c => c.checked = false); 
             updateAnalysis(); updateScore();
@@ -998,7 +1167,7 @@
     }
 
     // =========================================================================
-    // 4. FOLLOW-UP LOGICA
+    // 4. FOLLOW-UP LOGICA (CRM)
     // =========================================================================
     function renderClientList() {
         const q = document.getElementById('search-client').value.toLowerCase();
@@ -1015,19 +1184,47 @@
             return b.id.localeCompare(a.id); 
         });
 
+        const today = new Date();
+        const todayMonth = today.getMonth();
+        const todayDate = today.getDate();
+
         clientArray.forEach(c => {
             const displayName = c.name || (c.fiche && c.fiche.name) || 'Onbekend';
             if(q && !displayName.toLowerCase().includes(q)) return;
 
             const isActive = c.active !== false;
             let badge = '';
+            let milestoneBadge = '';
             
             if (isActive) {
                 const sDate = c.startdate || (c.fiche && c.fiche.startdate);
                 if(sDate) {
                     let diff = Math.round((new Date().setHours(0,0,0,0) - new Date(sDate).setHours(0,0,0,0)) / 86400000);
                     if([1,3,7,14,21].includes(diff)) badge = `<span class="badge-alert">Dag ${diff}</span>`;
+                    if(diff === 30) milestoneBadge = `<span class="badge-milestone">🎉 1 Maand!</span>`;
                 }
+
+                const bDate = c.birthdate || (c.fiche && c.fiche.birthdate);
+                if(bDate) {
+                    const birthD = new Date(bDate);
+                    if (birthD.getMonth() === todayMonth && birthD.getDate() === todayDate) {
+                        milestoneBadge = `<span class="badge-milestone" style="background:#9b59b6;">🎉 Jarig!</span>`;
+                    }
+                }
+                
+                // Check reorder alert
+                if (c.purchases && c.purchases.length > 0) {
+                    let needsReorder = false;
+                    c.purchases.forEach(pur => {
+                        const pDate = new Date(pur.date);
+                        let diffDays = Math.round((today - pDate) / 86400000);
+                        if(diffDays >= 21 && diffDays <= 25 && pur.sku.startsWith("44") || pur.sku.startsWith("048") || pur.sku.startsWith("2600")) {
+                            needsReorder = true;
+                        }
+                    });
+                    if (needsReorder) badge = `<span class="badge-alert" style="background:var(--warning);">⚠️ Shake op?</span>`;
+                }
+
             } else {
                 badge = `<span class="badge-alert" style="background:#888;">Inactief</span>`;
             }
@@ -1035,9 +1232,12 @@
             const li = document.createElement('li');
             li.className = 'client-item' + (c.id === currentClientId ? ' active' : '') + (!isActive ? ' client-inactive' : '');
             
-            li.innerHTML = `<div class="client-info-row"><span class="client-name">${displayName}</span> ${badge}</div>`;
+            li.innerHTML = `<div class="client-info-row"><span class="client-name">${displayName}</span> ${badge} ${milestoneBadge}</div>`;
             
-            li.onclick = () => { currentClientId = c.id; loadClientFiche(); renderClientList(); 
+            li.onclick = () => { 
+                currentClientId = c.id; 
+                loadClientFiche(); 
+                renderClientList(); 
                 if(window.innerWidth <= 768) {
                     document.getElementById('fu-workspace').scrollIntoView({behavior: "smooth"});
                 }
@@ -1075,6 +1275,7 @@
         const name = c.name || (c.fiche && c.fiche.name) || 'Geen Naam';
         const phone = c.phone || (c.fiche && c.fiche.phone) || 'Geen Tel.';
         const startdate = c.startdate || (c.fiche && c.fiche.startdate) || '';
+        const birthdate = c.birthdate || (c.fiche && c.fiche.birthdate) || '';
         const why = c.why || (c.fiche && c.fiche.why) || '';
         const notes = c.notes || (c.fiche && c.fiche.notes) || '';
         
@@ -1090,6 +1291,7 @@
         document.getElementById('fiche-name').value = name;
         document.getElementById('fiche-phone').value = phone;
         document.getElementById('fiche-startdate').value = startdate;
+        document.getElementById('fiche-birthdate').value = birthdate;
         document.getElementById('fiche-why').value = why;
         document.getElementById('fiche-notes').value = notes;
         
@@ -1297,7 +1499,16 @@
             if(linkedId && clients[linkedId]) {
                 const n = `[${new Date().toLocaleDateString()}] Gekocht: 1x ${p.name} (${custDisc*100}% korting)\n`;
                 const oldNotes = clients[linkedId].notes || (clients[linkedId].fiche && clients[linkedId].fiche.notes) || "";
-                db.collection('coaches').doc(currentCoach).collection('clients').doc(linkedId).set({ notes: n + oldNotes }, { merge: true });
+                
+                // SAVE STRUCTURED PURCHASE FOR REORDER ALERTS
+                let clientPurchases = clients[linkedId].purchases || [];
+                clientPurchases.push({ sku: p.sku, name: p.name, date: new Date().toISOString() });
+
+                db.collection('coaches').doc(currentCoach).collection('clients').doc(linkedId).set({ 
+                    notes: n + oldNotes,
+                    purchases: clientPurchases
+                }, { merge: true });
+                
                 document.getElementById('link-client-select').value = ""; 
             }
             saveInventory();
@@ -1403,7 +1614,6 @@
         filtered.forEach(p => {
             let card = document.createElement('div');
             card.className = "product-card";
-            // Koppel de openModal functie aan de klik op de kaart
             card.onclick = () => openProductModal(p.sku);
             
             card.innerHTML = `
@@ -1426,7 +1636,6 @@
         const p = dbProducts.find(x => x.sku === sku);
         if(!p) return;
 
-        // Vul de data in de modal
         document.getElementById('modal-img').src = p.sku + '.jpg';
         document.getElementById('modal-img').style.display = 'block';
         document.getElementById('modal-cat').innerText = p.cat;
@@ -1436,7 +1645,6 @@
         document.getElementById('modal-price').innerText = formatMoney(p.retail);
         document.getElementById('modal-desc').innerText = p.desc;
         
-        // Vul voordelen (bullets)
         const benefitsList = document.getElementById('modal-benefits');
         benefitsList.innerHTML = "";
         if (p.benefits && p.benefits.length > 0) {
@@ -1447,10 +1655,7 @@
             benefitsList.innerHTML = "<li>Geen specifieke voordelen geregistreerd.</li>";
         }
 
-        // Vul gebruiksaanwijzing
         document.getElementById('modal-usage').innerText = p.usage || "Lees de instructies op de verpakking.";
-
-        // Toon de modal
         document.getElementById('product-modal').classList.add('active');
     }
 
@@ -1479,6 +1684,104 @@
             `;
             grid.appendChild(card);
         });
+    }
+
+    // =========================================================================
+    // 8. TO-DO LIJST (NIEUW)
+    // =========================================================================
+    function renderToDoList() {
+        const listFollowups = document.getElementById('todo-followups');
+        const listReorders = document.getElementById('todo-reorders');
+        const listMilestones = document.getElementById('todo-milestones');
+        
+        listFollowups.innerHTML = "";
+        listReorders.innerHTML = "";
+        listMilestones.innerHTML = "";
+
+        let hasFollowups = false;
+        let hasReorders = false;
+        let hasMilestones = false;
+
+        const today = new Date();
+        const todayMonth = today.getMonth();
+        const todayDate = today.getDate();
+
+        let clientArray = Object.keys(clients).map(id => ({id: id, ...clients[id]}));
+
+        clientArray.forEach(c => {
+            if (c.active === false) return; // Skip inactieve
+
+            const displayName = c.name || (c.fiche && c.fiche.name) || 'Onbekend';
+            
+            // 1. Follow-ups (Dagen 1, 3, 7, 14, 21)
+            const sDate = c.startdate || (c.fiche && c.fiche.startdate);
+            if(sDate) {
+                let diff = Math.round((new Date().setHours(0,0,0,0) - new Date(sDate).setHours(0,0,0,0)) / 86400000);
+                if([1,3,7,14,21].includes(diff)) {
+                    hasFollowups = true;
+                    listFollowups.innerHTML += `
+                        <li class="todo-item" onclick="openClientFromTodo('${c.id}')">
+                            <span><strong>${displayName}</strong></span>
+                            <span class="badge-alert">Dag ${diff}</span>
+                        </li>
+                    `;
+                }
+                // 2. Mijlpalen (Exact 30 dagen)
+                if(diff === 30) {
+                    hasMilestones = true;
+                    listMilestones.innerHTML += `
+                        <li class="todo-item" onclick="openClientFromTodo('${c.id}')">
+                            <span><strong>${displayName}</strong> is exact 1 maand bezig!</span>
+                            <span>🎉</span>
+                        </li>
+                    `;
+                }
+            }
+
+            // 3. Verjaardagen
+            const bDate = c.birthdate || (c.fiche && c.fiche.birthdate);
+            if(bDate) {
+                const birthD = new Date(bDate);
+                if (birthD.getMonth() === todayMonth && birthD.getDate() === todayDate) {
+                    hasMilestones = true;
+                    listMilestones.innerHTML += `
+                        <li class="todo-item" onclick="openClientFromTodo('${c.id}')">
+                            <span><strong>${displayName}</strong> is vandaag jarig!</span>
+                            <span>🎂</span>
+                        </li>
+                    `;
+                }
+            }
+
+            // 4. Reorders (F1 Shakes en PDM gekocht tussen 21 en 25 dagen geleden)
+            if (c.purchases && c.purchases.length > 0) {
+                c.purchases.forEach(pur => {
+                    const pDate = new Date(pur.date);
+                    let diffDays = Math.round((today - pDate) / 86400000);
+                    // Check of het een F1 of PDM is (Start met 44, 048 of 2600)
+                    if(diffDays >= 21 && diffDays <= 25 && (pur.sku.startsWith("44") || pur.sku.startsWith("048") || pur.sku.startsWith("2600"))) {
+                        hasReorders = true;
+                        listReorders.innerHTML += `
+                            <li class="todo-item" onclick="openClientFromTodo('${c.id}')">
+                                <span><strong>${displayName}</strong> kocht 3 weken geleden ${pur.name}</span>
+                                <span class="badge-alert" style="background:var(--warning);">⚠️</span>
+                            </li>
+                        `;
+                    }
+                });
+            }
+        });
+
+        if(!hasFollowups) listFollowups.innerHTML = "<div class="todo-empty">Geen opvolgingen voor vandaag.</div>";
+        if(!hasReorders) listReorders.innerHTML = "<div class="todo-empty">Geen actuele herbestellingen.</div>";
+        if(!hasMilestones) listMilestones.innerHTML = "<div class="todo-empty">Geen verjaardagen of mijlpalen vandaag.</div>";
+    }
+
+    function openClientFromTodo(clientId) {
+        switchView('view-fu', document.querySelectorAll('.nav-btn')[1]); // Ga naar CRM tab
+        currentClientId = clientId; 
+        loadClientFiche(); 
+        renderClientList();
     }
 
 </script>
