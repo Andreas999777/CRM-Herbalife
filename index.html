@@ -487,6 +487,17 @@
                                 <div class="form-group"><label>De "WHY"</label><input type="text" id="fiche-why" oninput="autoSaveFiche('why')"></div>
                             </div>
                         </div>
+                        
+                        <div class="card">
+                            <h3>Lichaamsanalyse (Startwaarden)</h3>
+                            <div class="form-grid">
+                                <div class="form-group"><label>Gewicht (kg)</label><input type="text" id="fiche-t-gew" oninput="autoSaveTanitaStart('gew')"></div>
+                                <div class="form-group"><label>Vetpercentage (%)</label><input type="text" id="fiche-t-vet" oninput="autoSaveTanitaStart('vet')"></div>
+                                <div class="form-group"><label>Spiermassa (kg)</label><input type="text" id="fiche-t-spier" oninput="autoSaveTanitaStart('spier')"></div>
+                                <div class="form-group"><label>Visceraal vet</label><input type="text" id="fiche-t-visc" oninput="autoSaveTanitaStart('visc')"></div>
+                                <div class="form-group"><label>Metabolische leeftijd</label><input type="text" id="fiche-t-lft" oninput="autoSaveTanitaStart('lft')"></div>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="tab-d1" class="tab-content">
@@ -552,6 +563,17 @@
                             <div class="form-group"><label>Eventueel VIP-Klant worden?</label><textarea id="week3-q3" oninput="autoSaveDag('week3', 'q3')"></textarea></div>
                             <div class="form-group"><label>Lange termijn notities</label><textarea id="week3-q4" oninput="autoSaveDag('week3', 'q4')"></textarea></div>
                             <div class="form-group"><label>Extra opmerkingen</label><textarea id="week3-notes" oninput="autoSaveDag('week3', 'notes')"></textarea></div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3 style="color:var(--success);">Nieuwe Lichaamsanalyse (Tanita)</h3>
+                            <div class="form-grid">
+                                <div class="form-group"><label>Gewicht (kg)</label><input type="text" id="w3-t-gew" oninput="autoSaveTanitaW3('gew')"></div>
+                                <div class="form-group"><label>Vetpercentage (%)</label><input type="text" id="w3-t-vet" oninput="autoSaveTanitaW3('vet')"></div>
+                                <div class="form-group"><label>Spiermassa (kg)</label><input type="text" id="w3-t-spier" oninput="autoSaveTanitaW3('spier')"></div>
+                                <div class="form-group"><label>Visceraal vet</label><input type="text" id="w3-t-visc" oninput="autoSaveTanitaW3('visc')"></div>
+                                <div class="form-group"><label>Metabolische leeftijd</label><input type="text" id="w3-t-lft" oninput="autoSaveTanitaW3('lft')"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -1144,12 +1166,28 @@
 
         document.getElementById('sticky-why').innerText = why || '-';
 
+        // Lichaamsanalyse Startwaarden inladen en aanpasbaar maken
         if(c.tanita_start) {
             ['gew', 'vet', 'spier', 'visc', 'lft'].forEach(t => {
                 document.getElementById(`disp-t-${t}`).innerText = c.tanita_start[t] || '-';
+                document.getElementById(`fiche-t-${t}`).value = c.tanita_start[t] || '';
             });
         } else {
-            ['gew', 'vet', 'spier', 'visc', 'lft'].forEach(t => document.getElementById(`disp-t-${t}`).innerText = '-');
+            ['gew', 'vet', 'spier', 'visc', 'lft'].forEach(t => {
+                document.getElementById(`disp-t-${t}`).innerText = '-';
+                document.getElementById(`fiche-t-${t}`).value = '';
+            });
+        }
+
+        // Lichaamsanalyse Week 3+ inladen
+        if(c.tanita_w3) {
+            ['gew', 'vet', 'spier', 'visc', 'lft'].forEach(t => {
+                document.getElementById(`w3-t-${t}`).value = c.tanita_w3[t] || '';
+            });
+        } else {
+            ['gew', 'vet', 'spier', 'visc', 'lft'].forEach(t => {
+                document.getElementById(`w3-t-${t}`).value = '';
+            });
         }
 
         const evalBtn = document.getElementById('tab-btn-eval');
@@ -1168,6 +1206,27 @@
         const el = document.getElementById(`${sectie}-${field}`);
         db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).set({ 
             [`${sectie.replace('week', 'w').replace('dag', 'd')}-${field}`]: el.value 
+        }, { merge: true });
+    }
+
+    function autoSaveTanitaStart(field) {
+        if(!currentClientId) return;
+        const el = document.getElementById(`fiche-t-${field}`);
+        
+        db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).set({
+            tanita_start: { [field]: el.value }
+        }, { merge: true });
+        
+        // Zorg dat de waarde bovenaan direct ook wordt aangepast
+        document.getElementById(`disp-t-${field}`).innerText = el.value || '-';
+    }
+
+    function autoSaveTanitaW3(field) {
+        if(!currentClientId) return;
+        const el = document.getElementById(`w3-t-${field}`);
+        
+        db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).set({
+            tanita_w3: { [field]: el.value }
         }, { merge: true });
     }
 
