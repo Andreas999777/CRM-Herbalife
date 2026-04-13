@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HBL-Connect</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     
     <style>
         :root {
@@ -17,6 +19,14 @@
         }
         body { font-family: 'Montserrat', sans-serif; background-color: var(--bg-light); margin: 0; display: flex; height: 100vh; overflow: hidden; color: #333; }
         
+        /* --- LOGIN OVERLAY --- */
+        #login-overlay { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--sidebar-dark); z-index: 9999; align-items: center; justify-content: center; }
+        .login-box { background: white; padding: 40px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; }
+        .login-box h1 { color: var(--theme-color); margin-top: 0; letter-spacing: 1px; }
+        .login-box span { color: var(--hb-green); }
+        .login-box p { color: #666; margin-bottom: 25px; font-size: 0.9rem; }
+        .login-error { color: white; background: var(--danger); padding: 10px; border-radius: 6px; font-size: 0.85rem; margin-bottom: 15px; display: none; font-weight: bold; }
+
         /* --- MOBILE HEADER & HAMBURGER --- */
         .mobile-header { display: none; background: var(--sidebar); color: white; padding: 15px 20px; align-items: center; justify-content: space-between; z-index: 1001; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
         .hamburger { font-size: 26px; background: none; border: none; color: white; cursor: pointer; }
@@ -197,6 +207,26 @@
 </head>
 <body>
 
+    <div id="login-overlay">
+        <div class="login-box">
+            <h1>HBL-Connect <span>Pro</span></h1>
+            <p>Welkom coach! Log in om bij je veilige dashboard en klantendossiers te komen.</p>
+            
+            <div id="login-error" class="login-error">Onjuist e-mailadres of wachtwoord.</div>
+            
+            <div class="form-group" style="text-align: left;">
+                <label>E-mailadres</label>
+                <input type="email" id="login-email" placeholder="jouw@email.com">
+            </div>
+            <div class="form-group" style="text-align: left; margin-bottom: 25px;">
+                <label>Wachtwoord</label>
+                <input type="password" id="login-password" placeholder="••••••••" onkeyup="if(event.key === 'Enter') loginUser()">
+            </div>
+            
+            <button class="btn-success" style="width: 100%; padding: 15px; font-size: 1.1rem;" onclick="loginUser()">Veilig Inloggen</button>
+        </div>
+    </div>
+
     <div class="mobile-header">
         <div style="font-weight: 700; font-size: 1.2rem; letter-spacing: 1px;">HBL-Connect <span style="color:var(--hb-green);">Pro</span></div>
         <button class="hamburger" onclick="toggleMenu()">☰</button>
@@ -247,12 +277,16 @@
                 <option value="Silvia">Silvia</option>
             </select>
         </div>
-        <ul class="nav-menu">
+        <ul class="nav-menu" style="display: flex; flex-direction: column;">
             <li><button class="nav-btn active" onclick="switchView('view-eval', this)">📝 Nieuwe Evaluatie</button></li>
             <li><button class="nav-btn" onclick="switchView('view-fu', this)">👥 Mijn Klanten</button></li>
             <li><button class="nav-btn" onclick="switchView('view-stock', this)">📦 Voorraad & Winst</button></li>
             <li><button class="nav-btn" onclick="switchView('view-catalog', this)">📗 Product Info</button></li>
             <li><button class="nav-btn" onclick="switchView('view-testimonials', this)">⭐ Testimonials</button></li>
+            
+            <li style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
+                <button class="nav-btn" style="color: #e74c3c;" onclick="logoutUser()">🚪 Veilig Uitloggen</button>
+            </li>
         </ul>
     </div>
 
@@ -817,7 +851,7 @@
     ];
 
     // =========================================================================
-    // 2. FIREBASE & GLOBALS
+    // 2. FIREBASE & GLOBALS & AUTHENTICATIE (NIEUW)
     // =========================================================================
     const firebaseConfig = {
         apiKey: "AIzaSyD9xhQuLnjgbaMHZI_vWp4FoUUjTNbA0tM",
@@ -829,6 +863,7 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const auth = firebase.auth(); // Auth initialiseren
 
     let currentCoach = 'Andreas';
     let clients = {};
@@ -844,18 +879,69 @@
 
     const formatMoney = (amt) => "€ " + parseFloat(amt).toFixed(2).replace('.', ',');
 
+    // INLOGGEN LOGICA
+    function loginUser() {
+        const email = document.getElementById('login-email').value;
+        const pass = document.getElementById('login-password').value;
+        const errDiv = document.getElementById('login-error');
+        errDiv.style.display = 'none';
+
+        if(!email || !pass) {
+            errDiv.innerText = "Vul zowel e-mail als wachtwoord in.";
+            errDiv.style.display = 'block';
+            return;
+        }
+
+        auth.signInWithEmailAndPassword(email, pass)
+            .catch(error => {
+                console.error("Login error:", error);
+                errDiv.innerText = "Inloggen mislukt. Controleer je gegevens.";
+                errDiv.style.display = 'block';
+            });
+    }
+
+    function logoutUser() {
+        if(confirm("Weet je zeker dat je veilig wilt uitloggen?")) {
+            auth.signOut();
+        }
+    }
+
+    // STATE LISTENER (Kijkt of je bent ingelogd)
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            // VERBERG LOGIN SCHERM
+            document.getElementById('login-overlay').style.display = 'none';
+            // Start de app pas als we ingelogd zijn
+            switchCoach();
+            initCatalog();
+            renderTestimonials();
+        } else {
+            // TOON LOGIN SCHERM
+            document.getElementById('login-overlay').style.display = 'flex';
+            
+            // Verberg eventuele openstaande data uit het zicht
+            clients = {};
+            myStock = {};
+            currentClientId = null;
+            renderClientList();
+            renderStockTable();
+            document.getElementById('fu-content').style.display = 'none';
+            document.getElementById('fu-empty').style.display = 'flex';
+
+            // Stop met luisteren naar de database op de achtergrond
+            if(unsubClients) unsubClients();
+            if(unsubStock) unsubStock();
+        }
+    });
+
     window.onload = () => {
         buildEvalForm();
-        switchCoach();
         document.getElementById('eval-date').valueAsDate = new Date();
         
         const now = new Date();
         const yyyy = now.getFullYear();
         const mm = String(now.getMonth() + 1).padStart(2, '0');
         document.getElementById('monthSelector').value = `${yyyy}-${mm}`;
-        
-        initCatalog();
-        renderTestimonials();
     };
 
     function switchView(viewId, btn) {
@@ -869,6 +955,9 @@
     }
 
     function switchCoach() {
+        // Alleen laden als we ingelogd zijn!
+        if (!auth.currentUser) return; 
+
         currentCoach = document.getElementById('coach-selector').value;
         document.getElementById('brand-coach').innerText = currentCoach;
         
@@ -895,6 +984,8 @@
             renderClientList();
             updateClientLinkDropdown();
             if(currentClientId && clients[currentClientId]) loadClientFiche();
+        }, error => {
+            console.error("Fout bij laden klanten (Permissie?):", error);
         });
 
         unsubStock = coachRef.collection('inventory').doc('data').onSnapshot(doc => {
@@ -908,6 +999,8 @@
             }
             renderStockTable();
             renderHistoryLists();
+        }, error => {
+            console.error("Fout bij laden stock (Permissie?):", error);
         });
     }
 
