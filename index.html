@@ -352,6 +352,11 @@
                     </div>
 
                     <div class="card">
+                        <h2>5b. Medicatiegebruik</h2>
+                        <textarea id="eval-medication" rows="2" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border); font-family:inherit; box-sizing:border-box;" placeholder="Noteer hier eventuele medicatie (optioneel)..."></textarea>
+                    </div>
+
+                    <div class="card">
                         <h2>6. Extra Opmerkingen</h2>
                         <textarea id="eval-extra-notes" rows="4" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border); font-family:inherit; box-sizing:border-box;" placeholder="Extra notities, vragen van de klant, bijzonderheden..."></textarea>
                     </div>
@@ -436,6 +441,11 @@
                                     <h4 style="margin:0 0 10px 0;">Aangeraden Producten</h4>
                                     <p id="crm-eval-products" style="margin:0; font-size:0.9rem; line-height:1.5;">Geen</p>
                                 </div>
+                            </div>
+
+                            <div style="background:#e8f4f8; padding:15px; border-radius:8px; border-left:4px solid #3498db; margin-top:15px;">
+                                <h4 style="margin:0 0 5px 0;">💊 Medicatiegebruik</h4>
+                                <p id="crm-eval-meds" style="margin:0; font-size:0.9rem; line-height:1.5;">Geen</p>
                             </div>
                         </div>
                         
@@ -729,6 +739,7 @@
         { cat: "F1 SHAKES", sku: "4469", name: "F1 Vrij Van Framboos & Witte Choc 500g", vp: 23.95, retail: 60.90, desc: "Vrij van soja, zuivel en gluten. Perfect voor mensen met allergieën.", benefits: ["Vrij van soja, zuivel en gluten (bij gebruik met aangepaste vloeistof)", "Erwtenproteïne in plaats van soja", "Lekkere, unieke smaakcombinatie"], usage: "Meng 2 eetlepels poeder met 250 ml van je favoriete hypoallergene drank (bijv. rijst- of amandeldrink)." },
         { cat: "F1 SHAKES", sku: "048K", name: "F1 Shake Romige Vanille 780g", vp: 32.75, retail: 79.85, desc: "De klassieke Romige Vanille, maar dan in een voordelige XXL pot.", benefits: ["Voordeliger per portie", "Langere gebruiksduur (ideaal voor 2 shakes per dag)", "Dezelfde hoogwaardige voeding en vitaminen"], usage: "Meng 2 eetlepels (26g) poeder met 250 ml vloeistof naar keuze." },
         { cat: "F1 SHAKES", sku: "053K", name: "F1 Shake 7 zakjes (Vanille/Choco/Cookie)", vp: 10.00, retail: 25.35, desc: "Handige proefpakketten of on-the-go zakjes met gemixte smaken.", benefits: ["Super handig om mee te nemen naar het werk of op vakantie", "Perfect proefpakket om smaken te testen", "Individueel verpakt, altijd de juiste dosering"], usage: "Gooi 1 zakje in je shaker, voeg 250ml melk (of water+PDM) toe en shake it!" },
+        { cat: "F1 SHAKES", sku: "8888", name: "F1 shake limited Edition 550g", vp: 23.95, retail: 60.90, desc: "Tijdelijk verkrijgbare limited edition F1 shake met een unieke smaak.", benefits: ["Veganistische ingrediënten, glutenvrij", "25 vitaminen en mineralen", "Unieke en tijdelijke smaaksensatie"], usage: "Meng 2 maatlepels (26g) met 250ml (plantaardige) melk. Goed shaken!" },
         { cat: "F1 SHAKES", sku: "4472", name: "Express Maaltijdreep (7 stuks)", vp: 14.00, retail: 30.70, desc: "Geen tijd om te shaken? Deze reep bevat alle voedingsstoffen van 1 maaltijd.", benefits: ["Complete maaltijd in een handige reep", "Rijk aan vezels en eiwitten", "Bevat 25 vitamines en mineralen", "Slechts 207 calorieën per reep"], usage: "Eet 1 reep als vervanging voor 1 maaltijd, of snij hem in kleine stukjes als verantwoorde snacks door de dag heen." },
         { cat: "PROTEÏNE & SNACKS", sku: "528K", name: "Proteïne Bak Mix (PBM)", vp: 26.90, retail: 68.35, desc: "Bak gezonde, eiwitrijke pannenkoeken, wafels of muffins zonder toegevoegde suikers.", benefits: ["Ontwikkeld om mee te bakken (hittebestendig)", "Vrij van kunstmatige kleur- en zoetstoffen", "Glutenvrij en geschikt voor vegetariërs", "Hoog in eiwitten en vezels"], usage: "Meng met je favoriete F1 smaak en wat water of melk om heerlijk beslag te maken. Bak in de pan of in het wafelijzer." },
         { cat: "PROTEÏNE & SNACKS", sku: "013K", name: "Tri Blend Select Banaan 600g", vp: 37.50, retail: 90.25, desc: "100% plantaardige, natuurlijke premium eiwitshake. Rijk aan vezels.", benefits: ["100% veganistische ingrediënten (erwt, quinoa, lijnzaad)", "20g proteïne per portie", "Geen kunstmatige kleurstoffen, aroma's of zoetstoffen", "Hoog in vezels (6g per portie)"], usage: "Meng 3 eetlepels (40g) met 250 ml water, vruchtensap of plantaardige melk. Ideaal als post-workout of voedzaam tussendoortje." },
@@ -971,6 +982,7 @@
 
         const pts = document.querySelectorAll('input.pt:checked').length;
         const symptomList = Array.from(document.querySelectorAll('.sc:checked')).map(c => c.getAttribute('data-name'));
+        const medicatie = document.getElementById('eval-medication').value.trim();
         const extraNotes = document.getElementById('eval-extra-notes').value.trim();
         
         let adviceText = Array.from(document.querySelectorAll('#suggested-products div')).map(d => d.innerText.replace('+ ', '')).join(', ');
@@ -1001,6 +1013,7 @@
             focus: focusList,
             eetgewoonten: eetgewoonten,
             active: true, 
+            medicatie: medicatie,
             tanita_start: { 
                 gew: document.getElementById('eval-t-gew').value, vet: document.getElementById('eval-t-vet').value, 
                 spier: document.getElementById('eval-t-spier').value, visc: document.getElementById('eval-t-visc').value, 
@@ -1009,7 +1022,7 @@
             notes: initialNote
         }).then(() => {
             alert("Klantendossier aangemaakt!");
-            ['eval-name','eval-phone','eval-email','eval-why','eval-t-gew','eval-t-vet','eval-t-spier','eval-t-visc','eval-t-lft', 'eval-eet-ontbijt', 'eval-eet-middag', 'eval-eet-avond', 'eval-eet-tussen', 'eval-eet-water', 'eval-eet-drank', 'eval-extra-notes'].forEach(id => document.getElementById(id).value = '');
+            ['eval-name','eval-phone','eval-email','eval-why','eval-t-gew','eval-t-vet','eval-t-spier','eval-t-visc','eval-t-lft', 'eval-eet-ontbijt', 'eval-eet-middag', 'eval-eet-avond', 'eval-eet-tussen', 'eval-eet-water', 'eval-eet-drank', 'eval-medication', 'eval-extra-notes'].forEach(id => document.getElementById(id).value = '');
             document.querySelectorAll('.sc').forEach(c => c.checked = false); 
             document.querySelectorAll('.focus-check').forEach(c => c.checked = false); 
             updateAnalysis(); updateScore();
@@ -1118,6 +1131,7 @@
         document.getElementById('crm-eval-score').innerText = c.score !== undefined ? c.score : '?';
         document.getElementById('crm-eval-symptoms').innerHTML = symptomsArr.map(s => `&bull; ${s}`).join('<br>');
         document.getElementById('crm-eval-products').innerHTML = advies.split(', ').map(p => `&bull; <strong>${p}</strong>`).join('<br>');
+        document.getElementById('crm-eval-meds').innerText = c.medicatie || 'Geen';
         
         document.getElementById('crm-eval-focus').innerHTML = focusArr.map(f => `&bull; ${f}`).join('<br>');
         document.getElementById('crm-eet-ontbijt').innerText = eet.ontbijt || '-';
