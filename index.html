@@ -76,10 +76,14 @@
         .brand-logo { width: 34px; height: 34px; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; font-size: 0.95rem; letter-spacing: -0.03em; }
         .brand-text { font-weight: 800; font-size: 1.05rem; color: white; letter-spacing: -0.02em; }
         .brand-text span { color: var(--accent); font-weight: 600; }
-        .coach-box { padding: 14px 18px; border-bottom: 1px solid var(--sidebar-border); }
-        .coach-box label { display: block; font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
-        .coach-select { width: 100%; padding: 9px 12px; border-radius: var(--radius-sm); border: 1px solid var(--sidebar-border); background: #1e293b; color: white; font-weight: 500; font-family: inherit; font-size: 0.875rem; cursor: pointer; outline: none; transition: border-color var(--transition); }
-        .coach-select:focus, .coach-select:hover { border-color: var(--primary); }
+        .coach-box { padding: 16px 18px; border-bottom: 1px solid var(--sidebar-border); background: rgba(255,255,255,0.02); }
+        .coach-box label { display: flex; align-items: center; gap: 6px; font-size: 0.68rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+        .coach-box label::before { content: "👤"; font-size: 0.85rem; }
+        .coach-select-wrap { position: relative; }
+        .coach-select-wrap::after { content: "▾"; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 1rem; pointer-events: none; font-weight: 700; }
+        .coach-select { width: 100%; padding: 12px 36px 12px 44px; border-radius: var(--radius-sm); border: 2px solid var(--primary); background: #1e293b; color: white; font-weight: 700; font-family: inherit; font-size: 0.95rem; cursor: pointer; outline: none; transition: all var(--transition); appearance: none; -webkit-appearance: none; box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
+        .coach-select:focus, .coach-select:hover { border-color: var(--accent); background: #243449; box-shadow: 0 4px 12px rgba(37,99,235,0.4); }
+        .coach-avatar { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 26px; height: 26px; border-radius: 999px; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); color: white; font-weight: 800; font-size: 0.78rem; display: flex; align-items: center; justify-content: center; pointer-events: none; letter-spacing: 0; }
         .nav-menu { flex: 1; padding: 14px 12px; list-style: none; margin: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
         .nav-menu::-webkit-scrollbar { width: 6px; }
         .nav-menu::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
@@ -290,7 +294,7 @@
         .product-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
         .product-img { width: 100%; height: 140px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; margin-bottom: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
         .product-img img { max-width: 100%; max-height: 100%; object-fit: contain; padding: 8px; position: relative; z-index: 1; }
-        .product-img::after { content: "📷 Geen afbeelding"; position: absolute; color: var(--text-light); font-size: 0.8rem; z-index: 0; }
+        .product-img.no-image::after { content: "📷 Geen afbeelding"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text-light); font-size: 0.8rem; }
         .product-cat-label { font-size: 0.7rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
 
         /* ---------- PRODUCT MODAL ---------- */
@@ -301,7 +305,7 @@
         .modal-close:hover { color: var(--danger); border-color: var(--danger); }
         .modal-header-img { width: 100%; height: 240px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); display: flex; justify-content: center; align-items: center; border-bottom: 1px solid var(--border); padding: 20px; position: relative; }
         .modal-header-img img { max-width: 100%; max-height: 100%; object-fit: contain; z-index: 1; }
-        .modal-header-img::after { content: "📷 Geen afbeelding"; position: absolute; color: var(--text-light); font-size: 1rem; z-index: 0; }
+        .modal-header-img.no-image::after { content: "📷 Geen afbeelding"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text-light); font-size: 1rem; }
         .modal-body { padding: 26px 28px; }
         .modal-body h2 { color: var(--text); margin: 0 0 6px 0; font-size: 1.35rem; border: none; padding: 0; }
         .modal-meta { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
@@ -463,12 +467,15 @@
             </div>
         </div>
         <div class="coach-box">
-            <label>Coach</label>
-            <select id="coach-selector" class="coach-select" onchange="switchCoach()">
-                <option value="Andreas">Andreas</option>
-                <option value="Thalyssa">Thalyssa</option>
-                <option value="Silvia">Silvia</option>
-            </select>
+            <label>Actieve coach</label>
+            <div class="coach-select-wrap">
+                <div class="coach-avatar" id="coach-avatar">A</div>
+                <select id="coach-selector" class="coach-select" onchange="switchCoach()">
+                    <option value="Andreas">Andreas</option>
+                    <option value="Thalyssa">Thalyssa</option>
+                    <option value="Silvia">Silvia</option>
+                </select>
+            </div>
         </div>
         <ul class="nav-menu">
             <li><button class="nav-btn active" onclick="switchView('view-dash', this)"><span class="nav-icon">🏠</span> Dashboard</button></li>
@@ -1309,6 +1316,8 @@
         currentCoach = document.getElementById('coach-selector').value;
         const bc = document.getElementById('brand-coach');
         if(bc) bc.innerText = currentCoach;
+        const av = document.getElementById('coach-avatar');
+        if(av) av.innerText = (currentCoach || '?').charAt(0).toUpperCase();
         
         // Accent kleur per coach (primary blijft consistent voor CRM-gevoel)
         const root = document.documentElement;
@@ -1940,7 +1949,7 @@
             
             card.innerHTML = `
                 <div class="product-img">
-                    <img src="${p.sku}.jpg" alt="${p.name}" onerror="this.style.display='none'">
+                    <img src="${p.sku}.jpg" alt="${p.name}" onload="this.parentNode.classList.remove('no-image')" onerror="this.style.display='none'; this.parentNode.classList.add('no-image')">
                 </div>
                 <div class="product-info-cat">
                     <div class="product-cat-label">${p.cat}</div>
@@ -1959,8 +1968,13 @@
         if(!p) return;
 
         // Vul de data in de modal
-        document.getElementById('modal-img').src = p.sku + '.jpg';
-        document.getElementById('modal-img').style.display = 'block';
+        const modalImg = document.getElementById('modal-img');
+        const modalImgWrap = modalImg.parentNode;
+        modalImgWrap.classList.remove('no-image');
+        modalImg.style.display = 'block';
+        modalImg.onload = () => modalImgWrap.classList.remove('no-image');
+        modalImg.onerror = () => { modalImg.style.display = 'none'; modalImgWrap.classList.add('no-image'); };
+        modalImg.src = p.sku + '.jpg';
         document.getElementById('modal-cat').innerText = p.cat;
         document.getElementById('modal-title').innerText = p.name;
         document.getElementById('modal-sku').innerText = p.sku;
@@ -2036,16 +2050,27 @@
     }
 
     // Verwachte contactmomenten (dagen na startdate)
-    const FU_MILESTONES = [
-        { day: 1, label: 'Dag 1', tab: 'tab-d1' },
-        { day: 3, label: 'Dag 3', tab: 'tab-d3' },
-        { day: 7, label: 'Dag 7', tab: 'tab-d7' },
-        { day: 14, label: 'Week 2', tab: 'tab-w2' },
-        { day: 21, label: 'Week 3+', tab: 'tab-w3' }
-    ];
+    // Na dag 21 houden we wekelijkse check-ins aan zodat lopende klanten op het dashboard blijven.
+    const FU_MILESTONES = (() => {
+        const base = [
+            { day: 1, label: 'Dag 1', tab: 'tab-d1' },
+            { day: 3, label: 'Dag 3', tab: 'tab-d3' },
+            { day: 7, label: 'Dag 7', tab: 'tab-d7' },
+            { day: 14, label: 'Week 2', tab: 'tab-w2' },
+            { day: 21, label: 'Week 3', tab: 'tab-w3' }
+        ];
+        // Wekelijkse vervolgmomenten tot ~1 jaar
+        for (let w = 4; w <= 52; w++) {
+            base.push({ day: w * 7, label: `Week ${w}`, tab: 'tab-w3' });
+        }
+        return base;
+    })();
+
+    function clientStart(c) { return c.startdate || (c.fiche && c.fiche.startdate) || null; }
+    function clientName(c) { return c.name || (c.fiche && c.fiche.name) || 'Naamloos'; }
 
     function getClientStatus(client) {
-        const start = client.startDate || client.date;
+        const start = clientStart(client);
         const d = daysBetween(start);
         if(d === null) return { text: '—', tone: 'muted', dueToday: false, overdue: false };
         // Zoek volgende milestone
@@ -2057,7 +2082,7 @@
     }
 
     function getDueInfo(client) {
-        const start = client.startDate || client.date;
+        const start = clientStart(client);
         const d = daysBetween(start);
         if(d === null) return null;
         for(const m of FU_MILESTONES) {
@@ -2085,7 +2110,7 @@
         if(!view) return;
 
         const arr = Object.entries(clients || {}).map(([id, c]) => ({ id, ...c }));
-        const active = arr.filter(c => c.isActive !== false);
+        const active = arr.filter(c => c.active !== false);
         document.getElementById('dash-stat-active').textContent = active.length;
 
         // Follow-ups vandaag + upcoming + overdue
@@ -2121,16 +2146,16 @@
         if(today.length === 0) {
             todayEl.innerHTML = '<div class="empty-hint">Geen opvolgingen voor vandaag 🎉</div>';
         } else {
-            todayEl.innerHTML = today.map(({c, info}) => `
+            todayEl.innerHTML = today.map(({c, info}) => { const nm = clientName(c); return `
                 <div class="dash-item" onclick="openClientFromDash('${c.id}', '${info.tab}')">
-                    <div class="avatar">${(c.name||'?').charAt(0).toUpperCase()}</div>
+                    <div class="avatar">${nm.charAt(0).toUpperCase()}</div>
                     <div class="dash-item-main">
-                        <div class="dash-item-name">${escapeHtml(c.name||'Naamloos')}</div>
-                        <div class="dash-item-sub">${info.label} • start ${formatShortDate(c.startDate || c.date)}</div>
+                        <div class="dash-item-name">${escapeHtml(nm)}</div>
+                        <div class="dash-item-sub">${info.label} • start ${formatShortDate(clientStart(c))}</div>
                     </div>
                     <span class="badge badge-warn">Vandaag</span>
                 </div>
-            `).join('');
+            `; }).join('');
         }
 
         // Upcoming lijst
@@ -2138,16 +2163,16 @@
         if(upcoming.length === 0) {
             upEl.innerHTML = '<div class="empty-hint">Geen opvolgingen binnen 3 dagen</div>';
         } else {
-            upEl.innerHTML = upcoming.slice(0, 6).map(({c, info}) => `
+            upEl.innerHTML = upcoming.slice(0, 6).map(({c, info}) => { const nm = clientName(c); return `
                 <div class="dash-item" onclick="openClientFromDash('${c.id}', '${info.tab}')">
-                    <div class="avatar blue">${(c.name||'?').charAt(0).toUpperCase()}</div>
+                    <div class="avatar blue">${nm.charAt(0).toUpperCase()}</div>
                     <div class="dash-item-main">
-                        <div class="dash-item-name">${escapeHtml(c.name||'Naamloos')}</div>
+                        <div class="dash-item-name">${escapeHtml(nm)}</div>
                         <div class="dash-item-sub">${info.label} • over ${info.inDays} ${info.inDays===1?'dag':'dagen'}</div>
                     </div>
                     <span class="badge badge-info">+${info.inDays}d</span>
                 </div>
-            `).join('');
+            `; }).join('');
         }
 
         // Overdue lijst
@@ -2155,16 +2180,16 @@
         if(overdue.length === 0) {
             odEl.innerHTML = '<div class="empty-hint">Alles up-to-date 👌</div>';
         } else {
-            odEl.innerHTML = overdue.slice(0, 6).map(({c, info}) => `
+            odEl.innerHTML = overdue.slice(0, 6).map(({c, info}) => { const nm = clientName(c); return `
                 <div class="dash-item" onclick="openClientFromDash('${c.id}', '${info.tab}')">
-                    <div class="avatar red">${(c.name||'?').charAt(0).toUpperCase()}</div>
+                    <div class="avatar red">${nm.charAt(0).toUpperCase()}</div>
                     <div class="dash-item-main">
-                        <div class="dash-item-name">${escapeHtml(c.name||'Naamloos')}</div>
+                        <div class="dash-item-name">${escapeHtml(nm)}</div>
                         <div class="dash-item-sub">${info.label} • ${info.daysLate} ${info.daysLate===1?'dag':'dagen'} achterstand</div>
                     </div>
                     <span class="badge badge-danger">Achter</span>
                 </div>
-            `).join('');
+            `; }).join('');
         }
 
         // Verjaardagen deze maand
@@ -2180,11 +2205,12 @@
         } else {
             bdEl.innerHTML = bds.map(c => {
                 const d = new Date(c.dob || c.birthday);
+                const nm = clientName(c);
                 return `
                 <div class="dash-item" onclick="openClientFromDash('${c.id}', 'tab-fiche')">
-                    <div class="avatar">${(c.name||'?').charAt(0).toUpperCase()}</div>
+                    <div class="avatar">${nm.charAt(0).toUpperCase()}</div>
                     <div class="dash-item-main">
-                        <div class="dash-item-name">${escapeHtml(c.name||'Naamloos')}</div>
+                        <div class="dash-item-name">${escapeHtml(nm)}</div>
                         <div class="dash-item-sub">Jarig op ${d.getDate()} ${['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][d.getMonth()]}</div>
                     </div>
                     <span class="badge badge-muted">🎂</span>
