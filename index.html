@@ -1307,6 +1307,7 @@
     let currentCoach = 'Andreas';
     let clients = {};
     let currentClientId = null;
+    let lastLoadedClientId = null;
     
     let myStock = {};
     let salesHistory = [];
@@ -1757,20 +1758,27 @@
             });
         }
 
-        // Tanita-metingen per opvolg-moment inladen (d1, d3, d7, w2, w3)
+        // Tanita-metingen per opvolg-moment inladen (d1, d3, d7, w2, w3).
+        // Sla een input over die actief gefocust is: anders klopt de cursor-positie niet
+        // tijdens het typen zodra een Firestore-snapshot binnenkomt.
         ['d1', 'd3', 'd7', 'w2', 'w3'].forEach(tab => {
             const data = c['tanita_' + tab] || {};
             ['gew', 'vet', 'spier', 'visc', 'lft'].forEach(t => {
                 const el = document.getElementById(`${tab}-t-${t}`);
-                if(el) el.value = data[t] || '';
+                if(el && el !== document.activeElement) el.value = data[t] || '';
             });
         });
 
         // Voortgang-grafiek renderen
         renderProgressChart(c);
 
-        const evalBtn = document.getElementById('tab-btn-eval');
-        if(evalBtn) openTab('tab-evaluatie', evalBtn);
+        // Alleen tab resetten bij wissel van klant — niet bij elke Firestore-snapshot.
+        // Anders springt de gebruiker bij elke auto-save terug naar Evaluatie.
+        if(lastLoadedClientId !== currentClientId) {
+            lastLoadedClientId = currentClientId;
+            const evalBtn = document.getElementById('tab-btn-eval');
+            if(evalBtn) openTab('tab-evaluatie', evalBtn);
+        }
     }
 
     function autoSaveFiche(field) {
