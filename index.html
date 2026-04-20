@@ -96,6 +96,7 @@
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--secondary); color: white; }
         .btn-outline { border: 1px solid var(--border); background: white; color: var(--text-main); }
+        .btn-danger { background: var(--danger); color: white;}
         
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
         .form-group { margin-bottom: 16px; }
@@ -113,27 +114,43 @@
 
         /* Client List */
         .client-grid { display: grid; grid-template-columns: 320px 1fr; gap: 30px; height: calc(100vh - 180px); }
-        .scroll-list { background: white; border-radius: 12px; border: 1px solid var(--border); overflow-y: auto; }
+        .scroll-list { background: white; border-radius: 12px; border: 1px solid var(--border); overflow-y: auto; padding: 10px; }
         .client-row { 
-            padding: 15px 20px; border-bottom: 1px solid var(--border); cursor: pointer;
-            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px; border-bottom: 1px solid var(--bg-main); cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center; border-radius: 8px;
         }
         .client-row:hover { background: var(--bg-main); }
-        .client-row.active { border-left: 4px solid var(--primary); background: #eff6ff; }
+        .client-row.active { background: var(--primary); color: white; }
 
-        /* Recipes */
-        .recipe-card { overflow: hidden; position: relative; }
+        /* Catalogus / Recepten Grid */
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .recipe-card { overflow: hidden; position: relative; padding: 20px; border-radius: 12px; }
         .recipe-tag { 
-            position: absolute; top: 10px; right: 10px; background: var(--secondary); 
-            color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold;
+            position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.1); 
+            color: #333; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold;
         }
+
+        /* Checklist Evaluatie */
+        .check-table { width: 100%; border-collapse: collapse; }
+        .check-table td { padding: 12px 5px; border-bottom: 1px solid var(--border); font-size: 0.9rem;}
+        .col-option { width: 80px; text-align: center; font-weight: bold; color: var(--text-muted); }
+        
+        .symp-item { font-size: 0.85rem; display: flex; align-items: center; gap: 8px; cursor: pointer; color:var(--text-main);}
+        .symp-item input { margin: 0; cursor: pointer; width: auto;}
+
+        /* Tabbladen */
+        .tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 20px; overflow-x: auto; }
+        .tab-btn { padding: 10px 20px; cursor: pointer; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
         /* Toast */
         #toast { 
             position: fixed; bottom: 30px; right: 30px; background: var(--sidebar-bg); 
             color: white; padding: 16px 24px; border-radius: var(--radius); 
             box-shadow: 0 10px 15px rgba(0,0,0,0.2); display: none; z-index: 10000;
-            animation: slideIn 0.3s ease-out;
+            animation: slideIn 0.3s ease-out; font-weight: 500;
         }
 
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
@@ -144,6 +161,7 @@
             aside.open { left: 0; }
             .client-grid { grid-template-columns: 1fr; }
             .header-bar { padding: 0 20px; }
+            .view { padding: 20px; }
         }
     </style>
 </head>
@@ -153,37 +171,41 @@
 
     <div id="login-overlay">
         <div class="login-card">
-            <h2>HBL-Connect <span>Pro</span></h2>
+            <h2>HBL-Connect <span style="color: var(--secondary);">Pro</span></h2>
             <p>Geavanceerd Coach Management Systeem</p>
-            <div id="login-error" style="color: var(--danger); font-size: 0.8rem; margin-bottom: 10px; display: none;">Oeps! Wachtwoord onjuist.</div>
+            
+            <div id="login-error" style="color: white; background: var(--danger); padding: 10px; border-radius: 6px; font-size: 0.85rem; margin-bottom: 15px; display: none; font-weight: bold;">Oeps! E-mail of wachtwoord onjuist.</div>
+            
             <input type="email" id="login-email" class="login-input" placeholder="E-mailadres">
-            <input type="password" id="login-password" class="login-input" placeholder="Wachtwoord">
+            <input type="password" id="login-password" class="login-input" placeholder="Wachtwoord" onkeyup="if(event.key === 'Enter') loginUser()">
+            
             <label style="display: flex; align-items: center; gap: 8px; margin: 15px 0; font-size: 0.85rem; color: var(--text-muted); cursor: pointer;">
-                <input type="checkbox" id="login-remember" checked> Onthoud mij op dit apparaat
+                <input type="checkbox" id="login-remember" checked style="width: auto;"> Onthoud mij op dit apparaat
             </label>
-            <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="loginUser()">Inloggen</button>
+            
+            <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 15px; font-size: 1.05rem;" onclick="loginUser()">Veilig Inloggen</button>
         </div>
     </div>
 
     <aside id="app-sidebar">
         <div class="brand">HBL-Connect <span>Pro</span></div>
-        <nav>
+        <nav style="flex: 1; overflow-y: auto;">
             <button class="nav-link active" onclick="switchView('view-dash', this)">📊 Dashboard</button>
             <button class="nav-link" onclick="switchView('view-eval', this)">📝 Nieuwe Intake</button>
             <button class="nav-link" onclick="switchView('view-fu', this)">👥 Mijn Klanten</button>
             <button class="nav-link" onclick="switchView('view-stock', this)">📦 Voorraad & Winst</button>
-            <button class="nav-link" onclick="switchView('view-catalog', this)">📗 Producten</button>
-            <button class="nav-link" onclick="switchView('view-recipes', this)">🥗 Recepten</button>
+            <button class="nav-link" onclick="switchView('view-catalog', this)">📗 Producten Catalogus</button>
+            <button class="nav-link" onclick="switchView('view-recipes', this)">🥗 Recepten Boek</button>
             <button class="nav-link" onclick="switchView('view-testimonials', this)">⭐ Wall of Fame</button>
         </nav>
 
-        <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #1e293b;">
-            <select id="coach-selector" onchange="switchCoach()" style="background: #1e293b; color: white; border: none; margin-bottom: 10px;">
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #1e293b;">
+            <select id="coach-selector" onchange="switchCoach()" style="background: #1e293b; color: white; border: 1px solid #334155; margin-bottom: 10px; cursor: pointer;">
                 <option value="Andreas">Coach Andreas</option>
                 <option value="Thalyssa">Coach Thalyssa</option>
                 <option value="Silvia">Coach Silvia</option>
             </select>
-            <button class="nav-link" style="color: var(--danger);" onclick="logoutUser()">🚪 Uitloggen</button>
+            <button class="nav-link" style="color: var(--danger);" onclick="logoutUser()">🚪 Veilig Uitloggen</button>
         </div>
     </aside>
 
@@ -197,7 +219,7 @@
         </div>
 
         <div id="view-dash" class="view active">
-            <div class="grid">
+            <div class="grid" style="margin-bottom: 30px;">
                 <div class="card stat-card">
                     <span class="stat-label">Actieve Dossiers</span>
                     <span class="stat-val" id="stat-clients">0</span>
@@ -212,11 +234,22 @@
                 </div>
             </div>
             
-            <div class="card">
-                <div class="card-title">Snelkoppelingen</div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-primary" onclick="switchView('view-eval')">+ Nieuwe Klant</button>
-                    <button class="btn btn-outline" onclick="switchView('view-stock')">Voorraad bijvullen</button>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-title">Snelkoppelingen</div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button class="btn btn-primary" onclick="switchView('view-eval', document.querySelectorAll('.nav-link')[1])" style="justify-content: center;">+ Nieuwe Intake Starten</button>
+                        <button class="btn btn-outline" onclick="switchView('view-fu', document.querySelectorAll('.nav-link')[2])" style="justify-content: center;">Open Klantendossiers</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Hulp & Info Documenten</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="btn btn-outline" style="font-size: 0.8rem;" onclick="window.open('Visceraal-vet.pdf')">Visceraal vet</button>
+                        <button class="btn btn-outline" style="font-size: 0.8rem;" onclick="window.open('Vetpercentage.pdf')">Vetpercentage</button>
+                        <button class="btn btn-outline" style="font-size: 0.8rem;" onclick="window.open('Prijslijst.pdf')">Prijslijst</button>
+                        <button class="btn btn-outline" style="font-size: 0.8rem;" onclick="window.open('Ontbijtopties.jpg')">Ontbijtopties</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -225,182 +258,467 @@
             <div class="card">
                 <div class="card-title">1. Persoonsgegevens</div>
                 <div class="grid">
-                    <div class="form-group"><label>Naam Klant</label><input type="text" id="eval-name" placeholder="Volledige naam"></div>
-                    <div class="form-group"><label>Telefoon</label><input type="text" id="eval-phone" placeholder="04xx xxx xxx"></div>
-                    <div class="form-group"><label>E-mail</label><input type="email" id="eval-email"></div>
-                    <div class="form-group"><label>Datum</label><input type="date" id="eval-date"></div>
+                    <div class="form-group"><label>Naam Klant</label><input type="text" id="eval-name" placeholder="Verplicht"></div>
+                    <div class="form-group"><label>Start Datum</label><input type="date" id="eval-date"></div>
+                    <div class="form-group"><label>Telefoonnummer</label><input type="text" id="eval-phone"></div>
+                    <div class="form-group"><label>E-mailadres</label><input type="email" id="eval-email"></div>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-title">2. Lichaamsanalyse (Start)</div>
-                <div class="grid" style="grid-template-columns: repeat(5, 1fr);">
+                <div class="card-title">2. Verwachtingen & Focus</div>
+                <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); margin-bottom: 15px;">
+                    <label class="symp-item"><input type="checkbox" value="Energie" class="focus-check"> Energie</label>
+                    <label class="symp-item"><input type="checkbox" value="Gewicht" class="focus-check"> Gewicht</label>
+                    <label class="symp-item"><input type="checkbox" value="Sport" class="focus-check"> Sport</label>
+                    <label class="symp-item"><input type="checkbox" value="Slaap" class="focus-check"> Slaap</label>
+                    <label class="symp-item"><input type="checkbox" value="Immuniteit" class="focus-check"> Immuniteit</label>
+                    <label class="symp-item"><input type="checkbox" value="Spijsvertering" class="focus-check"> Spijsvertering</label>
+                </div>
+                <div class="form-group"><label>De "Why" (Waarom is dit belangrijk?)</label><textarea id="eval-why" rows="2"></textarea></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">3. Lichaamsanalyse (Tanita Startwaarden)</div>
+                <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));">
                     <div class="form-group"><label>Gewicht (kg)</label><input type="text" id="eval-t-gew"></div>
                     <div class="form-group"><label>Vet %</label><input type="text" id="eval-t-vet"></div>
-                    <div class="form-group"><label>Spiermassa</label><input type="text" id="eval-t-spier"></div>
+                    <div class="form-group"><label>Spier (kg)</label><input type="text" id="eval-t-spier"></div>
                     <div class="form-group"><label>Visceraal</label><input type="text" id="eval-t-visc"></div>
-                    <div class="form-group"><label>Metab. Leeftijd</label><input type="text" id="eval-t-lft"></div>
+                    <div class="form-group"><label>Metab. Lft</label><input type="text" id="eval-t-lft"></div>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-title">3. Leefstijl & Gezondheid</div>
-                <div class="form-group">
-                    <label>Welke medicatie gebruikt de klant?</label>
-                    <textarea id="eval-medication" rows="2" placeholder="Lijst medicatie of 'Geen'"></textarea>
-                </div>
-                <div class="grid" id="symp-list">
+                <div class="card-title">4. Checklist Levensstijl</div>
+                <table class="check-table">
+                    <thead><tr><th align="left" style="color:var(--text-muted);">Vraagstelling</th><th class="col-option">NEE</th><th class="col-option">JA</th></tr></thead>
+                    <tbody id="check-list"></tbody>
+                </table>
+                <div style="margin-top: 20px; padding: 15px; background: var(--bg-main); border-radius: 8px;">
+                    <strong>Score: <span id="score-num">0</span> / 15</strong>
+                    <div style="background: #e2e8f0; height: 8px; border-radius: 4px; margin-top: 10px; overflow: hidden;">
+                        <div id="score-fill" style="height: 100%; width: 0%; background: var(--danger); transition: 0.3s;"></div>
                     </div>
+                </div>
             </div>
 
             <div class="card">
-                <div class="card-title">4. Analyse & Advies</div>
+                <div class="card-title">5. Eetgewoonten & Hydratatie</div>
                 <div class="grid">
+                    <div class="form-group"><label>Ontbijt</label><textarea id="eval-eet-ontbijt" rows="2"></textarea></div>
+                    <div class="form-group"><label>Middag</label><textarea id="eval-eet-middag" rows="2"></textarea></div>
+                    <div class="form-group"><label>Avond</label><textarea id="eval-eet-avond" rows="2"></textarea></div>
+                    <div class="form-group"><label>Tussendoortjes</label><textarea id="eval-eet-tussen" rows="2"></textarea></div>
+                    <div class="form-group"><label>Water (Liters)</label><input type="text" id="eval-eet-water"></div>
+                    <div class="form-group"><label>Andere dranken</label><input type="text" id="eval-eet-drank"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">6. Analyse Voedingstekorten</div>
+                <div class="grid" id="symp-list" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));"></div>
+                
+                <div id="vitamin-warning" style="display:none; margin-top:20px; padding:15px; background:#fef2f2; border-left:4px solid var(--danger); color:var(--danger); font-weight:bold; border-radius:4px;">
+                    Let op: Bij 5 of meer symptomen is er tevens een algemeen tekort aan vitaminen!
+                </div>
+
+                <div class="grid" style="margin-top: 20px;">
                     <div style="background: var(--bg-main); padding: 15px; border-radius: 8px;">
-                        <label style="font-weight: 700;">Gekozen Focus:</label>
-                        <div id="symp-details" style="font-size: 0.85rem; margin-top: 10px;">...</div>
+                        <strong style="color:var(--primary)">Vermoedelijke Tekorten:</strong>
+                        <div id="tally-results" style="margin-top:10px; font-size: 0.9rem;">...</div>
                     </div>
-                    <div style="background: #ecfdf5; padding: 15px; border-radius: 8px; border-left: 4px solid var(--secondary);">
-                        <label style="font-weight: 700; color: var(--secondary);">Voorgestelde Producten:</label>
-                        <div id="suggested-products" style="font-size: 0.85rem; margin-top: 10px;">...</div>
+                    <div style="background: #ecfdf5; padding: 15px; border-radius: 8px;">
+                        <strong style="color:var(--secondary)">Voorgestelde Producten:</strong>
+                        <div id="suggested-products" style="margin-top:10px; font-size:0.9rem;">...</div>
                     </div>
                 </div>
             </div>
 
-            <button class="btn btn-success" style="width: 100%; padding: 20px; font-size: 1.1rem;" onclick="saveEvaluatie()">💾 Dossier Definitief Opslaan</button>
+            <div class="card">
+                <div class="card-title">7. Medisch & Notities</div>
+                <div class="form-group">
+                    <label>Medicatiegebruik (Optioneel)</label>
+                    <textarea id="eval-medication" rows="2" placeholder="Noteer hier eventuele medicatie..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Extra Opmerkingen</label>
+                    <textarea id="eval-extra-notes" rows="4" placeholder="Vragen van de klant, bijzonderheden..."></textarea>
+                </div>
+            </div>
+
+            <button class="btn btn-success" style="width: 100%; padding: 20px; font-size: 1.1rem; justify-content: center;" onclick="saveEvaluatie()">💾 Opslaan & Klantendossier Aanmaken</button>
         </div>
 
-        <div id="view-fu" class="view">
+        <div id="view-fu" class="view" style="padding: 20px;">
             <div class="client-grid">
-                <div class="scroll-list" id="client-list">
-                    </div>
-                <div class="card" id="fu-workspace" style="display: none; overflow-y: auto;">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <input type="text" id="search-client" placeholder="🔍 Zoek klant..." oninput="renderClientList()" style="padding: 12px; border-radius: 12px;">
+                    <div class="scroll-list" id="client-list"></div>
+                </div>
+                
+                <div class="card" id="fu-workspace" style="display: none; margin: 0; position: relative;">
+                    <button class="btn btn-success" style="position: absolute; bottom: 30px; right: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); border-radius: 30px; padding: 12px 24px;" onclick="showToast('Alle wijzigingen opgeslagen')">💾 Opslaan</button>
+
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
                         <div>
-                            <h2 id="header-client-name" style="margin: 0;">Selecteer Klant</h2>
-                            <span id="header-client-phone" style="color: var(--text-muted);"></span>
+                            <h2 id="header-client-name" style="margin: 0 0 5px 0;">Selecteer Klant</h2>
+                            <span id="header-client-phone" style="color: var(--text-muted); font-size: 0.9rem;"></span>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn btn-outline" onclick="openWA()">WhatsApp</button>
+                            <button class="btn btn-success" id="wa-btn" onclick="openWA()" style="background: #25D366;">WhatsApp</button>
                             <button class="btn btn-outline" id="btn-toggle-active" onclick="toggleActiveStatus()">Inactief</button>
+                            <button class="btn btn-danger" onclick="deleteClient()">Verwijder</button>
                         </div>
                     </div>
 
-                    <div class="tabs" style="display: flex; gap: 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px;">
-                        <span class="tab-btn active" onclick="openTab('tab-eval', this)" style="cursor: pointer; padding-bottom: 10px;">Intake</span>
-                        <span class="tab-btn" onclick="openTab('tab-dag', this)" style="cursor: pointer; padding-bottom: 10px;">Opvolging</span>
-                        <span class="tab-btn" onclick="openTab('tab-progress', this)" style="cursor: pointer; padding-bottom: 10px;">Voortgang</span>
+                    <div style="background:#eff6ff; padding:15px; border-radius:8px; border-left:4px solid var(--primary); margin-bottom: 20px;">
+                        <strong style="color:var(--primary);">De "WHY":</strong> <span id="sticky-why"></span>
                     </div>
 
-                    <div id="tab-eval" class="tab-content active">
+                    <div class="tabs">
+                        <span class="tab-btn active" onclick="openTab('tab-fiche', this)">Klantfiche & Intake</span>
+                        <span class="tab-btn" onclick="openTab('tab-d1', this)">Dag 1</span>
+                        <span class="tab-btn" onclick="openTab('tab-d3', this)">Dag 3</span>
+                        <span class="tab-btn" onclick="openTab('tab-d7', this)">Dag 7</span>
+                        <span class="tab-btn" onclick="openTab('tab-w2', this)">Week 2</span>
+                        <span class="tab-btn" onclick="openTab('tab-w3', this)">Week 3+ (Tanita)</span>
+                    </div>
+
+                    <div id="tab-fiche" class="tab-content active">
+                        <h3 style="color: var(--primary);">Basisgegevens</h3>
+                        <div class="grid" style="margin-bottom: 20px;">
+                            <div class="form-group"><label>Naam</label><input type="text" id="fiche-name" oninput="autoSaveFiche('name')"></div>
+                            <div class="form-group"><label>Telefoon</label><input type="text" id="fiche-phone" oninput="autoSaveFiche('phone')"></div>
+                            <div class="form-group"><label>Startdatum</label><input type="date" id="fiche-startdate" oninput="autoSaveFiche('startdate')"></div>
+                            <div class="form-group"><label>Waarom (Why)</label><input type="text" id="fiche-why" oninput="autoSaveFiche('why')"></div>
+                        </div>
+
+                        <h3 style="color: var(--primary);">Intake Resultaten & Start Tanita</h3>
+                        <div class="grid" style="margin-bottom: 20px;">
+                            <div style="background: var(--bg-main); padding: 15px; border-radius: 8px;">
+                                <p style="margin:0 0 10px 0;"><strong>Score:</strong> <span id="crm-eval-score">?</span>/15</p>
+                                <strong>Symptomen:</strong> <p id="crm-eval-symptoms" style="margin: 5px 0 0 0; font-size: 0.85rem; color: var(--text-muted);"></p>
+                            </div>
+                            <div style="background: var(--bg-main); padding: 15px; border-radius: 8px;">
+                                <strong>Aangeraden Producten:</strong> <p id="crm-eval-products" style="margin: 5px 0 0 0; font-size: 0.85rem; color: var(--text-muted);"></p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); margin-bottom: 20px;">
+                            <div class="form-group"><label>Start Gew.</label><input type="text" id="fiche-t-gew" oninput="autoSaveTanitaStart('gew')"></div>
+                            <div class="form-group"><label>Start Vet%</label><input type="text" id="fiche-t-vet" oninput="autoSaveTanitaStart('vet')"></div>
+                            <div class="form-group"><label>Start Spier</label><input type="text" id="fiche-t-spier" oninput="autoSaveTanitaStart('spier')"></div>
+                            <div class="form-group"><label>Start Visc.</label><input type="text" id="fiche-t-visc" oninput="autoSaveTanitaStart('visc')"></div>
+                            <div class="form-group"><label>Start Metab.</label><input type="text" id="fiche-t-lft" oninput="autoSaveTanitaStart('lft')"></div>
+                        </div>
+
                         <div class="grid">
-                            <div class="form-group"><label>De "WHY"</label><textarea id="fiche-why" oninput="autoSaveFiche('why')"></textarea></div>
-                            <div class="form-group"><label>Medicatie</label><textarea id="fiche-meds" oninput="autoSaveFiche('medicatie')"></textarea></div>
+                            <div class="form-group"><label>Medicatie</label><textarea id="fiche-meds" rows="3" oninput="autoSaveFiche('medicatie')"></textarea></div>
+                            <div class="form-group"><label>Vrije Notities</label><textarea id="fiche-notes" rows="3" oninput="autoSaveFiche('notes')"></textarea></div>
                         </div>
-                        <div class="form-group"><label>Interne Notities</label><textarea id="fiche-notes" rows="6" oninput="autoSaveFiche('notes')"></textarea></div>
                     </div>
 
-                    <div id="tab-dag" class="tab-content" style="display: none;">
-                        <div class="form-group"><label>Dag 1 Notitie</label><textarea id="dag1-notes" oninput="autoSaveDag('dag1', 'notes')"></textarea></div>
-                        <div class="form-group"><label>Dag 3 Notitie</label><textarea id="dag3-notes" oninput="autoSaveDag('dag3', 'notes')"></textarea></div>
-                        <div class="form-group"><label>Dag 7 Notitie</label><textarea id="dag7-notes" oninput="autoSaveDag('dag7', 'notes')"></textarea></div>
+                    <div id="tab-d1" class="tab-content">
+                        <h3 style="color: var(--primary);">Opvolging Dag 1</h3>
+                        <div class="form-group"><label>1. Hoe smaakte de shake? Lekker?</label><textarea id="dag1-q1" oninput="autoSaveDag('dag1', 'q1')"></textarea></div>
+                        <div class="form-group"><label>2. Hoe heb je hem gemaakt?</label><textarea id="dag1-q2" oninput="autoSaveDag('dag1', 'q2')"></textarea></div>
+                        <div class="form-group"><label>3. Nuchter gemeten?</label><textarea id="dag1-q3" oninput="autoSaveDag('dag1', 'q3')"></textarea></div>
+                        <div class="form-group"><label>4. Water gedronken?</label><textarea id="dag1-q4" oninput="autoSaveDag('dag1', 'q4')"></textarea></div>
+                        <div class="form-group"><label>5. Hoe voel je je?</label><textarea id="dag1-q6" oninput="autoSaveDag('dag1', 'q6')"></textarea></div>
+                        <div class="form-group"><label>Extra Notities Dag 1</label><textarea id="dag1-notes" oninput="autoSaveDag('dag1', 'notes')"></textarea></div>
                     </div>
+
+                    <div id="tab-d3" class="tab-content">
+                        <h3 style="color: var(--primary);">Opvolging Dag 3</h3>
+                        <div class="form-group"><label>1. Hoe voel je je? Energie?</label><textarea id="dag3-q1" oninput="autoSaveDag('dag3', 'q1')"></textarea></div>
+                        <div class="form-group"><label>2. Water gedronken?</label><textarea id="dag3-q3" oninput="autoSaveDag('dag3', 'q3')"></textarea></div>
+                        <div class="form-group"><label>3. Gemeten?</label><textarea id="dag3-q4" oninput="autoSaveDag('dag3', 'q4')"></textarea></div>
+                        <div class="form-group"><label>4. Honger gehad?</label><textarea id="dag3-q5" oninput="autoSaveDag('dag3', 'q5')"></textarea></div>
+                        <div class="form-group"><label>Extra Notities Dag 3</label><textarea id="dag3-notes" oninput="autoSaveDag('dag3', 'notes')"></textarea></div>
+                    </div>
+
+                    <div id="tab-d7" class="tab-content">
+                        <h3 style="color: var(--primary);">Opvolging Dag 7</h3>
+                        <div class="form-group"><label>1. Hoe voel je je?</label><textarea id="dag7-q1" oninput="autoSaveDag('dag7', 'q1')"></textarea></div>
+                        <div class="form-group"><label>2. Water?</label><textarea id="dag7-q2" oninput="autoSaveDag('dag7', 'q2')"></textarea></div>
+                        <div class="form-group"><label>3. Heeft iemand al iets gezegd?</label><textarea id="dag7-q5" oninput="autoSaveDag('dag7', 'q5')"></textarea></div>
+                        <div class="form-group"><label>Extra Notities Dag 7</label><textarea id="dag7-notes" oninput="autoSaveDag('dag7', 'notes')"></textarea></div>
+                    </div>
+
+                    <div id="tab-w2" class="tab-content">
+                        <h3 style="color: var(--primary);">Opvolging Week 2</h3>
+                        <p style="color: var(--danger); font-size: 0.85rem; margin-top: -10px;">Herinnering symptomen: <strong id="w2-symp-reminder"></strong></p>
+                        <div class="form-group"><label>1. Hoe gaat het nu?</label><textarea id="week2-q1" oninput="autoSaveDag('week2', 'q1')"></textarea></div>
+                        <div class="form-group"><label>Extra Notities Week 2</label><textarea id="week2-notes" oninput="autoSaveDag('week2', 'notes')"></textarea></div>
+                    </div>
+
+                    <div id="tab-w3" class="tab-content">
+                        <h3 style="color: var(--primary);">Opvolging Week 3+</h3>
+                        <div class="form-group"><label>Nieuwe bestelling afgesproken?</label><textarea id="week3-q1" oninput="autoSaveDag('week3', 'q1')"></textarea></div>
+                        <div class="form-group"><label>VIP-klant voorstel?</label><textarea id="week3-q3" oninput="autoSaveDag('week3', 'q3')"></textarea></div>
+                        <div class="form-group"><label>Lange termijn notities</label><textarea id="week3-notes" oninput="autoSaveDag('week3', 'notes')"></textarea></div>
+
+                        <h3 style="color: var(--secondary); margin-top: 30px;">Nieuwe Lichaamsanalyse (Tanita)</h3>
+                        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));">
+                            <div class="form-group"><label>Gewicht (kg)</label><input type="text" id="w3-t-gew" oninput="autoSaveTanitaW3('gew')"></div>
+                            <div class="form-group"><label>Vet %</label><input type="text" id="w3-t-vet" oninput="autoSaveTanitaW3('vet')"></div>
+                            <div class="form-group"><label>Spier (kg)</label><input type="text" id="w3-t-spier" oninput="autoSaveTanitaW3('spier')"></div>
+                            <div class="form-group"><label>Visceraal</label><input type="text" id="w3-t-visc" oninput="autoSaveTanitaW3('visc')"></div>
+                            <div class="form-group"><label>Metab. Lft</label><input type="text" id="w3-t-lft" oninput="autoSaveTanitaW3('lft')"></div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
 
         <div id="view-stock" class="view">
-            <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                 <div>
-                    <h3 style="margin: 0;">Stock Beheer</h3>
-                    <p style="color: var(--text-muted); margin: 0; font-size: 0.8rem;">Beheer je inkoop en verkopen</p>
+                    <h3 style="margin: 0; color: var(--primary);">Voorraad & Verkopen</h3>
                 </div>
-                <input type="text" id="searchStock" placeholder="Zoek product..." onkeyup="renderStockTable()" style="max-width: 300px;">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <input type="month" id="monthSelector" style="padding:10px; border-radius:6px; border:1px solid var(--border);" onchange="renderHistoryLists()">
+                    <select id="link-client-select" class="btn btn-outline">
+                        <option value="">Koppel aan klant...</option>
+                    </select>
+                    <select id="discountSelect" style="padding:10px; border-radius:6px; border:1px solid var(--border);" onchange="renderStockTable()">
+                        <option value="25">Inkoop 25%</option>
+                        <option value="35">Inkoop 35%</option>
+                        <option value="42" selected>Inkoop 42%</option>
+                        <option value="50">Inkoop 50%</option>
+                    </select>
+                    <input type="text" id="searchStock" placeholder="Zoek SKU/Naam..." onkeyup="renderStockTable()" style="padding:10px; border-radius:6px; border:1px solid var(--border);">
+                </div>
             </div>
-            
-            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; border: 1px solid var(--border);">
-                <thead>
-                    <tr style="background: var(--sidebar-bg); color: white; text-align: left;">
-                        <th style="padding: 15px;">Product</th>
-                        <th>VP</th>
-                        <th>Voorraad</th>
-                        <th>Acties</th>
-                    </tr>
-                </thead>
-                <tbody id="stockTableBody">
-                    </tbody>
-            </table>
+
+            <div class="grid" style="margin-bottom: 20px;">
+                <div class="card stat-card"><span class="stat-label">VP in Stock</span><span class="stat-val" id="dash-vp">0</span></div>
+                <div class="card stat-card" style="border-left-color: var(--accent);"><span class="stat-label">Inkoopwaarde</span><span class="stat-val" id="dash-inkoop">€ 0</span></div>
+                <div class="card stat-card" style="border-left-color: var(--secondary);"><span class="stat-label">Potentiële Winst</span><span class="stat-val" style="color: var(--secondary);" id="dash-winst">€ 0</span></div>
+            </div>
+
+            <div class="grid" style="grid-template-columns: 2fr 1fr;">
+                <div class="card" style="padding: 0; overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead style="background: var(--bg-main); text-align: left; font-size: 0.85rem; color: var(--text-muted);">
+                            <tr>
+                                <th style="padding: 15px;">Product</th>
+                                <th>Klantprijs</th>
+                                <th>Winst</th>
+                                <th>Voorraad</th>
+                                <th>Actie</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockTableBody"></tbody>
+                    </table>
+                </div>
+                <div>
+                    <div class="card">
+                        <h3 id="month-title-display">Gerealiseerde Winst</h3>
+                        <h2 style="color: var(--secondary); margin: 10px 0;" id="current-month-profit">€ 0.00</h2>
+                    </div>
+                    <div class="card">
+                        <h3>Verkopen</h3>
+                        <ul id="sales-history-list" style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-catalog" class="view">
+            <div class="card" style="position: sticky; top: 70px; z-index: 10;">
+                <input type="text" id="search-catalog" placeholder="Zoek product of SKU..." onkeyup="renderCatalog()" style="width: 100%; max-width: 400px; margin-bottom: 15px;">
+                <div id="catalog-filters" style="display:flex; gap:10px; flex-wrap:wrap; font-size: 0.85rem;"></div>
+            </div>
+            <div class="product-grid" id="catalog-grid"></div>
         </div>
 
         <div id="view-recipes" class="view">
-            <div class="grid" id="recipe-grid">
-                </div>
+            <div class="card">
+                <h3 style="margin: 0; color: var(--primary);">Gezonde Recepten</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">Deel deze makkelijk met je klanten voor extra inspiratie.</p>
+            </div>
+            <div class="grid" id="recipe-grid"></div>
+        </div>
+
+        <div id="view-testimonials" class="view">
+            <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; color: var(--primary);">Wall of Fame</h3>
+                <button class="btn btn-outline" onclick="window.open('Testimonials.pdf')">Open PDF Versie</button>
+            </div>
+            <div class="grid" id="testi-grid"></div>
         </div>
 
     </main>
 
     <script>
-        // CONFIG & DATA
-        const firebaseConfig = {
-            apiKey: "AIzaSyD9xhQuLnjgbaMHZI_vWp4FoUUjTNbA0tM",
-            authDomain: "follow-up-coaches.firebaseapp.com",
-            projectId: "follow-up-coaches",
-            storageBucket: "follow-up-coaches.firebasestorage.app",
-            messagingSenderId: "273305831461",
-            appId: "1:273305831461:web:4471b563a5d0da164457cc"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
+        // =========================================================================
+        // DATA & CONFIG
+        // =========================================================================
+        const evalQuestions = [
+            {q: "Ik ben uitgeslapen als ik 's morgens opsta", val: "JA"}, {q: "Ik start elke ochtend met een volwaardig ontbijt", val: "JA"},
+            {q: "Ik heb tijdens de dag last van energiedips", val: "NEE"}, {q: "Ik heb geregeld honger of snoepzin", val: "NEE"},
+            {q: "Ik drink meer dan 2 kopjes koffie per dag", val: "NEE"}, {q: "Ik neem tijd voor een evenwichtige maaltijd", val: "JA"},
+            {q: "Ik drink dagelijks frisdrank", val: "NEE"}, {q: "Ik eet elke dag minstens 2 stuks fruit", val: "JA"},
+            {q: "Ik eet elke dag minimaal 300g groenten", val: "JA"}, {q: "Ik beweeg dagelijks minimaal 30 minuten", val: "JA"},
+            {q: "Ik heb momenteel veel stress", val: "NEE"}, {q: "Mijn gewicht is perfect onder controle", val: "JA"},
+            {q: "Ik drink minimaal 1,5L water per dag", val: "JA"}, {q: "Ik drink dagelijks alcohol", val: "NEE"}, {q: "Ik rook", val: "NEE"}
+        ];
 
-        let currentCoach = 'Andreas';
-        let clients = {};
-        let myStock = {};
-        let currentClientId = null;
+        const evalSymptoms = [
+            {t: "Energiegebrek", f: ["Stress", "Vezels", "Vetten", "Eiwitten", "Water"]}, {t: "Regelmatig verkouden", f: ["Vetten", "Eiwitten", "Water"]},
+            {t: "Hoofdpijn / Migraine", f: ["Stress", "Vezels", "Vetten", "Eiwitten", "Water"]}, {t: "Spierkrampen", f: ["Vetten", "Eiwitten", "Water"]},
+            {t: "Spierpijn", f: ["Vetten", "Eiwitten", "Water"]}, {t: "Vocht vasthouden", f: ["Vezels", "Water"]},
+            {t: "Angst / Paniek", f: ["Stress", "Vezels", "Eiwitten", "Water"]}, {t: "Brandend maagzuur", f: ["Vezels", "Eiwitten", "Water"]},
+            {t: "Stoelgang problemen", f: ["Vezels", "Vetten", "Water"]}, {t: "Concentratieverlies", f: ["Stress", "Vetten", "Eiwitten", "Water"]},
+            {t: "Vergeetachtigheid", f: ["Stress", "Vetten", "Eiwitten", "Water"]}, {t: "Onzeker zijn", f: ["Vezels", "Vetten", "Water"]},
+            {t: "Minder aankunnen", f: ["Vezels", "Vetten", "Eiwitten", "Water"]}, {t: "Negatieve gedachten", f: ["Stress", "Vezels", "Vetten", "Eiwitten", "Water"]},
+            {t: "Snel geïrriteerd", f: ["Stress", "Vezels", "Vetten", "Eiwitten", "Water"]}, {t: "Zin in zoet", f: ["Stress", "Vezels", "Eiwitten", "Water"]},
+            {t: "Ontstekingen", f: ["Stress", "Vezels", "Vetten", "Eiwitten", "Water"]}, {t: "Gewrichtspijn", f: ["Stress", "Vezels", "Vetten", "Eiwitten", "Water"]},
+            {t: "Hartkloppingen", f: ["Stress", "Vetten", "Eiwitten", "Water"]}, {t: "Droge huid / Acné", f: ["Stress", "Vetten", "Eiwitten", "Water"]},
+            {t: "Trage wondgenezing", f: ["Stress", "Vezels"]}, {t: "Haarverlies", f: ["Vezels"]},
+            {t: "Wazig zicht", f: ["Stress", "Vezels", "Vetten", "Water"]}, {t: "Broze nagels", f: ["Vezels"]},
+            {t: "Schimmelinfectie", f: ["Stress", "Vezels", "Water"]}, {t: "Allergieën", f: ["Vezels"]},
+            {t: "Bloedend tandvlees", f: ["Eiwitten"]}, {t: "Koortsblaasjes", f: ["Weerstand"]},
+            {t: "Veel dorst/plassen", f: ["Stress", "Vezels", "Eiwitten"]}, {t: "Slechte slaper", f: ["Stress", "Vezels", "Water"]}
+        ];
 
         const dbProducts = [
-            { cat: "F1 SHAKES", sku: "4466", name: "F1 Shake Romige Vanille 550g", vp: 23.95, retail: 60.90 },
-            { cat: "F1 SHAKES", sku: "4468", name: "F1 Shake Zachte Chocolade 550g", vp: 23.95, retail: 60.90 },
-            { cat: "F1 SHAKES", sku: "8888", name: "F1 shake limited Edition 550g", vp: 23.95, retail: 60.90 },
-            { cat: "DRANKEN", sku: "1065", name: "Herbal Aloë Drank Mango", vp: 24.95, retail: 52.80 },
-            { cat: "DRANKEN", sku: "165K", name: "Instant Theedrank Original 51g", vp: 19.95, retail: 38.25 }
+            { cat: "ONTBIJT & DRANKEN", sku: "1188", name: "Herbal Aloe Drank Original 1,9L", vp: 91.10, retail: 190.90, desc: "Verzacht de maag en bevordert spijsvertering.", benefits: ["Ondersteunt spijsvertering", "Caloriearm"], usage: "3 dopjes in 120ml water." },
+            { cat: "ONTBIJT & DRANKEN", sku: "0006", name: "Herbal Aloë Drank Original 473ml", vp: 24.95, retail: 52.80, desc: "Verzacht de maag. Ideaal voor hydratatie.", benefits: ["Ondersteunt spijsvertering", "Caloriearm"], usage: "3 dopjes in 120ml water." },
+            { cat: "ONTBIJT & DRANKEN", sku: "1065", name: "Herbal Aloë Drank Mango 473ml", vp: 24.95, retail: 52.80, desc: "Zoete mangosmaak. Kalmeert de maag.", benefits: ["Natuurlijke smaak", "Caloriearm"], usage: "3 dopjes in 120ml water." },
+            { cat: "ONTBIJT & DRANKEN", sku: "1196", name: "Herbal Aloë Max 473ml", vp: 28.15, retail: 61.70, desc: "97% Aloë Vera sap. Puurste vorm.", benefits: ["97% puur", "IASC gecertificeerd"], usage: "3 dopjes in 120ml water." },
+            { cat: "ONTBIJT & DRANKEN", sku: "166K", name: "Instant Theedrank Original 102g", vp: 34.95, retail: 73.25, desc: "Energie en vetverbranding. (Grote pot)", benefits: ["6 kcal per portie", "Verhoogt alertheid"], usage: "Halve theelepel in water." },
+            { cat: "ONTBIJT & DRANKEN", sku: "165K", name: "Instant Theedrank Original 51g", vp: 19.95, retail: 38.25, desc: "Energie en thermogenese.", benefits: ["6 kcal per portie", "Verhoogt alertheid"], usage: "Halve theelepel in water." },
+            { cat: "ONTBIJT & DRANKEN", sku: "167K", name: "Instant Theedrank Citroen 51g", vp: 19.95, retail: 38.25, desc: "Frisse citroensmaak. Boost metabolisme.", benefits: ["6 kcal per portie", "Verhoogt alertheid"], usage: "Halve theelepel in water." },
+            { cat: "ONTBIJT & DRANKEN", sku: "168K", name: "Instant Theedrank Framboos 51g", vp: 19.95, retail: 38.25, desc: "Fruitige theedrank voor energie.", benefits: ["6 kcal per portie", "Verhoogt alertheid"], usage: "Halve theelepel in water." },
+            { cat: "ONTBIJT & DRANKEN", sku: "169K", name: "Instant Theedrank Perzik 51g", vp: 19.95, retail: 38.25, desc: "Zachte perziksmaak. Stimuleert verbranding.", benefits: ["6 kcal per portie", "Verhoogt alertheid"], usage: "Halve theelepel in water." },
+            
+            { cat: "F1 SHAKES", sku: "4462", name: "F1 Shake Bananen Crème 550g", vp: 23.95, retail: 60.90, desc: "Volwaardige maaltijdvervanger.", benefits: ["Vegan", "25 vitaminen", "Eiwitrijk"], usage: "2 scheppen met 250ml melk." },
+            { cat: "F1 SHAKES", sku: "4463", name: "F1 Shake Frisse Aardbei 550g", vp: 23.95, retail: 60.90, desc: "Lichte aardbeiensmaak.", benefits: ["Vegan", "25 vitaminen", "Eiwitrijk"], usage: "2 scheppen met 250ml melk." },
+            { cat: "F1 SHAKES", sku: "4465", name: "F1 Shake Cafè Latte 550g", vp: 23.95, retail: 60.90, desc: "Voor de koffieliefhebber.", benefits: ["Echt koffie-extract", "Vegan", "Eiwitrijk"], usage: "2 scheppen met 250ml melk." },
+            { cat: "F1 SHAKES", sku: "4466", name: "F1 Shake Romige Vanille 550g", vp: 23.95, retail: 60.90, desc: "De klassieker. Neutraal.", benefits: ["Vegan", "25 vitaminen", "Eiwitrijk"], usage: "2 scheppen met 250ml melk." },
+            { cat: "F1 SHAKES", sku: "4467", name: "F1 Shake Cookie Crunch 550g", vp: 23.95, retail: 60.90, desc: "Met krokante stukjes.", benefits: ["Vegan", "25 vitaminen", "Eiwitrijk"], usage: "2 scheppen met 250ml melk." },
+            { cat: "F1 SHAKES", sku: "4468", name: "F1 Shake Zachte Chocolade 550g", vp: 23.95, retail: 60.90, desc: "Rijke chocoladesmaak.", benefits: ["Vegan", "25 vitaminen", "Eiwitrijk"], usage: "2 scheppen met 250ml melk." },
+            { cat: "F1 SHAKES", sku: "4471", name: "F1 Shake Munt Chocolade 550g", vp: 23.95, retail: 60.90, desc: "Frisse munt en chocolade.", benefits: ["Vegan", "25 vitaminen", "Eiwitrijk"], usage: "2 scheppen met 250ml melk." },
+            { cat: "F1 SHAKES", sku: "4469", name: "F1 Vrij Van Framboos & Witte Choc", vp: 23.95, retail: 60.90, desc: "Vrij van soja, zuivel en gluten.", benefits: ["Allergievrij", "Erwtenproteïne"], usage: "2 scheppen met hypoallergene drank." },
+            { cat: "F1 SHAKES", sku: "048K", name: "F1 Shake Romige Vanille XXL 780g", vp: 32.75, retail: 79.85, desc: "De klassieker in XXL pot.", benefits: ["Voordeliger per portie", "Vegan"], usage: "2 scheppen met 250ml melk." },
+            { cat: "F1 SHAKES", sku: "053K", name: "F1 Shake 7 zakjes (Mix)", vp: 10.00, retail: 25.35, desc: "Handige proefpakketten.", benefits: ["On-the-go", "Makkelijk doseren"], usage: "1 zakje met 250ml melk." },
+            { cat: "F1 SHAKES", sku: "8888", name: "F1 Shake Limited Edition 550g", vp: 23.95, retail: 60.90, desc: "Tijdelijke exclusieve smaak.", benefits: ["Vegan", "25 vitaminen", "Uniek"], usage: "2 scheppen met 250ml melk." },
+            
+            { cat: "PROTEÏNE & SNACKS", sku: "528K", name: "Proteïne Bak Mix (PBM)", vp: 26.90, retail: 68.35, desc: "Bak gezonde pannenkoeken of wafels.", benefits: ["Hittebestendig", "Suikervrij"], usage: "Meng met F1 en water/melk." },
+            { cat: "PROTEÏNE & SNACKS", sku: "013K", name: "Tri Blend Select Banaan 600g", vp: 37.50, retail: 90.25, desc: "100% plantaardige eiwitshake.", benefits: ["Vegan", "20g proteïne", "Natuurlijk"], usage: "3 eetlepels met water." },
+            { cat: "PROTEÏNE & SNACKS", sku: "172K", name: "Vegan PDM Vanille 560g", vp: 31.45, retail: 68.35, desc: "Vegan variant van PDM.", benefits: ["Vegan", "Ideaal met water"], usage: "1-2 scheppen toevoegen aan F1." },
+            { cat: "PROTEÏNE & SNACKS", sku: "012K", name: "High Protein Iced Coffee 308g", vp: 30.55, retail: 72.75, desc: "IJskoffie met 15g proteïne.", benefits: ["15g eiwit", "80 kcal", "Echte koffie"], usage: "2 scheppen in koud water met ijs." },
+            { cat: "PROTEÏNE & SNACKS", sku: "141K", name: "Proteïne Chips Barbecue", vp: 11.75, retail: 26.70, desc: "Hartige eiwitchips (10 stuks).", benefits: ["11g eiwit", "Gepopt, niet gefrituurd"], usage: "Eet als gezond tussendoortje." },
+            { cat: "PROTEÏNE & SNACKS", sku: "142K", name: "Proteïne Chips Sour Cream", vp: 11.75, retail: 26.70, desc: "Sour Cream chips (10 stuks).", benefits: ["12g eiwit", "Gepopt, niet gefrituurd"], usage: "Eet als gezond tussendoortje." },
+            { cat: "PROTEÏNE & SNACKS", sku: "2600", name: "Proteïnedrankmix Vanille (PDM)", vp: 33.00, retail: 71.75, desc: "Maakt melk overbodig in je shake.", benefits: ["15g extra eiwit", "Romig resultaat"], usage: "Voeg toe aan F1 met water." },
+            { cat: "PROTEÏNE & SNACKS", sku: "3968", name: "Proteïnereep Vanille Amandel", vp: 13.22, retail: 27.80, desc: "Stilt de honger en zoete trek.", benefits: ["10g eiwit", "140 kcal"], usage: "Gezond tussendoortje." },
+            { cat: "PROTEÏNE & SNACKS", sku: "3976", name: "Proteïnereep Citroen", vp: 13.22, retail: 27.80, desc: "Frisse, eiwitrijke snack.", benefits: ["10g eiwit", "140 kcal"], usage: "Gezond tussendoortje." },
+
+            { cat: "SUPPLEMENTEN", sku: "376K", name: "ViewVita", vp: 27.20, retail: 62.60, desc: "Ondersteunt optimaal zicht.", benefits: ["Omega-3", "Luteïne"], usage: "1 capsule per dag." },
+            { cat: "SUPPLEMENTEN", sku: "282K", name: "Night Mode", vp: 31.25, retail: 63.35, desc: "Verbetert slaap met Saffraan.", benefits: ["Bewezen werking", "Geen melatonine"], usage: "1 schepje uur voor slapen." },
+            { cat: "SUPPLEMENTEN", sku: "236K", name: "Phyto Complete", vp: 38.15, retail: 85.35, desc: "Buikvetverbranding en energie.", benefits: ["Fiit-NS™", "Natuurlijke energie"], usage: "2x per dag 1 capsule." },
+            { cat: "SUPPLEMENTEN", sku: "173K", name: "Microbiotic Max", vp: 27.10, retail: 62.65, desc: "Pro- en prebiotica voor darmen.", benefits: ["2 miljard bacteriën", "Vezels"], usage: "1 zakje in water of shake." },
+            { cat: "SUPPLEMENTEN", sku: "233K", name: "Immune Booster", vp: 18.90, retail: 50.65, desc: "Versterkt het immuunsysteem.", benefits: ["EpiCor®", "Vitamine C, D, Zink"], usage: "1 zakje in water." },
+            { cat: "SUPPLEMENTEN", sku: "0043", name: "Herbalifeline Max", vp: 19.40, retail: 40.70, desc: "Hoogwaardige Omega-3.", benefits: ["EPA en DHA", "Geen vissmaak"], usage: "1-5 capsules per dag." },
+            { cat: "SUPPLEMENTEN", sku: "2554", name: "Multivezel Drank", vp: 22.95, retail: 43.40, desc: "Haver-Appel vezels voor de darmen.", benefits: ["5g vezels", "18 kcal"], usage: "1 schep in water of shake." },
+            { cat: "SUPPLEMENTEN", sku: "0267", name: "Beta Heart", vp: 25.95, retail: 57.20, desc: "Verlaagt cholesterol.", benefits: ["Haver-bètaglucanen", "Vezelrijk"], usage: "1-2 scheppen per dag." },
+            { cat: "SUPPLEMENTEN", sku: "2039", name: "F2 Vitaminen VROUW", vp: 13.55, retail: 30.95, desc: "Multivitaminen voor vrouwen.", benefits: ["Hormonale balans", "Huid/Haar/Nagels"], usage: "1-2 tabletten per dag." },
+            { cat: "SUPPLEMENTEN", sku: "1746", name: "F2 Vitaminen MAN", vp: 13.55, retail: 30.95, desc: "Multivitaminen voor mannen.", benefits: ["Spierfunctie", "Immuunsysteem"], usage: "1-2 tabletten per dag." },
+            { cat: "SUPPLEMENTEN", sku: "0020", name: "Xtra-Cal", vp: 10.25, retail: 24.35, desc: "Calcium voor botten en spieren.", benefits: ["Met Vitamine D", "Tegen krampen"], usage: "1-3 tabletten per dag." },
+            { cat: "SUPPLEMENTEN", sku: "3152", name: "Lift Off Citroen", vp: 15.95, retail: 39.95, desc: "Suikervrije energieboost.", benefits: ["0% suiker", "Guarana en Cafeïne"], usage: "1 tablet in water." },
+
+            { cat: "H24 SPORT", sku: "403K", name: "H24 Rebuild Strength", vp: 33.55, retail: 78.75, desc: "Ultieme herstelshake na kracht.", benefits: ["25g eiwit", "L-Glutamine", "Ijzer"], usage: "5 scheppen na training." },
+            { cat: "H24 SPORT", sku: "1466", name: "CR7 Drive", vp: 12.50, retail: 26.80, desc: "Sportdrank voor hydratatie.", benefits: ["Elektrolyten", "B12 Vitamine"], usage: "2 scheppen in bidon." },
+            { cat: "H24 SPORT", sku: "150K", name: "H24 Achieve Reep Choco", vp: 11.30, retail: 23.65, desc: "Sportreep met 21g eiwit.", benefits: ["21g eiwit", "Weinig suiker"], usage: "Direct na sport of tussendoor." }
         ];
 
-        const dbRecipes = [
-            { title: "Snickers Shake", tag: "Eiwitrijk", desc: "F1 Choco + 1 el pindakaas + water/melk.", color: "#fef3c7" },
-            { title: "Appeltaart Ontbijt", tag: "Vezelrijk", desc: "F1 Vanille + Kaneel + Halve appel.", color: "#dcfce7" },
-            { title: "Aloë Mocktail", tag: "Hydratatie", desc: "Aloë Mango + Bruiswater + Munt.", color: "#e0f2fe" }
+        const dbTestimonials = [
+            { naam: "Marieke", fase: "Hersenletsel, altijd moe", nu: "Energie, geen dutjes meer, -63cm", label: "Energie & Herstel" },
+            { naam: "Huguette", fase: "Maatje 42, snoepverslaving", nu: "Maatje 38, fit & uitgeslapen", label: "Afslanken & Fit" },
+            { naam: "Geert", fase: "Ondergewicht, stressvet", nu: "Spiermassa, dagelijks vitaal", label: "Spiermassa" },
+            { naam: "Twan", fase: "Geen tijd voor ontbijt, moe", nu: "Bootcamp, windsurfen: Fitte 65+ Opa!", label: "Vitaliteit 60+" }
         ];
 
-        // AUTHENTICATIE
+        const dbRecipesData = [
+            { title: "Snickers Shake", tag: "Zoet & Eiwitrijk", desc: "1. 250ml Melk<br>2. 2 scheppen F1 Choco<br>3. 1 el pure pindakaas<br>4. IJsblokjes<br>Blend tot een romige snickers vervanger!", color: "#fef3c7" },
+            { title: "Appeltaart Ontbijt", tag: "Vezelrijk", desc: "1. 250ml Melk<br>2. 2 scheppen F1 Vanille<br>3. Halve appel (in stukjes)<br>4. Theelepel kaneel<br>Blend goed door!", color: "#dcfce7" },
+            { title: "Krokante Wafeltjes", tag: "Baking", desc: "1. 170g F1 Vanille<br>2. 80g PBM<br>3. 100g Zusto<br>4. 1 ei & 75ml melk<br>5. 125g gesmolten kokosolie<br>Mix & bak 4-5 min in wafelijzer.", color: "#fee2e2" },
+            { title: "Chocopudding", tag: "Dessert", desc: "1. 1L Sojamelk Choco (warmen)<br>2. 10 scheppen F1 Choco<br>3. 10 scheppen Rebuild Strength<br>Mixen, verdelen en 3 uur in koelkast.", color: "#e0e7ff" }
+        ];
+
+        // =========================================================================
+        // FIREBASE LOGIC
+        // =========================================================================
         function loginUser() {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
             const remember = document.getElementById('login-remember').checked;
             
+            if(!email || !pass) {
+                document.getElementById('login-error').innerText = "Vul alle velden in.";
+                document.getElementById('login-error').style.display = 'block';
+                return;
+            }
+
             const persistence = remember ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
 
             auth.setPersistence(persistence).then(() => {
                 return auth.signInWithEmailAndPassword(email, pass);
             }).catch(err => {
+                document.getElementById('login-error').innerText = "Inloggen mislukt. Gegevens onjuist.";
                 document.getElementById('login-error').style.display = 'block';
             });
         }
 
-        function logoutUser() { auth.signOut(); }
+        function logoutUser() {
+            if(confirm("Weet je zeker dat je veilig wilt uitloggen?")) {
+                auth.signOut();
+            }
+        }
 
         auth.onAuthStateChanged(user => {
             if (user) {
                 document.getElementById('login-overlay').style.display = 'none';
-                document.getElementById('user-display').innerText = `Ingelogd als: ${user.email}`;
-                loadFirebaseData();
+                document.getElementById('user-display').innerText = `${user.email}`;
+                switchCoach();
+                initCatalog();
+                renderTestimonials();
                 renderRecipes();
             } else {
                 document.getElementById('login-overlay').style.display = 'flex';
+                clients = {}; myStock = {}; currentClientId = null;
+                renderClientList(); renderStockTable();
+                if(unsubClients) unsubClients();
+                if(unsubStock) unsubStock();
             }
         });
 
-        // NAVIGATION
+        // =========================================================================
+        // UI & NAVIGATION
+        // =========================================================================
+        window.onload = () => {
+            buildEvalForm();
+            document.getElementById('eval-date').valueAsDate = new Date();
+            
+            const now = new Date();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            document.getElementById('monthSelector').value = `${now.getFullYear()}-${mm}`;
+        };
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = `✅ ${msg}`;
+            t.style.display = 'block';
+            t.style.animation = 'none';
+            t.offsetHeight; /* trigger reflow */
+            t.style.animation = null; 
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+
         function switchView(viewId, btn) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
@@ -408,37 +726,170 @@
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             if(btn) btn.classList.add('active');
 
-            const titles = { 'view-dash': 'Dashboard', 'view-eval': 'Nieuwe Intake', 'view-fu': 'Klantenbeheer', 'view-stock': 'Voorraad', 'view-catalog': 'Catalogus', 'view-recipes': 'Recepten Boek' };
+            const titles = { 'view-dash': 'Dashboard Overzicht', 'view-eval': 'Nieuwe Intake Starten', 'view-fu': 'Klantendossiers', 'view-stock': 'Voorraad & Administratie', 'view-catalog': 'Producten Catalogus', 'view-recipes': 'Gezonde Recepten', 'view-testimonials': 'Succesverhalen' };
             document.getElementById('view-title').innerText = titles[viewId] || 'HBL-Connect';
+            document.getElementById('app-sidebar').classList.remove('open');
         }
 
-        // FIREBASE DATA
-        function loadFirebaseData() {
-            const coachRef = db.collection('coaches').doc(currentCoach);
+        function switchCoach() {
+            if (!auth.currentUser) return; 
+
+            currentCoach = document.getElementById('coach-selector').value;
+            const root = document.documentElement;
+            if(currentCoach === 'Andreas') { root.style.setProperty('--primary', '#2563eb'); root.style.setProperty('--secondary', '#10b981'); }
+            else if(currentCoach === 'Silvia') { root.style.setProperty('--primary', '#f59e0b'); root.style.setProperty('--secondary', '#e11d48'); }
+            else { root.style.setProperty('--primary', '#7AC142'); root.style.setProperty('--secondary', '#0284c7'); }
             
-            coachRef.collection('clients').onSnapshot(snap => {
+            currentClientId = null;
+            document.getElementById('fu-workspace').style.display = 'none';
+            loadFirebaseData();
+        }
+
+        function loadFirebaseData() {
+            if(unsubClients) unsubClients();
+            if(unsubStock) unsubStock();
+
+            const coachRef = db.collection('coaches').doc(currentCoach);
+
+            unsubClients = coachRef.collection('clients').onSnapshot(snap => {
                 clients = {};
                 snap.forEach(doc => clients[doc.id] = doc.data());
                 renderClientList();
+                updateClientLinkDropdown();
                 document.getElementById('stat-clients').innerText = Object.keys(clients).length;
+                if(currentClientId && clients[currentClientId]) loadClientFiche();
             });
 
-            coachRef.collection('inventory').doc('data').onSnapshot(doc => {
-                myStock = doc.exists ? doc.data().stock : {};
+            unsubStock = coachRef.collection('inventory').doc('data').onSnapshot(doc => {
+                if (doc.exists) {
+                    const d = doc.data();
+                    myStock = d.stock || {}; salesHistory = d.sales || []; personalUse = d.personal || [];
+                } else {
+                    myStock = {}; salesHistory = []; personalUse = [];
+                }
                 renderStockTable();
+                renderHistoryLists();
             });
         }
 
-        // RENDERERS
+        // =========================================================================
+        // INTAKE & EVALUATIE
+        // =========================================================================
+        function buildEvalForm() {
+            const cl = document.getElementById('check-list');
+            evalQuestions.forEach((q, i) => {
+                cl.innerHTML += `<tr><td style="padding:15px 5px; color:var(--text-muted);">${i+1}. ${q.q}</td>
+                    <td class="col-option"><input type="radio" name="q${i}" class="${q.val==='NEE'?'pt':''}" onchange="updateScore()"></td>
+                    <td class="col-option"><input type="radio" name="q${i}" class="${q.val==='JA'?'pt':''}" onchange="updateScore()"></td></tr>`;
+            });
+            
+            const sl = document.getElementById('symp-list');
+            evalSymptoms.forEach(s => {
+                sl.innerHTML += `<label class="symp-item"><input type="checkbox" class="sc" data-tags="${s.f.join(',')}" data-name="${s.t}" onchange="updateAnalysis()"> ${s.t}</label>`;
+            });
+        }
+
+        function updateScore() {
+            const pts = document.querySelectorAll('input.pt:checked').length;
+            document.getElementById('score-num').innerText = pts;
+            const fill = document.getElementById('score-fill');
+            fill.style.width = (pts/15*100) + "%";
+            fill.style.background = pts <= 7 ? "var(--danger)" : (pts <= 11 ? "var(--accent)" : "var(--secondary)");
+        }
+
+        function updateAnalysis() {
+            const checked = document.querySelectorAll('.sc:checked');
+            let tallies = {}; let names = []; let hasAllergy = false;
+            let suggested = new Set(["F1 Shake (Ideaal Basis Ontbijt)", "Instant Theedrank (Energie)", "Herbal Aloë Drank (Spijsvertering)"]);
+
+            checked.forEach(c => {
+                const sn = c.getAttribute('data-name');
+                const st = c.getAttribute('data-tags').split(',');
+                names.push(`• ${sn}`);
+                st.forEach(t => tallies[t] = (tallies[t]||0)+1);
+                if (sn === "Allergieën") hasAllergy = true;
+                
+                if (["Energiegebrek", "Concentratieverlies"].includes(sn)) suggested.add("Lift-Off (Focus)");
+                if (sn === "Slechte slaper") suggested.add("Night Mode");
+                if (["Spierpijn", "Spierkrampen", "Gewrichtspijn"].includes(sn)) { suggested.add("H24 Rebuild Strength"); suggested.add("Xtra-Cal"); }
+                if (["Stoelgang problemen", "Brandend maagzuur"].includes(sn)) suggested.add("Multivezel Drank");
+                if (["Droge huid / Acné", "Haarverlies"].includes(sn)) suggested.add("Collageen Skin Booster");
+                if (sn === "Regelmatig verkouden") suggested.add("Immune Booster");
+                if (["Zin in zoet", "Veel dorst/plassen"].includes(sn)) suggested.add("Proteïnedrankmix (PDM)");
+            });
+
+            document.getElementById('allergy-box').style.display = hasAllergy ? 'block' : 'none';
+            document.getElementById('vitamin-warning').style.display = checked.length >= 5 ? 'block' : 'none';
+            document.getElementById('symp-details').innerHTML = names.join('<br>') || "...";
+            
+            const sorted = Object.entries(tallies).sort((a,b) => b[1]-a[1]);
+            document.getElementById('tally-results').innerHTML = sorted.map(r => `<div style="padding:3px 0;"><strong>${r[0]}:</strong> ${r[1]}x gescoord</div>`).join('') || "...";
+            document.getElementById('suggested-products').innerHTML = Array.from(suggested).map(s => `<div style="padding:4px 0;">+ ${s}</div>`).join('');
+        }
+
+        function saveEvaluatie() {
+            const name = document.getElementById('eval-name').value.trim();
+            if(!name) return alert("Naam is verplicht!");
+
+            const pts = document.querySelectorAll('input.pt:checked').length;
+            const symps = Array.from(document.querySelectorAll('.sc:checked')).map(c => c.getAttribute('data-name'));
+            const advText = Array.from(document.querySelectorAll('#suggested-products div')).map(d => d.innerText.replace('+ ', '')).join(', ');
+            const focus = Array.from(document.querySelectorAll('.focus-check:checked')).map(c => c.value);
+
+            const newId = 'client_' + Date.now();
+            
+            db.collection('coaches').doc(currentCoach).collection('clients').doc(newId).set({
+                name: name,
+                phone: document.getElementById('eval-phone').value,
+                email: document.getElementById('eval-email').value,
+                startdate: document.getElementById('eval-date').value,
+                why: document.getElementById('eval-why').value,
+                score: pts, symptoms: symps, advies: advText, focus: focus, active: true,
+                medicatie: document.getElementById('eval-medication').value,
+                notes: "Intake Notities:\n" + document.getElementById('eval-extra-notes').value,
+                tanita_start: { 
+                    gew: document.getElementById('eval-t-gew').value, vet: document.getElementById('eval-t-vet').value, 
+                    spier: document.getElementById('eval-t-spier').value, visc: document.getElementById('eval-t-visc').value, lft: document.getElementById('eval-t-lft').value 
+                },
+                eetgewoonten: {
+                    ontbijt: document.getElementById('eval-eet-ontbijt').value, middag: document.getElementById('eval-eet-middag').value, avond: document.getElementById('eval-eet-avond').value,
+                    tussen: document.getElementById('eval-eet-tussen').value, water: document.getElementById('eval-eet-water').value, drank: document.getElementById('eval-eet-drank').value
+                }
+            }).then(() => {
+                showToast("Dossier succesvol aangemaakt!");
+                document.querySelectorAll('input[type="text"], input[type="email"], textarea').forEach(i => i.value = '');
+                document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(i => i.checked = false);
+                updateAnalysis(); updateScore();
+                switchView('view-fu', document.querySelectorAll('.nav-link')[2]);
+                selectClient(newId);
+            });
+        }
+
+        // =========================================================================
+        // KLANTENBEHEER (DOSSIER)
+        // =========================================================================
         function renderClientList() {
+            const q = document.getElementById('search-client').value.toLowerCase();
             const list = document.getElementById('client-list');
             list.innerHTML = '';
-            Object.keys(clients).forEach(id => {
-                const c = clients[id];
+            
+            let arr = Object.keys(clients).map(id => ({id, ...clients[id]}));
+            arr.sort((a,b) => (b.active !== false ? 1 : 0) - (a.active !== false ? 1 : 0) || b.id.localeCompare(a.id));
+
+            arr.forEach(c => {
+                if(q && !(c.name||'').toLowerCase().includes(q)) return;
+                const isActive = c.active !== false;
+                
                 const div = document.createElement('div');
-                div.className = `client-row ${id === currentClientId ? 'active' : ''}`;
-                div.innerHTML = `<div><strong>${c.name}</strong><br><small>${c.phone || ''}</small></div><span>›</span>`;
-                div.onclick = () => selectClient(id);
+                div.className = `client-row ${c.id === currentClientId ? 'active' : ''}`;
+                div.style.opacity = isActive ? '1' : '0.5';
+                div.innerHTML = `
+                    <div>
+                        <strong style="display:block; margin-bottom:4px;">${c.name || 'Onbekend'}</strong>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">${isActive ? 'Actief' : 'Inactief'}</span>
+                    </div>
+                `;
+                div.onclick = () => selectClient(c.id);
                 list.appendChild(div);
             });
         }
@@ -446,92 +897,350 @@
         function selectClient(id) {
             currentClientId = id;
             const c = clients[id];
+            
             document.getElementById('fu-workspace').style.display = 'block';
-            document.getElementById('header-client-name').innerText = c.name;
+            document.getElementById('header-client-name').innerText = c.name || 'Onbekend';
+            document.getElementById('header-client-phone').innerText = c.phone || 'Geen telefoonnummer';
+            
+            const btnToggle = document.getElementById('btn-toggle-active');
+            if (c.active !== false) { btnToggle.innerText = "Zet Inactief"; btnToggle.style.color = "var(--accent)"; }
+            else { btnToggle.innerText = "Zet Actief"; btnToggle.style.color = "var(--secondary)"; }
+
+            document.getElementById('sticky-why').innerText = c.why || 'Niet ingevuld';
+            
+            // Fiche
+            document.getElementById('fiche-name').value = c.name || '';
+            document.getElementById('fiche-phone').value = c.phone || '';
+            document.getElementById('fiche-startdate').value = c.startdate || '';
             document.getElementById('fiche-why').value = c.why || '';
             document.getElementById('fiche-meds').value = c.medicatie || '';
             document.getElementById('fiche-notes').value = c.notes || '';
-            renderClientList();
-        }
 
-        function renderRecipes() {
-            const grid = document.getElementById('recipe-grid');
-            grid.innerHTML = '';
-            dbRecipes.forEach(r => {
-                grid.innerHTML += `
-                    <div class="card recipe-card" style="background: ${r.color}">
-                        <span class="recipe-tag">${r.tag}</span>
-                        <h3 style="margin-top: 0;">${r.title}</h3>
-                        <p style="font-size: 0.9rem;">${r.desc}</p>
-                        <button class="btn btn-primary" style="font-size: 0.7rem;">Deel via WhatsApp</button>
-                    </div>
-                `;
+            // Intake Read-Only
+            document.getElementById('crm-eval-score').innerText = c.score || '?';
+            document.getElementById('crm-eval-symptoms').innerHTML = (c.symptoms||[]).map(s=>`• ${s}`).join('<br>');
+            document.getElementById('crm-eval-products').innerHTML = (c.advies||'').split(',').map(p=>`• <strong>${p}</strong>`).join('<br>');
+            
+            // Tanita Start
+            if(c.tanita_start) {
+                ['gew','vet','spier','visc','lft'].forEach(t => document.getElementById(`fiche-t-${t}`).value = c.tanita_start[t]||'');
+            } else {
+                ['gew','vet','spier','visc','lft'].forEach(t => document.getElementById(`fiche-t-${t}`).value = '');
+            }
+
+            // Tanita W3
+            if(c.tanita_w3) {
+                ['gew','vet','spier','visc','lft'].forEach(t => document.getElementById(`w3-t-${t}`).value = c.tanita_w3[t]||'');
+            } else {
+                ['gew','vet','spier','visc','lft'].forEach(t => document.getElementById(`w3-t-${t}`).value = '');
+            }
+
+            // Dagen
+            ['dag1','dag3','dag7','week2','week3'].forEach(d => {
+                ['q1','q2','q3','q4','q5','q6','q7','q8','notes'].forEach(q => {
+                    const el = document.getElementById(`${d}-${q}`);
+                    if(el) el.value = c[`${d.replace('week','w').replace('dag','d')}-${q}`] || '';
+                });
             });
+
+            document.getElementById('w2-symp-reminder').innerText = (c.symptoms||[]).join(', ');
+
+            renderClientList(); // Update active state in list
         }
 
-        function renderStockTable() {
-            const tbody = document.getElementById('stockTableBody');
-            tbody.innerHTML = '';
-            dbProducts.forEach(p => {
-                const q = myStock[p.sku] || 0;
-                tbody.innerHTML += `
-                    <tr style="border-bottom: 1px solid var(--border);">
-                        <td style="padding: 15px;"><strong>${p.name}</strong></td>
-                        <td>${p.vp}</td>
-                        <td><span style="font-weight: bold; color: ${q < 2 ? 'var(--danger)' : 'inherit'}">${q} stuks</span></td>
-                        <td>
-                            <button onclick="updateStock('${p.sku}', ${q+1})">+</button>
-                            <button onclick="updateStock('${p.sku}', ${q-1})">-</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        // ACTIONS
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 3000);
-        }
-
-        function updateStock(sku, val) {
-            myStock[sku] = Math.max(0, val);
-            db.collection('coaches').doc(currentCoach).collection('inventory').doc('data').set({ stock: myStock }, { merge: true });
-            showToast("Voorraad bijgewerkt");
+        function openTab(tabId, btn) {
+            document.querySelectorAll('#fu-workspace .tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('#fu-workspace .tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
         }
 
         function autoSaveFiche(field) {
             if(!currentClientId) return;
             const val = document.getElementById(`fiche-${field === 'medicatie' ? 'meds' : field}`).value;
             db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).update({ [field]: val });
+            if(field==='name') document.getElementById('header-client-name').innerText = val;
         }
 
-        function saveEvaluatie() {
-            const name = document.getElementById('eval-name').value;
-            if(!name) return alert("Naam verplicht");
-            
-            const newId = 'client_' + Date.now();
-            db.collection('coaches').doc(currentCoach).collection('clients').doc(newId).set({
-                name: name,
-                phone: document.getElementById('eval-phone').value,
-                medicatie: document.getElementById('eval-medication').value,
-                date: document.getElementById('eval-date').value,
-                active: true
-            }).then(() => {
-                showToast("Dossier aangemaakt!");
-                switchView('view-fu');
+        function autoSaveDag(prefix, field) {
+            if(!currentClientId) return;
+            const val = document.getElementById(`${prefix}-${field}`).value;
+            const dbKey = `${prefix.replace('week','w').replace('dag','d')}-${field}`;
+            db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).update({ [dbKey]: val });
+        }
+
+        function autoSaveTanitaStart(field) {
+            if(!currentClientId) return;
+            const val = document.getElementById(`fiche-t-${field}`).value;
+            db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).set({ tanita_start: { [field]: val } }, { merge: true });
+        }
+
+        function autoSaveTanitaW3(field) {
+            if(!currentClientId) return;
+            const val = document.getElementById(`w3-t-${field}`).value;
+            db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).set({ tanita_w3: { [field]: val } }, { merge: true });
+        }
+
+        function toggleActiveStatus() {
+            if(!currentClientId) return;
+            const st = clients[currentClientId].active !== false;
+            db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).update({ active: !st });
+            showToast(st ? "Dossier Inactief gezet" : "Dossier geactiveerd");
+        }
+
+        function deleteClient() {
+            if(confirm("Dossier en alle data permanent verwijderen?")) {
+                db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).delete().then(()=>{
+                    showToast("Dossier verwijderd");
+                    document.getElementById('fu-workspace').style.display = 'none';
+                    currentClientId = null;
+                });
+            }
+        }
+
+        function openWA() {
+            if(!currentClientId) return;
+            let p = (clients[currentClientId].phone || '').replace(/\D/g,'');
+            if(p.startsWith('0')) p = '32' + p.substring(1);
+            if(p.length > 5) window.open(`https://wa.me/${p}`, '_blank');
+            else alert("Geen geldig telefoonnummer gevonden.");
+        }
+
+        // =========================================================================
+        // VOORRAAD & WINST
+        // =========================================================================
+        function updateClientLinkDropdown() {
+            const sel = document.getElementById('link-client-select');
+            sel.innerHTML = '<option value="">Koppel aan klant...</option>';
+            Object.keys(clients).forEach(id => { 
+                if(clients[id].active !== false) sel.innerHTML += `<option value="${id}">${clients[id].name}</option>`; 
             });
         }
 
-        function openTab(tabId, btn) {
-            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-            document.getElementById(tabId).style.display = 'block';
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+        function renderStockTable() {
+            const tbody = document.getElementById('stockTableBody');
+            const disc = parseFloat(document.getElementById('discountSelect').value) / 100;
+            const search = document.getElementById('searchStock').value.toLowerCase();
+            tbody.innerHTML = '';
+            
+            let tVP = 0, tBuy = 0, tRet = 0, tProf = 0, cCat = '';
+
+            dbProducts.forEach(p => {
+                if (search && !p.name.toLowerCase().includes(search) && !p.sku.toLowerCase().includes(search)) return;
+                const count = myStock[p.sku] || 0;
+                const buyP = p.retail * (1 - disc);
+                const prof = p.retail - buyP;
+
+                if(count > 0) { tVP += (p.vp * count); tBuy += (buyP * count); tRet += (p.retail * count); tProf += (prof * count); }
+                
+                if (p.cat !== cCat) {
+                    tbody.innerHTML += `<tr><td colspan="5" style="background:#f1f5f9; font-weight:700; font-size:0.8rem; padding:10px 15px; color:var(--text-muted);">${p.cat}</td></tr>`;
+                    cCat = p.cat;
+                }
+
+                tbody.innerHTML += `
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 12px 15px;"><strong>${p.name}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">SKU: ${p.sku} | VP: ${p.vp}</span></td>
+                        <td>${formatMoney(p.retail)}</td>
+                        <td style="color:var(--secondary); font-weight:600;">+ ${formatMoney(prof)}</td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <button class="btn btn-outline" style="padding:4px 10px;" onclick="updateStockCount('${p.sku}', ${count - 1})">-</button>
+                                <span style="font-weight:700; width:20px; text-align:center; color:${count===0?'var(--text-muted)':(count<3?'var(--accent)':'var(--text-main)')};">${count}</span>
+                                <button class="btn btn-outline" style="padding:4px 10px;" onclick="updateStockCount('${p.sku}', ${count + 1})">+</button>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="display:flex; gap:5px;">
+                                <select id="cdisc-${p.sku}" style="padding:5px; border-radius:4px; width:70px; font-size:0.8rem;">
+                                    <option value="0">0%</option><option value="5">5%</option><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option>
+                                </select>
+                                <button class="btn btn-primary" style="padding:5px 10px; font-size:0.8rem;" onclick="sellProduct('${p.sku}')" ${count===0?'disabled':''}>Verkoop</button>
+                                <button class="btn btn-outline" style="padding:5px 10px; font-size:0.8rem;" onclick="usePersonal('${p.sku}')" ${count===0?'disabled':''}>Zelf</button>
+                            </div>
+                        </td>
+                    </tr>`;
+            });
+
+            document.getElementById('dash-vp').innerText = tVP.toFixed(2);
+            document.getElementById('dash-inkoop').innerText = formatMoney(tBuy);
+            document.getElementById('dash-winst').innerText = formatMoney(tProf);
+            
+            // Stats op Home Dashboard
+            const hStatStock = document.getElementById('stat-stock');
+            if(hStatStock) hStatStock.innerText = formatMoney(tRet);
         }
 
+        function updateStockCount(sku, val) { 
+            myStock[sku] = Math.max(0, val); 
+            db.collection('coaches').doc(currentCoach).collection('inventory').doc('data').set({ stock: myStock }, { merge: true });
+        }
+
+        function sellProduct(sku) {
+            const p = dbProducts.find(x => x.sku === sku);
+            if (p && (myStock[sku] || 0) > 0) {
+                const coachD = parseFloat(document.getElementById('discountSelect').value) / 100;
+                const custD = parseFloat(document.getElementById(`cdisc-${sku}`).value) / 100;
+                const profit = (p.retail * (1 - custD)) - (p.retail * (1 - coachD));
+
+                myStock[sku] -= 1;
+                salesHistory.unshift({ id: Date.now(), sku: p.sku, name: p.name, profit: profit, date: new Date().toISOString() });
+                
+                const clientSelect = document.getElementById('link-client-select');
+                if(clientSelect.value && clients[clientSelect.value]) {
+                    const n = `[${new Date().toLocaleDateString()}] Aankoop: ${p.name} (${custD*100}% korting)\n`;
+                    const cNotes = clients[clientSelect.value].notes || '';
+                    db.collection('coaches').doc(currentCoach).collection('clients').doc(clientSelect.value).update({ notes: n + cNotes });
+                    clientSelect.value = ""; 
+                    showToast("Verkocht & genoteerd in dossier!");
+                } else {
+                    showToast("Product verkocht!");
+                }
+                
+                db.collection('coaches').doc(currentCoach).collection('inventory').doc('data').set({ stock: myStock, sales: salesHistory }, { merge: true });
+            }
+        }
+
+        function usePersonal(sku) {
+            const p = dbProducts.find(x => x.sku === sku);
+            if (p && (myStock[sku] || 0) > 0) {
+                myStock[sku] -= 1;
+                personalUse.unshift({ id: Date.now(), name: p.name, date: new Date().toLocaleDateString() });
+                db.collection('coaches').doc(currentCoach).collection('inventory').doc('data').set({ stock: myStock, personal: personalUse }, { merge: true });
+                showToast("Genoteerd als eigen gebruik");
+            }
+        }
+
+        function renderHistoryLists() {
+            const month = document.getElementById('monthSelector').value; 
+            if (!month) return;
+
+            let mProfit = 0;
+            const filteredSales = salesHistory.filter(s => s.date.startsWith(month));
+            filteredSales.forEach(s => mProfit += s.profit);
+            
+            document.getElementById('current-month-profit').innerText = formatMoney(mProfit);
+            
+            // Home Dash Winst update
+            const hStatProf = document.getElementById('stat-profit');
+            if(hStatProf) hStatProf.innerText = formatMoney(mProfit);
+
+            const sList = document.getElementById('sales-history-list');
+            sList.innerHTML = filteredSales.length ? '' : '<li style="padding:10px; color:var(--text-muted);">Geen verkopen.</li>';
+            filteredSales.slice(0, 15).forEach(s => {
+                sList.innerHTML += `<li style="padding:12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                    <div><strong>${s.name}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">${new Date(s.date).toLocaleString()}</span></div>
+                    <div style="text-align:right;"><span style="color:var(--secondary); font-weight:700;">+ ${formatMoney(s.profit)}</span><br>
+                    <button style="background:none; border:none; color:var(--danger); font-size:0.7rem; cursor:pointer;" onclick="undoSale(${s.id}, '${s.sku}')">Undo</button></div>
+                </li>`;
+            });
+        }
+
+        function undoSale(id, sku) {
+            salesHistory = salesHistory.filter(s => s.id !== id);
+            myStock[sku] = (myStock[sku] || 0) + 1;
+            db.collection('coaches').doc(currentCoach).collection('inventory').doc('data').set({ stock: myStock, sales: salesHistory }, { merge: true });
+            showToast("Verkoop geannuleerd");
+        }
+
+        // =========================================================================
+        // CATALOGUS & MODALS & TESTIMONIALS & RECEPTEN
+        // =========================================================================
+        function initCatalog() {
+            const cats = ["Alles", ...new Set(dbProducts.map(p => p.cat))];
+            const fc = document.getElementById('catalog-filters');
+            fc.innerHTML = "";
+            cats.forEach(c => {
+                let btn = document.createElement('button');
+                btn.className = `btn ${c === currentCatFilter ? 'btn-primary' : 'btn-outline'}`;
+                btn.style.padding = "6px 12px"; btn.style.fontSize = "0.8rem"; btn.style.borderRadius = "20px";
+                btn.innerText = c;
+                btn.onclick = () => {
+                    currentCatFilter = c;
+                    document.querySelectorAll('#catalog-filters .btn').forEach(b => { b.classList.remove('btn-primary'); b.classList.add('btn-outline'); });
+                    btn.classList.remove('btn-outline'); btn.classList.add('btn-primary');
+                    renderCatalog();
+                };
+                fc.appendChild(btn);
+            });
+            renderCatalog();
+        }
+
+        function renderCatalog() {
+            const search = document.getElementById('search-catalog').value.toLowerCase();
+            const grid = document.getElementById('catalog-grid');
+            grid.innerHTML = "";
+
+            let filtered = dbProducts.filter(p => (currentCatFilter === "Alles" || p.cat === currentCatFilter) && (p.name.toLowerCase().includes(search) || p.sku.toLowerCase().includes(search)));
+
+            filtered.forEach(p => {
+                grid.innerHTML += `
+                    <div class="card" style="padding:20px; cursor:pointer; border-top: 4px solid var(--primary); margin-bottom:0;" onclick="openProductModal('${p.sku}')">
+                        <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted);">${p.cat}</span>
+                        <h4 style="margin:5px 0 10px 0;">${p.name}</h4>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 15px 0;">${p.desc}</p>
+                        <div style="display:flex; justify-content:space-between; align-items:end;">
+                            <span style="font-size:0.75rem; color:#888;">SKU: ${p.sku}</span>
+                            <span style="font-weight:700; color:var(--primary);">${formatMoney(p.retail)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openProductModal(sku) {
+            const p = dbProducts.find(x => x.sku === sku);
+            if(!p) return;
+            document.getElementById('modal-img').src = p.sku + '.jpg';
+            document.getElementById('modal-cat').innerText = p.cat;
+            document.getElementById('modal-title').innerText = p.name;
+            document.getElementById('modal-sku').innerText = p.sku;
+            document.getElementById('modal-vp').innerText = p.vp.toFixed(2);
+            document.getElementById('modal-price').innerText = formatMoney(p.retail);
+            document.getElementById('modal-desc').innerText = p.desc;
+            document.getElementById('modal-benefits').innerHTML = p.benefits.map(b => `<li>${b}</li>`).join('');
+            document.getElementById('modal-usage').innerText = p.usage || "Lees verpakking.";
+            document.getElementById('product-modal').classList.add('active');
+        }
+
+        function renderTestimonials() {
+            const grid = document.getElementById('testi-grid');
+            grid.innerHTML = "";
+            dbTestimonials.forEach(t => {
+                grid.innerHTML += `
+                    <div class="card" style="margin-bottom:0; padding:0; overflow:hidden;">
+                        <div style="background:var(--sidebar-bg); color:white; padding:15px; text-align:center;">
+                            <strong style="font-size:1.1rem;">${t.naam}</strong><br><span style="font-size:0.8rem; color:#94a3b8;">${t.label}</span>
+                        </div>
+                        <div style="padding:20px;">
+                            <div style="background:#fef2f2; padding:12px; border-radius:8px; border-left:3px solid var(--danger); margin-bottom:10px; font-size:0.85rem;">
+                                <strong style="color:var(--danger)">VOORHEEN:</strong><br>${t.fase}
+                            </div>
+                            <div style="background:#ecfdf5; padding:12px; border-radius:8px; border-left:3px solid var(--secondary); font-size:0.85rem;">
+                                <strong style="color:var(--secondary)">NU:</strong><br>${t.nu}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderRecipes() {
+            const grid = document.getElementById('recipe-grid');
+            grid.innerHTML = '';
+            dbRecipesData.forEach(r => {
+                grid.innerHTML += `
+                    <div class="card recipe-card" style="background: ${r.color}; border:none; margin-bottom:0;">
+                        <span class="recipe-tag">${r.tag}</span>
+                        <h3 style="margin-top: 0; color:var(--sidebar-bg);">${r.title}</h3>
+                        <p style="font-size: 0.85rem; color:var(--sidebar-bg); line-height:1.6;">${r.desc}</p>
+                        <button class="btn btn-outline" style="font-size: 0.75rem; width:100%; justify-content:center; background:rgba(255,255,255,0.6);" onclick="showToast('Recept gekopieerd om te delen!')">📋 Kopieer Recept</button>
+                    </div>
+                `;
+            });
+        }
+
+        function closeModal(e) { if(e) e.stopPropagation(); document.getElementById('product-modal').classList.remove('active'); }
     </script>
 </body>
 </html>
