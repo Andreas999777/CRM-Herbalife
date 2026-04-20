@@ -211,7 +211,7 @@
 
     <div id="login-overlay">
         <div class="login-card">
-            <h2>HBL-Connect <span>Pro</span></h2>
+            <h2>HBL-Connect <span style="color: var(--secondary);">Pro</span></h2>
             <p style="color: var(--text-muted); margin-bottom: 25px; font-size: 0.95rem;">Geavanceerd Coach Dashboard</p>
             
             <div id="login-error" style="color: white; background: var(--danger); padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 20px; display: none; font-weight: 600;">Oeps! E-mail of wachtwoord onjuist.</div>
@@ -299,7 +299,10 @@
 
     <main id="main-content">
         <div class="header-bar">
-            <h2 id="view-title" style="margin: 0; font-weight: 700; color: var(--text-main);">Dashboard Overzicht</h2>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="hamburger" onclick="document.getElementById('app-sidebar').classList.toggle('open')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; display: none;">☰</button>
+                <h2 id="view-title" style="margin: 0; font-weight: 700; color: var(--text-main);">Dashboard Overzicht</h2>
+            </div>
             <div id="user-display" style="font-weight: 500; font-size: 0.9rem; color: var(--text-muted); background: var(--bg-main); padding: 8px 16px; border-radius: 20px;">Laden...</div>
         </div>
 
@@ -761,7 +764,7 @@
             { cat: "PROTEÏNE & SNACKS", sku: "528K", name: "Proteïne Bak Mix (PBM)", vp: 26.90, retail: 68.35, desc: "Bak gezonde, eiwitrijke pannenkoeken, wafels of muffins zonder toegevoegde suikers.", benefits: ["Ontwikkeld om mee te bakken (hittebestendig)", "Vrij van kunstmatige kleur- en zoetstoffen", "Glutenvrij en geschikt voor vegetariërs", "Hoog in eiwitten en vezels"], usage: "Meng met je favoriete F1 smaak en wat water of melk om heerlijk beslag te maken. Bak in de pan of in het wafelijzer." },
             { cat: "PROTEÏNE & SNACKS", sku: "013K", name: "Tri Blend Select Banaan 600g", vp: 37.50, retail: 90.25, desc: "100% plantaardige, natuurlijke premium eiwitshake. Rijk aan vezels.", benefits: ["100% veganistische ingrediënten (erwt, quinoa, lijnzaad)", "20g proteïne per portie", "Geen kunstmatige kleurstoffen, aroma's of zoetstoffen", "Hoog in vezels (6g per portie)"], usage: "Meng 3 eetlepels (40g) met 250 ml water, vruchtensap of plantaardige melk. Ideaal als post-workout of voedzaam tussendoortje." },
             { cat: "PROTEÏNE & SNACKS", sku: "172K", name: "Vegan Proteïnedrankmix Vanille 560g", vp: 31.45, retail: 68.35, desc: "De vegan variant van de PDM. Voeg toe aan je F1 voor extra eiwitten en smaak.", benefits: ["100% Vegan (vrij van zuivel)", "Ideaal om te mengen met water (in plaats van melk)", "Verhoogt de eiwitinname aanzienlijk", "Lekkere, romige vanillesmaak"], usage: "Voeg 1 of 2 scheppen Vegan PDM toe aan je F1 Shake en meng simpelweg met water. Perfect voor onderweg!" },
-            { cat: "PROTEÏNE & SNACKS", sku: "441K", name: "Vegan PDM Vanille (7 zakjes)", vp: 13.25, retail: 29.90, desc: "Vegan Proteïnedrankmix in handige meeneemzakjes.", benefits: ["Makkelijk mee te nemen porties", "100% Vegan (vrij van zuivel)", "Ideaal om te mengen met water", "Verhoogt eiwitten en romigheid van je shake"], usage: "1 zakje Vegan PDM + 2 scheppen F1 Shake + 250ml water. Shake and go!" },
+            { cat: "PROTEÏNE & SNACKS", sku: "441K", name: "Vegan PDM Vanille (7 zakjes)", vp: 13.25, retail: 29.90, desc: "Vegan Proteïnedrankmix in handige meeneemzakjes.", benefits: ["Makkelijk mee te nemen porties", "100% Vegan (vrij van zuivel)", "Ideaal om te mengen met water", "Verhoogt eiwitten en romigheid of je shake"], usage: "1 zakje Vegan PDM + 2 scheppen F1 Shake + 250ml water. Shake and go!" },
             { cat: "PROTEÏNE & SNACKS", sku: "012K", name: "High Protein Iced Coffee 308g", vp: 30.55, retail: 72.75, desc: "Heerlijke ijskoffie met 15g proteïne en slechts 80 calorieën. Ideaal als 10-uurtje.", benefits: ["15g whey-eiwitten per portie", "Met 100% Robusta espresso koffiebonen", "Zonder toegevoegde suikers (bevat Stevia)", "Slechts 80 kcal per portie"], usage: "Voeg 2 scheppen toe aan 250 ml koud water. Voeg ijsblokjes toe en shake krachtig in een shakerbeker." },
             { cat: "PROTEÏNE & SNACKS", sku: "141K", name: "Proteïne Chips Barbecue (10 stuks)", vp: 11.75, retail: 26.70, desc: "Gezond snacken! Hartige chips met extra proteïne en 50% minder vet.", benefits: ["11g plantaardige (erwten)eiwitten per zakje", "50% minder vet dan gefrituurde chips", "Gepopt, niet gefrituurd", "Geschikt voor veganisten"], usage: "Eet als een heerlijk, verantwoord tussendoortje wanneer je zin hebt in iets hartigs." },
             { cat: "PROTEÏNE & SNACKS", sku: "142K", name: "Proteïne Chips Sour Cream (10 stuks)", vp: 11.75, retail: 26.70, desc: "Lekkere Sour Cream & Onion chips, gebakken (niet gefrituurd) voor verantwoord snacken.", benefits: ["12g eiwitten per zakje", "Gepopt, niet gefrituurd", "Geschikt voor vegetariërs", "Heerlijke, rijke Sour Cream en Onion smaak"], usage: "Perfect als gezonde hartige snack voor onderweg of 's avonds op de bank." },
@@ -1213,7 +1216,7 @@
         // =========================================================================
         function updateClientLinkDropdown() {
             const sel = document.getElementById('link-client-select');
-            sel.innerHTML = '<option value="">-- Koppel verkoop aan klant --</option>';
+            sel.innerHTML = '<option value="">Koppel aan klant...</option>';
             Object.keys(clients).forEach(id => { 
                 if(clients[id].active !== false) sel.innerHTML += `<option value="${id}">${clients[id].name}</option>`; 
             });
@@ -1236,7 +1239,7 @@
                 if(count > 0) { tVP += (p.vp * count); tBuy += (buyP * count); tRet += (p.retail * count); tProf += (prof * count); }
                 
                 if (p.cat !== cCat) {
-                    tbody.innerHTML += `<tr><td colspan="6" style="background:#f1f5f9; font-weight:700; font-size:0.8rem; padding:10px 15px; color:var(--text-muted);">${p.cat}</td></tr>`;
+                    tbody.innerHTML += `<tr><td colspan="5" style="background:#f1f5f9; font-weight:700; font-size:0.8rem; padding:10px 15px; color:var(--text-muted);">${p.cat}</td></tr>`;
                     cCat = p.cat;
                 }
 
@@ -1247,18 +1250,18 @@
                         <td style="color:var(--secondary); font-weight:600;">+ ${formatMoney(prof)}</td>
                         <td>
                             <div style="display:flex; align-items:center; gap:8px;">
-                                <button class="btn-qty" onclick="updateStockCount('${p.sku}', ${count - 1})">-</button>
+                                <button class="btn btn-outline" style="padding:4px 10px;" onclick="updateStockCount('${p.sku}', ${count - 1})">-</button>
                                 <span style="font-weight:700; width:20px; text-align:center; color:${count===0?'var(--text-muted)':(count<3?'var(--accent)':'var(--text-main)')};">${count}</span>
-                                <button class="btn-qty" onclick="updateStockCount('${p.sku}', ${count + 1})">+</button>
+                                <button class="btn btn-outline" style="padding:4px 10px;" onclick="updateStockCount('${p.sku}', ${count + 1})">+</button>
                             </div>
                         </td>
                         <td>
                             <div style="display:flex; gap:5px;">
-                                <select id="cdisc-${p.sku}" style="padding:5px; border-radius:4px; width:70px; font-size:0.8rem; border: 1px solid var(--border);">
+                                <select id="cdisc-${p.sku}" style="padding:5px; border-radius:4px; width:70px; font-size:0.8rem;">
                                     <option value="0">0%</option><option value="5">5%</option><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option>
                                 </select>
                                 <button class="btn btn-primary" style="padding:5px 10px; font-size:0.8rem;" onclick="sellProduct('${p.sku}')" ${count===0?'disabled':''}>Verkoop</button>
-                                <button class="btn btn-outline" style="padding:5px 10px; font-size:0.8rem;" onclick="usePersonal('${p.sku}')" ${count===0?'disabled':''}>Demo</button>
+                                <button class="btn btn-outline" style="padding:5px 10px; font-size:0.8rem;" onclick="usePersonal('${p.sku}')" ${count===0?'disabled':''}>Zelf</button>
                             </div>
                         </td>
                     </tr>`;
@@ -1266,7 +1269,6 @@
 
             document.getElementById('dash-vp').innerText = tVP.toFixed(2);
             document.getElementById('dash-inkoop').innerText = formatMoney(tBuy);
-            document.getElementById('dash-verkoop').innerText = formatMoney(tRet);
             document.getElementById('dash-winst').innerText = formatMoney(tProf);
             
             // Stats op Home Dashboard
@@ -1329,21 +1331,21 @@
             if(hStatProf) hStatProf.innerText = formatMoney(mProfit);
 
             const sList = document.getElementById('sales-history-list');
-            sList.innerHTML = filteredSales.length ? '' : '<li style="padding:10px; color:var(--text-muted);">Geen verkopen in deze maand.</li>';
+            sList.innerHTML = filteredSales.length ? '' : '<li style="padding:10px; color:var(--text-muted);">Geen verkopen.</li>';
             filteredSales.slice(0, 15).forEach(s => {
-                sList.innerHTML += `<li style="padding:12px; border-bottom:1px solid var(--bg-main); display:flex; justify-content:space-between; align-items:center;">
+                sList.innerHTML += `<li style="padding:12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
                     <div><strong>${s.name}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">${new Date(s.date).toLocaleString()}</span></div>
                     <div style="text-align:right;"><span style="color:var(--secondary); font-weight:700;">+ ${formatMoney(s.profit)}</span><br>
-                    <button style="background:none; border:none; color:var(--danger); font-size:0.7rem; cursor:pointer;" onclick="undoSale(${s.id}, '${s.sku}')">Undo verkoop</button></div>
+                    <button style="background:none; border:none; color:var(--danger); font-size:0.7rem; cursor:pointer;" onclick="undoSale(${s.id}, '${s.sku}')">Undo</button></div>
                 </li>`;
             });
 
             const pList = document.getElementById('personal-use-list');
             pList.innerHTML = personalUse.length ? '' : '<li style="padding:10px; color:var(--text-muted);">Geen actieve producten.</li>';
             personalUse.forEach(p => {
-                pList.innerHTML += `<li style="padding:12px; border-bottom:1px solid var(--bg-main); display:flex; justify-content:space-between; align-items:center;">
+                pList.innerHTML += `<li style="padding:12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
                     <div><strong>${p.name}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">Sinds: ${p.date}</span></div>
-                    <button class="btn btn-outline" style="font-size:0.7rem;" onclick="finishPersonal(${p.id})">Is op!</button>
+                    <button class="btn btn-success" style="font-size:0.7rem;" onclick="finishPersonal(${p.id})">Is op!</button>
                 </li>`;
             });
         }
@@ -1393,13 +1395,13 @@
 
             filtered.forEach(p => {
                 grid.innerHTML += `
-                    <div class="card" style="padding:25px; cursor:pointer; border-top: 4px solid var(--primary); margin-bottom:0;" onclick="openProductModal('${p.sku}')">
-                        <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform: uppercase;">${p.cat}</span>
-                        <h4 style="margin:5px 0 10px 0; font-size:1.1rem;">${p.name}</h4>
-                        <p style="font-size:0.85rem; color:var(--text-muted); margin:0 0 20px 0; line-height: 1.5;">${p.desc}</p>
-                        <div style="display:flex; justify-content:space-between; align-items:end; margin-top: auto;">
+                    <div class="card" style="padding:20px; cursor:pointer; border-top: 4px solid var(--primary); margin-bottom:0;" onclick="openProductModal('${p.sku}')">
+                        <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted);">${p.cat}</span>
+                        <h4 style="margin:5px 0 10px 0;">${p.name}</h4>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 15px 0;">${p.desc}</p>
+                        <div style="display:flex; justify-content:space-between; align-items:end;">
                             <span style="font-size:0.75rem; color:#888;">SKU: ${p.sku}</span>
-                            <span style="font-weight:800; font-size:1.1rem; color:var(--primary);">${formatMoney(p.retail)}</span>
+                            <span style="font-weight:700; color:var(--primary);">${formatMoney(p.retail)}</span>
                         </div>
                     </div>
                 `;
@@ -1416,7 +1418,7 @@
             document.getElementById('modal-vp').innerText = p.vp.toFixed(2);
             document.getElementById('modal-price').innerText = formatMoney(p.retail);
             document.getElementById('modal-desc').innerText = p.desc;
-            document.getElementById('modal-benefits').innerHTML = p.benefits.map(b => `<li style="margin-bottom: 5px;">${b}</li>`).join('');
+            document.getElementById('modal-benefits').innerHTML = p.benefits.map(b => `<li>${b}</li>`).join('');
             document.getElementById('modal-usage').innerText = p.usage || "Lees verpakking.";
             document.getElementById('product-modal').classList.add('active');
         }
@@ -1426,15 +1428,15 @@
             grid.innerHTML = "";
             dbTestimonials.forEach(t => {
                 grid.innerHTML += `
-                    <div class="card" style="margin-bottom:0; padding:0; overflow:hidden; border: 1px solid var(--border);">
-                        <div style="background:var(--sidebar-bg); color:white; padding:20px; text-align:center;">
-                            <strong style="font-size:1.2rem;">${t.naam}</strong><br><span style="font-size:0.85rem; color:#94a3b8;">${t.label}</span>
+                    <div class="card" style="margin-bottom:0; padding:0; overflow:hidden;">
+                        <div style="background:var(--sidebar-bg); color:white; padding:15px; text-align:center;">
+                            <strong style="font-size:1.1rem;">${t.naam}</strong><br><span style="font-size:0.8rem; color:#94a3b8;">${t.label}</span>
                         </div>
-                        <div style="padding:25px;">
-                            <div style="background:#fef2f2; padding:15px; border-radius:8px; border-left:4px solid var(--danger); margin-bottom:15px; font-size:0.9rem;">
+                        <div style="padding:20px;">
+                            <div style="background:#fef2f2; padding:12px; border-radius:8px; border-left:3px solid var(--danger); margin-bottom:10px; font-size:0.85rem;">
                                 <strong style="color:var(--danger)">VOORHEEN:</strong><br>${t.fase}
                             </div>
-                            <div style="background:#ecfdf5; padding:15px; border-radius:8px; border-left:4px solid var(--secondary); font-size:0.9rem;">
+                            <div style="background:#ecfdf5; padding:12px; border-radius:8px; border-left:3px solid var(--secondary); font-size:0.85rem;">
                                 <strong style="color:var(--secondary)">NU:</strong><br>${t.nu}
                             </div>
                         </div>
@@ -1450,9 +1452,9 @@
                 grid.innerHTML += `
                     <div class="card recipe-card" style="background: ${r.color}; border:none; margin-bottom:0;">
                         <span class="recipe-tag">${r.tag}</span>
-                        <h3 style="margin-top: 0; color:var(--sidebar-bg); font-size: 1.3rem;">${r.title}</h3>
-                        <p style="font-size: 0.9rem; color:var(--sidebar-bg); line-height:1.6; margin-bottom: 20px;">${r.desc}</p>
-                        <button class="btn btn-outline" style="font-size: 0.85rem; width:100%; justify-content:center; background:rgba(255,255,255,0.6);" onclick="showToast('Recept succesvol gekopieerd!')">📋 Kopieer Recept</button>
+                        <h3 style="margin-top: 0; color:var(--sidebar-bg);">${r.title}</h3>
+                        <p style="font-size: 0.85rem; color:var(--sidebar-bg); line-height:1.6;">${r.desc}</p>
+                        <button class="btn btn-outline" style="font-size: 0.75rem; width:100%; justify-content:center; background:rgba(255,255,255,0.6);" onclick="showToast('Recept gekopieerd om te delen!')">📋 Kopieer Recept</button>
                     </div>
                 `;
             });
