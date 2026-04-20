@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HBL-Connect</title>
+    <title>HBL-Connect Pro | Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -243,7 +243,7 @@
             <h2>HBL-Connect <span style="color: var(--secondary);">Pro</span></h2>
             <p style="color: var(--text-muted); margin-bottom: 25px; font-size: 0.95rem;">Geavanceerd Coach Dashboard</p>
             
-            <div id="login-error" style="color: white; background: var(--danger); padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 20px; display: none; font-weight: 600; line-height: 1.4;">
+            <div id="login-error" style="color: white; background: var(--danger); padding: 15px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 20px; display: none; font-weight: 600; line-height: 1.4;">
                 Oeps! E-mail of wachtwoord onjuist.
             </div>
             
@@ -331,7 +331,10 @@
 
     <main id="main-content">
         <div class="header-bar">
-            <h2 id="view-title" style="margin: 0; font-weight: 700; color: var(--text-main);">Dashboard Overzicht</h2>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="hamburger" onclick="document.getElementById('app-sidebar').classList.toggle('open')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; display: none;">☰</button>
+                <h2 id="view-title" style="margin: 0; font-weight: 700; color: var(--text-main);">Dashboard Overzicht</h2>
+            </div>
             <div id="user-display" style="font-weight: 500; font-size: 0.9rem; color: var(--text-muted); background: var(--bg-main); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border);">Laden...</div>
         </div>
 
@@ -738,8 +741,35 @@
 
     <script>
         // =========================================================================
-        // DATA & CONFIG
+        // 1. FIREBASE INIT
         // =========================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyD9xhQuLnjgbaMHZI_vWp4FoUUjTNbA0tM",
+            authDomain: "follow-up-coaches.firebaseapp.com",
+            projectId: "follow-up-coaches",
+            storageBucket: "follow-up-coaches.firebasestorage.app",
+            messagingSenderId: "273305831461",
+            appId: "1:273305831461:web:4471b563a5d0da164457cc"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // =========================================================================
+        // 2. GLOBALS & DATA
+        // =========================================================================
+        let currentCoach = 'Andreas';
+        let clients = {};
+        let myStock = {};
+        let salesHistory = [];
+        let personalUse = [];
+        let currentClientId = null;
+        let currentCatFilter = "Alles";
+        let collapsedCats = {};
+        let unsubClients, unsubStock;
+
+        const formatMoney = (amt) => "€ " + parseFloat(amt).toFixed(2).replace('.', ',');
+
         const evalQuestions = [
             {q: "Ik ben uitgeslapen als ik 's morgens opsta", val: "JA"}, {q: "Ik start elke ochtend met een volwaardig ontbijt", val: "JA"},
             {q: "Ik heb tijdens de dag last van energiedips", val: "NEE"}, {q: "Ik heb geregeld honger of snoepzin", val: "NEE"},
@@ -895,24 +925,24 @@
             loginBtn.innerText = "Laden...";
             loginBtn.disabled = true;
 
-            // Firebase default = LOCAL. We zetten hem op SESSION als vinkje uit staat.
-            let persistPromise = Promise.resolve();
-            if (!remember) {
-                persistPromise = auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
-            }
+            // DE ECHTE FIX: we gebruiken de string 'local' of 'session' i.p.v. het Firebase object
+            const persistenceType = remember ? 'local' : 'session';
 
-            persistPromise.then(() => {
-                return auth.signInWithEmailAndPassword(email, pass);
-            }).then(() => {
-                loginBtn.innerText = "Veilig Inloggen";
-                loginBtn.disabled = false;
-            }).catch(err => {
-                console.error("Login Fout:", err);
-                errDiv.innerText = "Inloggen mislukt: " + err.message;
-                errDiv.style.display = 'block';
-                loginBtn.innerText = "Veilig Inloggen";
-                loginBtn.disabled = false;
-            });
+            auth.setPersistence(persistenceType)
+                .then(() => {
+                    return auth.signInWithEmailAndPassword(email, pass);
+                })
+                .then(() => {
+                    loginBtn.innerText = "Veilig Inloggen";
+                    loginBtn.disabled = false;
+                })
+                .catch(err => {
+                    console.error("Login Fout:", err);
+                    errDiv.innerText = "Inloggen mislukt: " + err.message;
+                    errDiv.style.display = 'block';
+                    loginBtn.innerText = "Veilig Inloggen";
+                    loginBtn.disabled = false;
+                });
         }
 
         function logoutUser() {
@@ -1308,7 +1338,7 @@
                                     <option value="0">0%</option><option value="5">5%</option><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option>
                                 </select>
                                 <button class="btn btn-primary" style="padding:5px 10px; font-size:0.8rem;" onclick="sellProduct('${p.sku}')" ${count===0?'disabled':''}>Verkoop</button>
-                                <button class="btn btn-outline" style="padding:5px 10px; font-size:0.8rem;" onclick="usePersonal('${p.sku}')" ${count===0?'disabled':''}>Zelf</button>
+                                <button class="btn btn-outline" style="padding:5px 10px; font-size:0.8rem;" onclick="usePersonal('${p.sku}')" ${count===0?'disabled':''}>Demo</button>
                             </div>
                         </td>
                     </tr>`;
@@ -1420,12 +1450,12 @@
             fc.innerHTML = "";
             cats.forEach(c => {
                 let btn = document.createElement('button');
-                btn.className = `btn ${c === currentCatFilter ? 'btn-primary' : 'btn-outline'}`;
-                btn.style.padding = "6px 12px"; btn.style.fontSize = "0.8rem"; btn.style.borderRadius = "20px";
+                btn.className = `filter-btn btn ${c === currentCatFilter ? 'btn-primary' : 'btn-outline'}`;
+                btn.style.padding = "6px 12px"; btn.style.fontSize = "0.85rem"; btn.style.borderRadius = "20px";
                 btn.innerText = c;
                 btn.onclick = () => {
                     currentCatFilter = c;
-                    document.querySelectorAll('#catalog-filters .btn').forEach(b => { b.classList.remove('btn-primary'); b.classList.add('btn-outline'); });
+                    document.querySelectorAll('#catalog-filters .filter-btn').forEach(b => { b.classList.remove('btn-primary'); b.classList.add('btn-outline'); });
                     btn.classList.remove('btn-outline'); btn.classList.add('btn-primary');
                     renderCatalog();
                 };
@@ -1453,12 +1483,12 @@
             filtered.forEach(p => {
                 let card = document.createElement('div');
                 card.className = "product-card card";
-                card.style.padding = "20px"; card.style.cursor = "pointer"; card.style.borderTop = "4px solid var(--primary)"; card.style.marginBottom = "0";
+                card.style.padding = "20px"; card.style.cursor = "pointer"; card.style.borderTop = "4px solid var(--primary)"; card.style.marginBottom = "0"; card.style.display = "flex"; card.style.flexDirection = "column";
                 // Koppel de openModal functie aan de klik op de kaart
                 card.onclick = () => openProductModal(p.sku);
                 
                 card.innerHTML = `
-                    <div class="product-info-cat">
+                    <div class="product-info-cat" style="display:flex; flex-direction:column; height: 100%;">
                         <div class="product-cat-label" style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform: uppercase; margin-bottom: 5px;">${p.cat}</div>
                         <h4 style="margin:0 0 5px 0; color:var(--text-main); font-size:1.1rem;">${p.name}</h4>
                         <p style="margin: 0 0 15px 0; font-size:0.85rem; color:var(--text-muted); line-height: 1.5;">${p.desc}</p>
