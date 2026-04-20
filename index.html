@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HBL-Connect Pro | Dashboard</title>
+    <title>HBL-Connect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -214,7 +214,9 @@
             <h2>HBL-Connect <span style="color: var(--secondary);">Pro</span></h2>
             <p style="color: var(--text-muted); margin-bottom: 25px; font-size: 0.95rem;">Geavanceerd Coach Dashboard</p>
             
-            <div id="login-error" style="color: white; background: var(--danger); padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 20px; display: none; font-weight: 600;">Oeps! E-mail of wachtwoord onjuist.</div>
+            <div id="login-error" style="color: white; background: var(--danger); padding: 15px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 20px; display: none; font-weight: 600; line-height: 1.4;">
+                Oeps! E-mail of wachtwoord onjuist.
+            </div>
             
             <div style="text-align: left;">
                 <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">E-mailadres</label>
@@ -230,7 +232,7 @@
                 <input type="checkbox" id="login-remember" checked style="width: auto; accent-color: var(--primary);"> Onthoud mij op dit apparaat
             </label>
             
-            <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 15px; font-size: 1.05rem;" onclick="loginUser()">Veilig Inloggen</button>
+            <button id="login-btn" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 15px; font-size: 1.05rem;" onclick="loginUser()">Veilig Inloggen</button>
         </div>
     </div>
 
@@ -852,24 +854,38 @@
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
             const remember = document.getElementById('login-remember').checked;
+            const errDiv = document.getElementById('login-error');
+            const loginBtn = document.getElementById('login-btn');
             
+            errDiv.style.display = 'none';
+
             if(!email || !pass) {
-                document.getElementById('login-error').innerText = "Vul alle velden in.";
-                document.getElementById('login-error').style.display = 'block';
+                errDiv.innerText = "Vul alle velden in.";
+                errDiv.style.display = 'block';
                 return;
             }
 
-            const persistenceType = remember ? 'local' : 'session';
+            loginBtn.innerText = "Laden...";
+            loginBtn.disabled = true;
 
-            auth.setPersistence(persistenceType)
-                .then(() => {
-                    return auth.signInWithEmailAndPassword(email, pass);
-                })
-                .catch(err => {
-                    console.error("Login Fout:", err);
-                    document.getElementById('login-error').innerText = "Inloggen mislukt. Controleer je gegevens.";
-                    document.getElementById('login-error').style.display = 'block';
-                });
+            // Firebase default = LOCAL. We zetten hem op SESSION als vinkje uit staat.
+            let persistPromise = Promise.resolve();
+            if (!remember) {
+                persistPromise = auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+            }
+
+            persistPromise.then(() => {
+                return auth.signInWithEmailAndPassword(email, pass);
+            }).then(() => {
+                loginBtn.innerText = "Veilig Inloggen";
+                loginBtn.disabled = false;
+            }).catch(err => {
+                console.error("Login Fout:", err);
+                errDiv.innerText = "Inloggen mislukt: " + err.message;
+                errDiv.style.display = 'block';
+                loginBtn.innerText = "Veilig Inloggen";
+                loginBtn.disabled = false;
+            });
         }
 
         function logoutUser() {
@@ -1349,7 +1365,7 @@
             personalUse.forEach(p => {
                 pList.innerHTML += `<li style="padding:12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
                     <div><strong>${p.name}</strong><br><span style="font-size:0.75rem; color:var(--text-muted);">Sinds: ${p.date}</span></div>
-                    <button class="btn btn-success" style="font-size:0.7rem;" onclick="finishPersonal(${p.id})">Is op!</button>
+                    <button class="btn btn-outline" style="font-size:0.7rem;" onclick="finishPersonal(${p.id})">Is op!</button>
                 </li>`;
             });
         }
@@ -1461,7 +1477,7 @@
         }
 
         // =========================================================================
-        // 7. TESTIMONIALS 
+        // 7. TESTIMONIALS & RECEPTEN
         // =========================================================================
         function renderTestimonials() {
             const grid = document.getElementById('testi-grid');
@@ -1487,6 +1503,22 @@
             });
         }
 
+        function renderRecipes() {
+            const grid = document.getElementById('recipe-grid');
+            grid.innerHTML = '';
+            dbRecipesData.forEach(r => {
+                grid.innerHTML += `
+                    <div class="card recipe-card" style="background: ${r.color}; border:none; margin-bottom:0;">
+                        <span class="recipe-tag">${r.tag}</span>
+                        <h3 style="margin-top: 0; color:var(--sidebar-bg); font-size: 1.3rem;">${r.title}</h3>
+                        <p style="font-size: 0.9rem; color:var(--sidebar-bg); line-height:1.6; margin-bottom: 20px;">${r.desc}</p>
+                        <button class="btn btn-outline" style="font-size: 0.85rem; width:100%; justify-content:center; background:rgba(255,255,255,0.6);" onclick="showToast('Recept succesvol gekopieerd!')">📋 Kopieer Recept</button>
+                    </div>
+                `;
+            });
+        }
+
+        function closeModal(e) { if(e) e.stopPropagation(); document.getElementById('product-modal').classList.remove('active'); }
     </script>
 </body>
 </html>
