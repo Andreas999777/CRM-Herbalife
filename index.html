@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HBL-Connect</title>
+    <title>HBL-Connect Pro | Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -214,7 +214,7 @@
             <h2>HBL-Connect <span style="color: var(--secondary);">Pro</span></h2>
             <p style="color: var(--text-muted); margin-bottom: 25px; font-size: 0.95rem;">Geavanceerd Coach Dashboard</p>
             
-            <div id="login-error" style="color: white; background: var(--danger); padding: 15px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 20px; display: none; font-weight: 600; line-height: 1.4;">
+            <div id="login-error" style="color: white; background: var(--danger); padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 20px; display: none; font-weight: 600; line-height: 1.4;">
                 Oeps! E-mail of wachtwoord onjuist.
             </div>
             
@@ -711,8 +711,35 @@
 
     <script>
         // =========================================================================
-        // DATA & CONFIG
+        // 1. FIREBASE INIT
         // =========================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyD9xhQuLnjgbaMHZI_vWp4FoUUjTNbA0tM",
+            authDomain: "follow-up-coaches.firebaseapp.com",
+            projectId: "follow-up-coaches",
+            storageBucket: "follow-up-coaches.firebasestorage.app",
+            messagingSenderId: "273305831461",
+            appId: "1:273305831461:web:4471b563a5d0da164457cc"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // =========================================================================
+        // 2. GLOBALS & DATA
+        // =========================================================================
+        let currentCoach = 'Andreas';
+        let clients = {};
+        let myStock = {};
+        let salesHistory = [];
+        let personalUse = [];
+        let currentClientId = null;
+        let currentCatFilter = "Alles";
+        let collapsedCats = {};
+        let unsubClients, unsubStock;
+
+        const formatMoney = (amt) => "€ " + parseFloat(amt).toFixed(2).replace('.', ',');
+
         const evalQuestions = [
             {q: "Ik ben uitgeslapen als ik 's morgens opsta", val: "JA"}, {q: "Ik start elke ochtend met een volwaardig ontbijt", val: "JA"},
             {q: "Ik heb tijdens de dag last van energiedips", val: "NEE"}, {q: "Ik heb geregeld honger of snoepzin", val: "NEE"},
@@ -1235,7 +1262,7 @@
         // =========================================================================
         function updateClientLinkDropdown() {
             const sel = document.getElementById('link-client-select');
-            sel.innerHTML = '<option value="">-- Koppel verkoop aan klant --</option>';
+            sel.innerHTML = '<option value="">Koppel aan klant...</option>';
             Object.keys(clients).forEach(id => { 
                 if(clients[id].active !== false) sel.innerHTML += `<option value="${id}">${clients[id].name}</option>`; 
             });
@@ -1258,7 +1285,7 @@
                 if(count > 0) { tVP += (p.vp * count); tBuy += (buyP * count); tRet += (p.retail * count); tProf += (prof * count); }
                 
                 if (p.cat !== cCat) {
-                    tbody.innerHTML += `<tr><td colspan="6" style="background:#f1f5f9; font-weight:700; font-size:0.8rem; padding:10px 15px; color:var(--text-muted);">${p.cat}</td></tr>`;
+                    tbody.innerHTML += `<tr><td colspan="5" style="background:#f1f5f9; font-weight:700; font-size:0.8rem; padding:10px 15px; color:var(--text-muted);">${p.cat}</td></tr>`;
                     cCat = p.cat;
                 }
 
@@ -1280,7 +1307,7 @@
                                     <option value="0">0%</option><option value="5">5%</option><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option>
                                 </select>
                                 <button class="btn btn-primary" style="padding:5px 10px; font-size:0.8rem;" onclick="sellProduct('${p.sku}')" ${count===0?'disabled':''}>Verkoop</button>
-                                <button class="btn btn-outline" style="padding:5px 10px; font-size:0.8rem;" onclick="usePersonal('${p.sku}')" ${count===0?'disabled':''}>Demo</button>
+                                <button class="btn btn-outline" style="padding:5px 10px; font-size:0.8rem;" onclick="usePersonal('${p.sku}')" ${count===0?'disabled':''}>Zelf</button>
                             </div>
                         </td>
                     </tr>`;
@@ -1288,7 +1315,6 @@
 
             document.getElementById('dash-vp').innerText = tVP.toFixed(2);
             document.getElementById('dash-inkoop').innerText = formatMoney(tBuy);
-            document.getElementById('dash-verkoop').innerText = formatMoney(tRet);
             document.getElementById('dash-winst').innerText = formatMoney(tProf);
             
             // Stats op Home Dashboard
