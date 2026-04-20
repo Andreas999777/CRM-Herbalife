@@ -2105,17 +2105,16 @@
         document.getElementById('dash-today-count').textContent = today.length;
         document.getElementById('dash-overdue-count').textContent = overdue.length;
 
-        // Maandwinst
+        // Maandwinst (sale records slaan winst direct op in s.profit)
         const now = new Date();
         const ymPrefix = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
         let profit = 0;
         (salesHistory || []).forEach(s => {
             if(s.date && s.date.startsWith(ymPrefix)) {
-                const winst = (parseFloat(s.price) || 0) - (parseFloat(s.cost) || 0);
-                profit += winst;
+                profit += parseFloat(s.profit) || 0;
             }
         });
-        document.getElementById('dash-stat-profit').textContent = '€ ' + profit.toFixed(0);
+        document.getElementById('dash-stat-profit').textContent = '€ ' + profit.toFixed(2).replace('.', ',');
 
         // Vandaag lijst
         const todayEl = document.getElementById('dash-today-list');
@@ -2219,135 +2218,229 @@
     // =========================================================================
     // 9. RECEPTEN
     // =========================================================================
+    // Alle recepten zijn gebouwd rond Herbalife-producten uit de Belgische catalogus.
     const dbRecipes = [
         {
             cat: 'Shake',
             emoji: '🍓',
             gradient: 'linear-gradient(135deg, #fca5a5, #ef4444)',
-            title: 'Aardbei Power Shake',
-            subtitle: 'Ontbijt • 220 kcal • 24g eiwit',
+            title: 'Frisse Aardbei Power Shake',
+            subtitle: 'Maaltijdvervanger • ±220 kcal • 17g eiwit',
             time: '3 min',
             ingredients: [
-                '250 ml amandelmelk (ongezoet)',
-                '2 schepjes Formula 1 Aardbei',
-                '1 schep PPP (Proteïne Poeder)',
-                '100 g verse of diepvries aardbeien',
+                '250 ml halfvolle melk of amandelmelk',
+                '2 afgestreken schepjes F1 Frisse Aardbei',
+                '1 schep Proteïnedrankmix Vanille (PDM)',
+                '80 g verse of diepvries aardbeien',
                 'Handje ijsblokjes'
             ],
-            steps: 'Alles in blender, 30 sec mixen. Serveer direct.'
+            steps: 'Doe alle ingrediënten in een blender en mix 30 seconden tot een gladde shake. Serveer direct in een hoog glas.'
         },
         {
             cat: 'Shake',
             emoji: '🍫',
-            gradient: 'linear-gradient(135deg, #92400e, #b45309)',
-            title: 'Chocolade Energie Shake',
-            subtitle: 'Ontbijt • 260 kcal • 26g eiwit',
+            gradient: 'linear-gradient(135deg, #78350f, #b45309)',
+            title: 'Zachte Chocolade Energie Shake',
+            subtitle: 'Maaltijdvervanger • ±260 kcal • 18g eiwit',
             time: '3 min',
             ingredients: [
                 '300 ml halfvolle melk of havermelk',
-                '2 schepjes Formula 1 Chocolade',
-                '1 schep PPP',
-                '1 tl cacaopoeder',
-                '1/2 banaan'
+                '2 schepjes F1 Zachte Chocolade',
+                '1 schep F3 Proteïnepoeder (PPP)',
+                '1/2 banaan',
+                '1 tl ongezoete cacao',
+                'Ijsblokjes naar smaak'
             ],
-            steps: 'Blender 30 sec. Optioneel: blaadje munt voor topping.'
+            steps: 'Alles in de blender, 30 sec mixen tot romig. Optioneel: topping van een blaadje munt of cacao nibs.'
         },
         {
             cat: 'Shake',
             emoji: '🌿',
             gradient: 'linear-gradient(135deg, #86efac, #16a34a)',
-            title: 'Green Detox Shake',
-            subtitle: 'Lunch • 240 kcal • 22g eiwit',
+            title: 'Green Detox Vanille Shake',
+            subtitle: 'Maaltijdvervanger • ±240 kcal • 17g eiwit',
             time: '5 min',
             ingredients: [
-                '250 ml kokoswater',
-                '2 schepjes Formula 1 Vanille',
+                '250 ml water + 30 ml Herbal Aloë Max',
+                '2 schepjes F1 Romige Vanille',
                 '1 schep PPP',
                 'Handje spinazie',
                 '1/2 groene appel',
                 'Sapje van 1/2 citroen'
             ],
-            steps: 'Spinazie eerst met vloeistof mixen, daarna rest toevoegen. Blender 45 sec.'
+            steps: 'Aloë Max + water + spinazie eerst mixen, dan rest toevoegen. Blender 45 sec tot gladde groene shake.'
+        },
+        {
+            cat: 'Shake',
+            emoji: '🍪',
+            gradient: 'linear-gradient(135deg, #fbbf24, #d97706)',
+            title: 'Cookie Crunch Protein Shake',
+            subtitle: 'Maaltijdvervanger • ±280 kcal • 19g eiwit',
+            time: '3 min',
+            ingredients: [
+                '300 ml halfvolle melk',
+                '2 schepjes F1 Cookie Crunch',
+                '1 schep PDM Vanille',
+                '1 tl pindakaas (zonder suiker)',
+                'Ijsblokjes'
+            ],
+            steps: 'Alle ingrediënten in de blender, mix 30 sec tot een dikke milkshake. Serveer in een glas met een rietje.'
+        },
+        {
+            cat: 'Shake',
+            emoji: '☕',
+            gradient: 'linear-gradient(135deg, #78350f, #3f2712)',
+            title: 'Cafè Latte Iced Protein Shake',
+            subtitle: 'Ontbijt of pre-workout • ±230 kcal • 18g eiwit',
+            time: '3 min',
+            ingredients: [
+                '250 ml melk (of havermelk)',
+                '2 schepjes F1 Cafè Latte',
+                '1 schep PPP',
+                '1 shot koude espresso (optioneel)',
+                'Volop ijsblokjes'
+            ],
+            steps: 'Blender 30 sec tot schuimig. Giet over het ijs en werk af met een snuf kaneel.'
+        },
+        {
+            cat: 'Shake',
+            emoji: '🍌',
+            gradient: 'linear-gradient(135deg, #fde68a, #f59e0b)',
+            title: 'Tri Blend Tropical Bowl',
+            subtitle: 'Smoothie bowl • ±310 kcal • 20g eiwit',
+            time: '5 min',
+            ingredients: [
+                '200 ml kokosmelk (licht)',
+                '2 schepjes Tri Blend Select Banaan',
+                '1/2 bevroren banaan',
+                '80 g bevroren mango',
+                'Topping: granola, kokosrasp, chiazaad'
+            ],
+            steps: 'Blender 30 sec tot een dikke smoothie. Schep in een kom en werk af met de toppings. Eet met een lepel.'
         },
         {
             cat: 'Snack',
             emoji: '🥣',
             gradient: 'linear-gradient(135deg, #fcd34d, #f59e0b)',
             title: 'Proteïne Overnight Oats',
-            subtitle: 'Ontbijt • 320 kcal • 28g eiwit',
-            time: '5 min (+ nacht)',
+            subtitle: 'Ontbijt • ±320 kcal • 22g eiwit',
+            time: '5 min (+ 1 nacht)',
             ingredients: [
                 '50 g havervlokken',
-                '150 ml melk (naar keuze)',
-                '1 schep Formula 1 Vanille',
-                '1 el Greek yogurt',
-                'Bosvruchten + handje noten'
+                '150 ml melk naar keuze',
+                '1 schep F1 Romige Vanille',
+                '1 el Griekse yoghurt',
+                'Bosvruchten + handje noten als topping'
             ],
-            steps: 'Meng alles in pot, 1 nacht in koelkast. Top met fruit en noten voor serveren.'
+            steps: 'Meng alles in een weckpot, 1 nacht in de koelkast. \'s Ochtends toppen met fruit en noten.'
         },
         {
             cat: 'Snack',
             emoji: '🥜',
             gradient: 'linear-gradient(135deg, #fb923c, #ea580c)',
             title: 'Proteïne Energy Bites',
-            subtitle: 'Snack • 120 kcal p/stuk • 8g eiwit',
+            subtitle: 'Snack • ±120 kcal p/stuk • 6g eiwit',
             time: '10 min',
             ingredients: [
                 '100 g havervlokken',
-                '2 el pindakaas (zonder toevoegingen)',
-                '2 el honing',
-                '2 schepjes Formula 1 Chocolade',
+                '2 el pindakaas (zonder suiker)',
+                '2 el honing of ahornsiroop',
+                '2 schepjes F1 Zachte Chocolade',
                 'Snuf zeezout'
             ],
-            steps: 'Alles mengen, bolletjes draaien, 30 min koelen. Bewaar in gesloten bakje (max 5 dagen).'
+            steps: 'Alles mengen, 12-14 bolletjes draaien en 30 min koelen. Bewaar in een gesloten bakje, maximaal 5 dagen in de koelkast.'
         },
         {
-            cat: 'Maaltijd',
-            emoji: '🥗',
-            gradient: 'linear-gradient(135deg, #34d399, #10b981)',
-            title: 'Kip & Quinoa Bowl',
-            subtitle: 'Lunch/Diner • 480 kcal • 38g eiwit',
-            time: '25 min',
+            cat: 'Snack',
+            emoji: '🥞',
+            gradient: 'linear-gradient(135deg, #fcd34d, #ea580c)',
+            title: 'PBM Proteïne Pannenkoeken',
+            subtitle: 'Ontbijt/brunch • ±340 kcal • 24g eiwit',
+            time: '10 min',
             ingredients: [
-                '120 g kipfilet',
-                '60 g quinoa (droog)',
-                'Cherrytomaten, komkommer, avocado',
-                'Handje rucola',
-                'Olijfolie + citroen + zout/peper'
+                '1 portie Proteïne Bak Mix (PBM)',
+                '150 ml melk of plantaardige melk',
+                '1 ei',
+                'Topping: Griekse yoghurt, rood fruit, honing'
             ],
-            steps: 'Quinoa koken, kip grillen met kruiden, groenten snijden. Bowl opbouwen, afwerken met olie en citroen.'
-        },
-        {
-            cat: 'Maaltijd',
-            emoji: '🐟',
-            gradient: 'linear-gradient(135deg, #60a5fa, #2563eb)',
-            title: 'Zalm met Zoete Aardappel',
-            subtitle: 'Diner • 520 kcal • 35g eiwit',
-            time: '30 min',
-            ingredients: [
-                '150 g zalmfilet',
-                '200 g zoete aardappel',
-                'Broccoli of groene asperges',
-                'Dille, knoflook, citroen',
-                '1 el olijfolie'
-            ],
-            steps: 'Zoete aardappel in blokjes, 25 min in oven op 200°C. Zalm 10 min mee. Groenten stomen, afwerken met dille en citroen.'
+            steps: 'Meng PBM met ei en melk tot glad beslag. Bak 3-4 kleine pannenkoeken in een antikleefpan (medium vuur). Stapel op en werk af met yoghurt, fruit en een lijntje honing.'
         },
         {
             cat: 'Dessert',
             emoji: '🍨',
             gradient: 'linear-gradient(135deg, #f472b6, #db2777)',
             title: 'Nicecream Bosvruchten',
-            subtitle: 'Dessert • 180 kcal • 18g eiwit',
+            subtitle: 'Dessert • ±180 kcal • 12g eiwit',
             time: '5 min',
             ingredients: [
                 '1 bevroren banaan',
                 '100 g bevroren bosvruchten',
-                '1 schep Formula 1 Vanille',
+                '1 schep F1 Romige Vanille',
                 '2 el Griekse yoghurt',
                 'Munt ter garnering'
             ],
-            steps: 'Alles in krachtige blender of foodprocessor. Mix tot ijscreme-textuur. Serveer direct.'
+            steps: 'Alles in een krachtige blender of foodprocessor tot ijscreme-textuur. Direct serveren met een blaadje munt.'
+        },
+        {
+            cat: 'Dessert',
+            emoji: '🍃',
+            gradient: 'linear-gradient(135deg, #34d399, #047857)',
+            title: 'Munt Chocolade Protein Mousse',
+            subtitle: 'Dessert • ±210 kcal • 18g eiwit',
+            time: '10 min (+ 30 min koelen)',
+            ingredients: [
+                '200 g Griekse yoghurt 0%',
+                '1 schep F1 Munt Chocolade',
+                '1 schep PPP',
+                '1 tl cacaopoeder',
+                'Topping: cacao nibs of geraspte pure choco'
+            ],
+            steps: 'Klop yoghurt met F1 en PPP tot een luchtige mousse. Schep in kleine glazen, 30 min koelen. Werk af met cacao nibs.'
+        },
+        {
+            cat: 'Drank',
+            emoji: '🥭',
+            gradient: 'linear-gradient(135deg, #fdba74, #f97316)',
+            title: 'Aloë Mango Citrus Refresher',
+            subtitle: 'Gezonde dorstlesser • ±15 kcal',
+            time: '2 min',
+            ingredients: [
+                '500 ml koud water',
+                '3 dopjes (15 ml) Herbal Aloë Drank Mango',
+                '1/2 theelepel Instant Theedrank Citroen',
+                'Schijfje limoen + ijsblokjes'
+            ],
+            steps: 'Roer alles in een karaf tot alles is opgelost. Serveer ijskoud met limoen. Perfect als alternatief voor frisdrank tijdens de dag.'
+        },
+        {
+            cat: 'Drank',
+            emoji: '⚡',
+            gradient: 'linear-gradient(135deg, #fca5a5, #be123c)',
+            title: 'CR7 Drive Pre-Workout Boost',
+            subtitle: 'Voor het sporten • ±55 kcal',
+            time: '2 min',
+            ingredients: [
+                '500 ml water',
+                '1 zakje CR7 Drive Açai Bessen',
+                'Optioneel: 1 tablet Lift Off Citroen voor extra focus',
+                'Volop ijsblokjes'
+            ],
+            steps: 'Los CR7 Drive op in water, goed schudden in een shakerbeker. Drink 15-20 minuten vóór je training voor energie en uithouding.'
+        },
+        {
+            cat: 'Drank',
+            emoji: '🧃',
+            gradient: 'linear-gradient(135deg, #c4b5fd, #7c3aed)',
+            title: 'High Protein Iced Coffee',
+            subtitle: 'Afternoon boost • ±140 kcal • 15g eiwit',
+            time: '3 min',
+            ingredients: [
+                '1 portie High Protein Iced Coffee',
+                '250 ml koude melk (of havermelk)',
+                'Volop ijsblokjes',
+                'Optioneel: 1/2 schep F1 Cafè Latte voor extra body'
+            ],
+            steps: 'Los het poeder op in een shaker met de melk, goed schudden. Giet over een glas vol ijs. Perfecte namiddag pick-me-up met eiwitten erbij.'
         }
     ];
 
