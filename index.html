@@ -2066,8 +2066,11 @@
         return base;
     })();
 
+    function clientStart(c) { return c.startdate || (c.fiche && c.fiche.startdate) || null; }
+    function clientName(c) { return c.name || (c.fiche && c.fiche.name) || 'Naamloos'; }
+
     function getClientStatus(client) {
-        const start = client.startDate || client.date;
+        const start = clientStart(client);
         const d = daysBetween(start);
         if(d === null) return { text: '—', tone: 'muted', dueToday: false, overdue: false };
         // Zoek volgende milestone
@@ -2079,7 +2082,7 @@
     }
 
     function getDueInfo(client) {
-        const start = client.startDate || client.date;
+        const start = clientStart(client);
         const d = daysBetween(start);
         if(d === null) return null;
         for(const m of FU_MILESTONES) {
@@ -2107,7 +2110,7 @@
         if(!view) return;
 
         const arr = Object.entries(clients || {}).map(([id, c]) => ({ id, ...c }));
-        const active = arr.filter(c => c.isActive !== false);
+        const active = arr.filter(c => c.active !== false);
         document.getElementById('dash-stat-active').textContent = active.length;
 
         // Follow-ups vandaag + upcoming + overdue
@@ -2143,16 +2146,16 @@
         if(today.length === 0) {
             todayEl.innerHTML = '<div class="empty-hint">Geen opvolgingen voor vandaag 🎉</div>';
         } else {
-            todayEl.innerHTML = today.map(({c, info}) => `
+            todayEl.innerHTML = today.map(({c, info}) => { const nm = clientName(c); return `
                 <div class="dash-item" onclick="openClientFromDash('${c.id}', '${info.tab}')">
-                    <div class="avatar">${(c.name||'?').charAt(0).toUpperCase()}</div>
+                    <div class="avatar">${nm.charAt(0).toUpperCase()}</div>
                     <div class="dash-item-main">
-                        <div class="dash-item-name">${escapeHtml(c.name||'Naamloos')}</div>
-                        <div class="dash-item-sub">${info.label} • start ${formatShortDate(c.startDate || c.date)}</div>
+                        <div class="dash-item-name">${escapeHtml(nm)}</div>
+                        <div class="dash-item-sub">${info.label} • start ${formatShortDate(clientStart(c))}</div>
                     </div>
                     <span class="badge badge-warn">Vandaag</span>
                 </div>
-            `).join('');
+            `; }).join('');
         }
 
         // Upcoming lijst
@@ -2160,16 +2163,16 @@
         if(upcoming.length === 0) {
             upEl.innerHTML = '<div class="empty-hint">Geen opvolgingen binnen 3 dagen</div>';
         } else {
-            upEl.innerHTML = upcoming.slice(0, 6).map(({c, info}) => `
+            upEl.innerHTML = upcoming.slice(0, 6).map(({c, info}) => { const nm = clientName(c); return `
                 <div class="dash-item" onclick="openClientFromDash('${c.id}', '${info.tab}')">
-                    <div class="avatar blue">${(c.name||'?').charAt(0).toUpperCase()}</div>
+                    <div class="avatar blue">${nm.charAt(0).toUpperCase()}</div>
                     <div class="dash-item-main">
-                        <div class="dash-item-name">${escapeHtml(c.name||'Naamloos')}</div>
+                        <div class="dash-item-name">${escapeHtml(nm)}</div>
                         <div class="dash-item-sub">${info.label} • over ${info.inDays} ${info.inDays===1?'dag':'dagen'}</div>
                     </div>
                     <span class="badge badge-info">+${info.inDays}d</span>
                 </div>
-            `).join('');
+            `; }).join('');
         }
 
         // Overdue lijst
@@ -2177,16 +2180,16 @@
         if(overdue.length === 0) {
             odEl.innerHTML = '<div class="empty-hint">Alles up-to-date 👌</div>';
         } else {
-            odEl.innerHTML = overdue.slice(0, 6).map(({c, info}) => `
+            odEl.innerHTML = overdue.slice(0, 6).map(({c, info}) => { const nm = clientName(c); return `
                 <div class="dash-item" onclick="openClientFromDash('${c.id}', '${info.tab}')">
-                    <div class="avatar red">${(c.name||'?').charAt(0).toUpperCase()}</div>
+                    <div class="avatar red">${nm.charAt(0).toUpperCase()}</div>
                     <div class="dash-item-main">
-                        <div class="dash-item-name">${escapeHtml(c.name||'Naamloos')}</div>
+                        <div class="dash-item-name">${escapeHtml(nm)}</div>
                         <div class="dash-item-sub">${info.label} • ${info.daysLate} ${info.daysLate===1?'dag':'dagen'} achterstand</div>
                     </div>
                     <span class="badge badge-danger">Achter</span>
                 </div>
-            `).join('');
+            `; }).join('');
         }
 
         // Verjaardagen deze maand
@@ -2202,11 +2205,12 @@
         } else {
             bdEl.innerHTML = bds.map(c => {
                 const d = new Date(c.dob || c.birthday);
+                const nm = clientName(c);
                 return `
                 <div class="dash-item" onclick="openClientFromDash('${c.id}', 'tab-fiche')">
-                    <div class="avatar">${(c.name||'?').charAt(0).toUpperCase()}</div>
+                    <div class="avatar">${nm.charAt(0).toUpperCase()}</div>
                     <div class="dash-item-main">
-                        <div class="dash-item-name">${escapeHtml(c.name||'Naamloos')}</div>
+                        <div class="dash-item-name">${escapeHtml(nm)}</div>
                         <div class="dash-item-sub">Jarig op ${d.getDate()} ${['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][d.getMonth()]}</div>
                     </div>
                     <span class="badge badge-muted">🎂</span>
