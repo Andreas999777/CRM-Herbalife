@@ -3228,7 +3228,6 @@
         const el = document.getElementById('portal-checkin-feed');
         if(!el) return;
         const ck = (c.checkins || []).slice().reverse().slice(0, 5);
-        const photos = (c.portalPhotos || []).slice(-3);
         let html = '';
         if(ck.length) {
             html += '<div style="font-weight:700; margin-top:8px; font-size:0.82rem; color:var(--text-muted);">Laatste check-ins</div>';
@@ -3239,12 +3238,9 @@
                     <span style="color:var(--text-muted); font-size:0.8rem; text-align:right; max-width:60%;">${escapeHtml(x.note||'')}</span>
                 </div>`;
             }).join('');
+        } else {
+            html = '<div style="color:var(--text-muted); font-size:0.82rem;">Nog geen check-ins vanuit portaal.</div>';
         }
-        if(photos.length) {
-            html += '<div style="font-weight:700; margin-top:10px; font-size:0.82rem; color:var(--text-muted);">Laatste foto\'s</div>';
-            html += `<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:4px;">${photos.map(p => `<img src="${p.dataUrl}" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:6px;">`).join('')}</div>`;
-        }
-        if(!ck.length && !photos.length) html = '<div style="color:var(--text-muted); font-size:0.82rem;">Nog geen check-ins vanuit portaal.</div>';
         el.innerHTML = html;
     }
 
@@ -3913,16 +3909,6 @@
                 <div id="pt-save-status" style="margin-top:10px; text-align:center; font-size:0.85rem;"></div>
             </div>
 
-            <div class="card" style="padding:20px; margin-top:14px;">
-                <h3 style="margin-top:0;">📸 Foto uploaden (voor/na)</h3>
-                <input type="file" id="pt-photo" accept="image/*" style="margin-top:6px;">
-                <button onclick="savePortalPhoto('${coach}','${clientId}')" style="margin-top:10px; padding:10px 16px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Foto versturen</button>
-                <div id="pt-photo-status" style="margin-top:8px; font-size:0.85rem;"></div>
-                <div id="pt-photo-list" style="margin-top:12px; display:grid; grid-template-columns:repeat(3,1fr); gap:6px;">
-                    ${(c.portalPhotos || []).slice(-6).map(ph => `<img src="${ph.dataUrl}" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:8px;">`).join('')}
-                </div>
-            </div>
-
             <div style="text-align:center; margin-top:24px; color:#94a3b8; font-size:0.75rem;">HBL-Connect · ${escapeHtml(coach)}</div>
         `;
     }
@@ -3950,31 +3936,6 @@
         } catch(e) {
             status.innerHTML = '<span style="color:#ef4444;">Fout: ' + escapeHtml(e.message) + '</span>';
         }
-    }
-
-    async function savePortalPhoto(coach, clientId) {
-        const input = document.getElementById('pt-photo');
-        const status = document.getElementById('pt-photo-status');
-        if(!input.files || !input.files[0]) { status.textContent = 'Kies eerst een foto.'; return; }
-        const f = input.files[0];
-        if(f.size > 800*1024) { status.textContent = 'Foto is te groot (max 800KB voor nu).'; return; }
-        status.textContent = 'Bezig met uploaden...';
-        const reader = new FileReader();
-        reader.onload = async e => {
-            try {
-                const ref = db.collection('coaches').doc(coach).collection('clients').doc(clientId);
-                const doc = await ref.get();
-                const existing = (doc.data() && doc.data().portalPhotos) || [];
-                existing.push({ date: new Date().toISOString(), dataUrl: e.target.result });
-                while(existing.length > 20) existing.shift();
-                await ref.set({ portalPhotos: existing }, { merge: true });
-                status.innerHTML = '<span style="color:#10b981;">✓ Foto verstuurd!</span>';
-                setTimeout(() => location.reload(), 900);
-            } catch(err) {
-                status.innerHTML = '<span style="color:#ef4444;">Fout: ' + escapeHtml(err.message) + '</span>';
-            }
-        };
-        reader.readAsDataURL(f);
     }
 
     // Hook portal-mode bij page load VOOR de normale login-flow
