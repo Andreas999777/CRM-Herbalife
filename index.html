@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HBL-Connect">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <title>HBL-Connect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
@@ -382,6 +388,44 @@
         }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Sidebar nav badges */
+        .nav-btn { position: relative; }
+        .nav-badge { margin-left: auto; background: var(--danger); color: white; font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; min-width: 18px; text-align: center; line-height: 1.3; display: none; }
+        .nav-badge.visible { display: inline-block; }
+        .nav-badge.warn { background: var(--warning); color: #78350f; }
+
+        /* WhatsApp menu */
+        .wa-wrap { position: relative; display: inline-block; }
+        .wa-menu { position: absolute; right: 0; top: calc(100% + 6px); background: white; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 12px 32px rgba(15,23,42,0.18); min-width: 280px; padding: 6px; z-index: 100; display: none; }
+        .wa-menu.open { display: block; animation: fadeIn 0.12s ease; }
+        .wa-menu-title { padding: 10px 12px 6px; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+        .wa-opt { display: block; width: 100%; text-align: left; padding: 10px 12px; background: transparent; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 0.88rem; color: var(--text); cursor: pointer; font-weight: 500; }
+        .wa-opt:hover { background: var(--primary-soft); color: var(--primary-dark); }
+        .wa-opt .wa-opt-sub { display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; font-weight: 400; }
+
+        /* Progress chart card */
+        .progress-card { background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; }
+        .progress-card h3 { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 14px; font-size: 0.95rem; }
+        .progress-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+        .progress-tab { padding: 6px 12px; background: #f1f5f9; border: 1px solid var(--border); border-radius: 999px; cursor: pointer; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); font-family: inherit; transition: all var(--transition); }
+        .progress-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .progress-chart { width: 100%; height: 200px; background: white; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+        .progress-deltas { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 14px; }
+        .delta-item { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; }
+        .delta-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+        .delta-value { font-size: 1.15rem; font-weight: 800; color: var(--text); margin-top: 2px; }
+        .delta-change { font-size: 0.78rem; font-weight: 700; margin-top: 2px; }
+        .delta-change.down { color: var(--success); }
+        .delta-change.up { color: var(--danger); }
+        .delta-change.flat { color: var(--text-muted); }
+        .progress-empty { text-align: center; padding: 30px 10px; color: var(--text-muted); font-size: 0.85rem; }
+
+        /* Tanita mini-card in opvolg-tabs */
+        .tanita-mini { background: #f8fafc; border: 1px dashed var(--border); border-radius: var(--radius-sm); padding: 14px; margin-top: 12px; }
+        .tanita-mini h4 { margin: 0 0 10px; font-size: 0.82rem; color: var(--success); display: flex; align-items: center; gap: 6px; font-weight: 700; }
+        .tanita-mini .form-grid { gap: 10px; }
+        .tanita-mini input { padding: 7px 9px; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -478,8 +522,8 @@
             </div>
         </div>
         <ul class="nav-menu">
-            <li><button class="nav-btn active" onclick="switchView('view-dash', this)"><span class="nav-icon">🏠</span> Dashboard</button></li>
-            <li><button class="nav-btn" onclick="switchView('view-fu', this)"><span class="nav-icon">👥</span> Mijn Klanten</button></li>
+            <li><button class="nav-btn active" onclick="switchView('view-dash', this)"><span class="nav-icon">🏠</span> Dashboard <span id="nav-badge-dash" class="nav-badge warn">0</span></button></li>
+            <li><button class="nav-btn" onclick="switchView('view-fu', this)"><span class="nav-icon">👥</span> Mijn Klanten <span id="nav-badge-fu" class="nav-badge">0</span></button></li>
             <li><button class="nav-btn" onclick="switchView('view-eval', this)"><span class="nav-icon">📝</span> Nieuwe Evaluatie</button></li>
             <li><button class="nav-btn" onclick="switchView('view-stock', this)"><span class="nav-icon">📦</span> Voorraad & Winst</button></li>
             <li><button class="nav-btn" onclick="switchView('view-catalog', this)"><span class="nav-icon">📗</span> Product Info</button></li>
@@ -766,7 +810,10 @@
                         </div>
                         <div class="actions">
                             <button id="btn-toggle-active" class="btn-outline" onclick="toggleActiveStatus()">Zet Inactief</button>
-                            <button id="wa-btn" class="btn-wa" onclick="openWA()">💬 WhatsApp</button>
+                            <div class="wa-wrap">
+                                <button id="wa-btn" class="btn-wa" onclick="toggleWaMenu(event)">💬 WhatsApp ▾</button>
+                                <div id="wa-menu" class="wa-menu"></div>
+                            </div>
                             <button class="btn-danger" onclick="deleteClient()">Verwijderen</button>
                         </div>
                     </div>
@@ -846,6 +893,19 @@
                     </div>
 
                     <div id="tab-fiche" class="tab-content">
+                        <div class="progress-card">
+                            <h3>📈 Voortgang
+                                <div class="progress-tabs" id="progress-tabs">
+                                    <button class="progress-tab active" data-metric="gew" onclick="switchProgressMetric('gew', this)">Gewicht</button>
+                                    <button class="progress-tab" data-metric="vet" onclick="switchProgressMetric('vet', this)">Vet %</button>
+                                    <button class="progress-tab" data-metric="spier" onclick="switchProgressMetric('spier', this)">Spier</button>
+                                    <button class="progress-tab" data-metric="visc" onclick="switchProgressMetric('visc', this)">Visceraal</button>
+                                </div>
+                            </h3>
+                            <svg class="progress-chart" id="progress-chart" viewBox="0 0 600 200" preserveAspectRatio="none"></svg>
+                            <div class="progress-deltas" id="progress-deltas"></div>
+                        </div>
+
                         <div class="card">
                             <h3>Basisgegevens & Contact</h3>
                             <div class="form-grid">
@@ -880,6 +940,15 @@
                             <div class="form-group"><label>7. Heb je honger gehad?</label><textarea id="dag1-q7" oninput="autoSaveDag('dag1', 'q7')"></textarea></div>
                             <div class="form-group"><label>8. Is het gelukt om voorfoto's te nemen?</label><textarea id="dag1-q8" oninput="autoSaveDag('dag1', 'q8')"></textarea></div>
                             <div class="form-group"><label>Extra opmerkingen (Dag 1)</label><textarea id="dag1-notes" oninput="autoSaveDag('dag1', 'notes')"></textarea></div>
+                            <div class="tanita-mini">
+                                <h4>📏 Tanita-meting Dag 1 (optioneel)</h4>
+                                <div class="form-grid">
+                                    <div class="form-group"><label>Gewicht (kg)</label><input type="text" id="d1-t-gew" oninput="autoSaveTanita('d1','gew')"></div>
+                                    <div class="form-group"><label>Vet (%)</label><input type="text" id="d1-t-vet" oninput="autoSaveTanita('d1','vet')"></div>
+                                    <div class="form-group"><label>Spier (kg)</label><input type="text" id="d1-t-spier" oninput="autoSaveTanita('d1','spier')"></div>
+                                    <div class="form-group"><label>Visceraal</label><input type="text" id="d1-t-visc" oninput="autoSaveTanita('d1','visc')"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -892,6 +961,15 @@
                             <div class="form-group"><label>4. Heb je vanmorgen gemeten?</label><textarea id="dag3-q4" oninput="autoSaveDag('dag3', 'q4')"></textarea></div>
                             <div class="form-group"><label>5. Honger gehad?</label><textarea id="dag3-q5" oninput="autoSaveDag('dag3', 'q5')"></textarea></div>
                             <div class="form-group"><label>Extra opmerkingen (Dag 3)</label><textarea id="dag3-notes" oninput="autoSaveDag('dag3', 'notes')"></textarea></div>
+                            <div class="tanita-mini">
+                                <h4>📏 Tanita-meting Dag 3 (optioneel)</h4>
+                                <div class="form-grid">
+                                    <div class="form-group"><label>Gewicht (kg)</label><input type="text" id="d3-t-gew" oninput="autoSaveTanita('d3','gew')"></div>
+                                    <div class="form-group"><label>Vet (%)</label><input type="text" id="d3-t-vet" oninput="autoSaveTanita('d3','vet')"></div>
+                                    <div class="form-group"><label>Spier (kg)</label><input type="text" id="d3-t-spier" oninput="autoSaveTanita('d3','spier')"></div>
+                                    <div class="form-group"><label>Visceraal</label><input type="text" id="d3-t-visc" oninput="autoSaveTanita('d3','visc')"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -904,6 +982,15 @@
                             <div class="form-group"><label>4. Ben je per ongeluk op de weegschaal terecht gekomen?</label><textarea id="dag7-q4" oninput="autoSaveDag('dag7', 'q4')"></textarea><div class="coach-note">Spieren zijn zwaarder dan vet. Focus op centimeters!</div></div>
                             <div class="form-group"><label>5. Heeft iemand al iets gezegd?</label><textarea id="dag7-q5" oninput="autoSaveDag('dag7', 'q5')"></textarea></div>
                             <div class="form-group"><label>Extra opmerkingen (Dag 7)</label><textarea id="dag7-notes" oninput="autoSaveDag('dag7', 'notes')"></textarea></div>
+                            <div class="tanita-mini">
+                                <h4>📏 Tanita-meting Dag 7 (optioneel)</h4>
+                                <div class="form-grid">
+                                    <div class="form-group"><label>Gewicht (kg)</label><input type="text" id="d7-t-gew" oninput="autoSaveTanita('d7','gew')"></div>
+                                    <div class="form-group"><label>Vet (%)</label><input type="text" id="d7-t-vet" oninput="autoSaveTanita('d7','vet')"></div>
+                                    <div class="form-group"><label>Spier (kg)</label><input type="text" id="d7-t-spier" oninput="autoSaveTanita('d7','spier')"></div>
+                                    <div class="form-group"><label>Visceraal</label><input type="text" id="d7-t-visc" oninput="autoSaveTanita('d7','visc')"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -920,6 +1007,15 @@
                             <div class="form-group"><label>2. Hoeveel water heb je gedronken?</label><textarea id="week2-q2" oninput="autoSaveDag('week2', 'q2')"></textarea></div>
                             <div class="form-group"><label>3. Heb je vanmorgen gemeten?</label><textarea id="week2-q3" oninput="autoSaveDag('week2', 'q3')"></textarea></div>
                             <div class="form-group"><label>Extra opmerkingen (Week 2)</label><textarea id="week2-notes" oninput="autoSaveDag('week2', 'notes')"></textarea></div>
+                            <div class="tanita-mini">
+                                <h4>📏 Tanita-meting Week 2 (optioneel)</h4>
+                                <div class="form-grid">
+                                    <div class="form-group"><label>Gewicht (kg)</label><input type="text" id="w2-t-gew" oninput="autoSaveTanita('w2','gew')"></div>
+                                    <div class="form-group"><label>Vet (%)</label><input type="text" id="w2-t-vet" oninput="autoSaveTanita('w2','vet')"></div>
+                                    <div class="form-group"><label>Spier (kg)</label><input type="text" id="w2-t-spier" oninput="autoSaveTanita('w2','spier')"></div>
+                                    <div class="form-group"><label>Visceraal</label><input type="text" id="w2-t-visc" oninput="autoSaveTanita('w2','visc')"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1211,6 +1307,7 @@
     let currentCoach = 'Andreas';
     let clients = {};
     let currentClientId = null;
+    let lastLoadedClientId = null;
     
     let myStock = {};
     let salesHistory = [];
@@ -1661,19 +1758,27 @@
             });
         }
 
-        // Lichaamsanalyse Week 3+ inladen
-        if(c.tanita_w3) {
+        // Tanita-metingen per opvolg-moment inladen (d1, d3, d7, w2, w3).
+        // Sla een input over die actief gefocust is: anders klopt de cursor-positie niet
+        // tijdens het typen zodra een Firestore-snapshot binnenkomt.
+        ['d1', 'd3', 'd7', 'w2', 'w3'].forEach(tab => {
+            const data = c['tanita_' + tab] || {};
             ['gew', 'vet', 'spier', 'visc', 'lft'].forEach(t => {
-                document.getElementById(`w3-t-${t}`).value = c.tanita_w3[t] || '';
+                const el = document.getElementById(`${tab}-t-${t}`);
+                if(el && el !== document.activeElement) el.value = data[t] || '';
             });
-        } else {
-            ['gew', 'vet', 'spier', 'visc', 'lft'].forEach(t => {
-                document.getElementById(`w3-t-${t}`).value = '';
-            });
-        }
+        });
 
-        const evalBtn = document.getElementById('tab-btn-eval');
-        if(evalBtn) openTab('tab-evaluatie', evalBtn);
+        // Voortgang-grafiek renderen
+        renderProgressChart(c);
+
+        // Alleen tab resetten bij wissel van klant — niet bij elke Firestore-snapshot.
+        // Anders springt de gebruiker bij elke auto-save terug naar Evaluatie.
+        if(lastLoadedClientId !== currentClientId) {
+            lastLoadedClientId = currentClientId;
+            const evalBtn = document.getElementById('tab-btn-eval');
+            if(evalBtn) openTab('tab-evaluatie', evalBtn);
+        }
     }
 
     function autoSaveFiche(field) {
@@ -1700,23 +1805,172 @@
         }, { merge: true });
         
         // Zorg dat de waarde bovenaan direct ook wordt aangepast
-        document.getElementById(`disp-t-${field}`).innerText = el.value || '-';
+        const disp = document.getElementById(`disp-t-${field}`); if(disp) disp.innerText = el.value || '-';
+        const c = clients[currentClientId]; if(c) { c.tanita_start = Object.assign({}, c.tanita_start || {}, { [field]: el.value }); renderProgressChart(c); }
     }
 
-    function autoSaveTanitaW3(field) {
+    function autoSaveTanitaW3(field) { autoSaveTanita('w3', field); }
+
+    // Generiek: slaat Tanita-metingen op per opvolg-moment (d1, d3, d7, w2, w3)
+    function autoSaveTanita(tab, field) {
         if(!currentClientId) return;
-        const el = document.getElementById(`w3-t-${field}`);
-        
+        const el = document.getElementById(`${tab}-t-${field}`);
+        if(!el) return;
+        const key = 'tanita_' + tab;
         db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId).set({
-            tanita_w3: { [field]: el.value }
+            [key]: { [field]: el.value }
         }, { merge: true });
+        const c = clients[currentClientId]; if(c) { c[key] = Object.assign({}, c[key] || {}, { [field]: el.value }); renderProgressChart(c); }
     }
 
-    function openWA() {
-        const c = clients[currentClientId];
-        let p = (c.phone || (c.fiche && c.fiche.phone) || '').replace(/\D/g,'');
+    // =========================================================================
+    // WHATSAPP TEMPLATES — per milestone, met klantnaam + WHY ingevuld
+    // =========================================================================
+    const WA_TEMPLATES = [
+        { id: 'blank', label: '✏️ Leeg bericht', sub: 'Open WhatsApp zonder tekst', build: () => '' },
+        { id: 'd1', label: '☀️ Dag 1 — check-in', sub: 'Hoe was de eerste shake?', build: (n) => `Hé ${n}! Eerste dag zit erop 🎉 Hoe smaakte de shake? En hoe voel je je vandaag? Laat maar weten!` },
+        { id: 'd3', label: '💪 Dag 3 — motivatie', sub: 'Energie + stoelgang check', build: (n, w) => `Hé ${n}! Dag 3 — hoe gaat het met je energie?${w ? ` Denk aan je doel ("${w}").` : ''} Blijf bij de structuur. Vragen? Stuur maar!` },
+        { id: 'd7', label: '🏆 Dag 7 — week 1 gedaan', sub: 'Metingen + gevoel', build: (n) => `Top ${n}, een volle week! 🙌 Heb je vanmorgen gemeten? Ik ben benieuwd naar je resultaat en hoe je je voelt.` },
+        { id: 'w2', label: '📈 Week 2 — symptomen', sub: 'Check-in op klachten die je bij start aangaf', build: (n) => `Hé ${n}! Week 2 al — hoe gaat het? Hoe staat het met de klachten die je bij de start had? En ben je mee met het water en het ontbijt?` },
+        { id: 'w3', label: '🎯 Week 3+ — lange termijn', sub: 'Dankbaarheid + VIP-vraag', build: (n, w) => `Hé ${n}! Drie weken 💪${w ? ` — doel: "${w}".` : ''} Top bezig! Heb je zin om mee te denken over verdere begeleiding of iemand uit je omgeving die ook resultaat wil?` },
+        { id: 'reminder', label: '🔔 Herinnering bestellen', sub: 'Zorg dat ze tijdig bijbestellen', build: (n) => `Hé ${n}! Ik zag dat je producten bijna op zijn. Wil je dat ik de bestelling al voor je klaarzet? Laat even weten! 🙂` },
+        { id: 'meeting', label: '📅 Afspraak voorstellen', sub: 'Kort gesprek inplannen', build: (n) => `Hé ${n}! Zin in een korte check-in deze week? Stuur me gerust 2 momenten die jou passen, dan bel ik je even.` }
+    ];
+
+    function toggleWaMenu(evt) {
+        if(evt) evt.stopPropagation();
+        const menu = document.getElementById('wa-menu');
+        if(!menu) return;
+        if(menu.classList.contains('open')) { menu.classList.remove('open'); return; }
+        renderWaMenu();
+        menu.classList.add('open');
+    }
+
+    function renderWaMenu() {
+        const menu = document.getElementById('wa-menu');
+        if(!menu) return;
+        menu.innerHTML = '<div class="wa-menu-title">Kies een template</div>' +
+            WA_TEMPLATES.map(t => `<button type="button" class="wa-opt" onclick="openWaTemplate('${t.id}')">${escapeHtml(t.label)}<span class="wa-opt-sub">${escapeHtml(t.sub)}</span></button>`).join('');
+    }
+
+    function openWaTemplate(id) {
+        const c = clients[currentClientId]; if(!c) return;
+        const tpl = WA_TEMPLATES.find(t => t.id === id) || WA_TEMPLATES[0];
+        const nm = (clientName(c) || '').split(' ')[0] || 'daar';
+        const why = c.why || (c.fiche && c.fiche.why) || '';
+        const text = tpl.build(nm, why);
+        let p = (c.phone || (c.fiche && c.fiche.phone) || '').replace(/\D/g, '');
         if(p.startsWith('0')) p = '32' + p.substring(1);
-        window.open(`https://wa.me/${p}`, '_blank');
+        const url = `https://wa.me/${p}` + (text ? `?text=${encodeURIComponent(text)}` : '');
+        const menu = document.getElementById('wa-menu'); if(menu) menu.classList.remove('open');
+        window.open(url, '_blank');
+    }
+
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('wa-menu');
+        if(!menu || !menu.classList.contains('open')) return;
+        if(!e.target.closest('.wa-wrap')) menu.classList.remove('open');
+    });
+
+    // =========================================================================
+    // VOORTGANG-GRAFIEK — leest intake + elke opvolg-Tanita-meting als datapunt
+    // =========================================================================
+    const PROGRESS_STAGES = [
+        { key: 'tanita_start', label: 'Intake', day: 0 },
+        { key: 'tanita_d1', label: 'Dag 1', day: 1 },
+        { key: 'tanita_d3', label: 'Dag 3', day: 3 },
+        { key: 'tanita_d7', label: 'Dag 7', day: 7 },
+        { key: 'tanita_w2', label: 'Week 2', day: 14 },
+        { key: 'tanita_w3', label: 'Week 3+', day: 21 }
+    ];
+    const METRIC_LABELS = { gew: { name: 'Gewicht', unit: 'kg', goodDir: 'down' }, vet: { name: 'Vet', unit: '%', goodDir: 'down' }, spier: { name: 'Spier', unit: 'kg', goodDir: 'up' }, visc: { name: 'Visceraal', unit: '', goodDir: 'down' } };
+    let currentProgressMetric = 'gew';
+
+    function switchProgressMetric(metric, btn) {
+        currentProgressMetric = metric;
+        document.querySelectorAll('.progress-tab').forEach(t => t.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        const c = clients[currentClientId]; if(c) renderProgressChart(c);
+    }
+
+    function getProgressPoints(client, metric) {
+        return PROGRESS_STAGES.map(s => {
+            const t = client[s.key];
+            const v = t && t[metric];
+            const n = v !== undefined && v !== null && v !== '' ? parseFloat(String(v).replace(',', '.')) : NaN;
+            return { label: s.label, day: s.day, value: isNaN(n) ? null : n };
+        }).filter(p => p.value !== null);
+    }
+
+    function renderProgressChart(client) {
+        const svg = document.getElementById('progress-chart');
+        const deltasEl = document.getElementById('progress-deltas');
+        if(!svg || !deltasEl || !client) return;
+        const m = currentProgressMetric;
+        const meta = METRIC_LABELS[m];
+        const points = getProgressPoints(client, m);
+
+        if(points.length === 0) {
+            svg.innerHTML = '<text x="300" y="100" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" fill="#94a3b8">Nog geen metingen — vul Tanita in bij Klantfiche of een opvolg-tab</text>';
+            deltasEl.innerHTML = '';
+            return;
+        }
+
+        // Delta-kaartjes voor alle 4 metrieken
+        deltasEl.innerHTML = ['gew','vet','spier','visc'].map(k => {
+            const pts = getProgressPoints(client, k);
+            if(pts.length === 0) return '';
+            const first = pts[0].value, last = pts[pts.length - 1].value;
+            const diff = last - first;
+            const md = METRIC_LABELS[k];
+            const good = (md.goodDir === 'down' && diff < 0) || (md.goodDir === 'up' && diff > 0);
+            const arrow = diff === 0 ? '→' : (diff < 0 ? '▼' : '▲');
+            const dirClass = diff === 0 ? 'flat' : (good ? 'down' : 'up');
+            return `<div class="delta-item">
+                <div class="delta-label">${md.name}</div>
+                <div class="delta-value">${last.toFixed(1)}${md.unit ? ' ' + md.unit : ''}</div>
+                <div class="delta-change ${dirClass}">${arrow} ${Math.abs(diff).toFixed(1)}${md.unit ? ' ' + md.unit : ''} vs intake</div>
+            </div>`;
+        }).join('');
+
+        // Chart layout
+        const W = 600, H = 200, PL = 44, PR = 20, PT = 22, PB = 34;
+        const values = points.map(p => p.value);
+        let minV = Math.min.apply(null, values), maxV = Math.max.apply(null, values);
+        if(minV === maxV) { minV -= 1; maxV += 1; }
+        const pad = (maxV - minV) * 0.15; minV -= pad; maxV += pad;
+        const xStep = (W - PL - PR) / Math.max(1, points.length - 1);
+        const yFor = v => PT + (1 - (v - minV) / (maxV - minV)) * (H - PT - PB);
+        const xFor = i => PL + (points.length === 1 ? (W - PL - PR) / 2 : i * xStep);
+
+        let gridHtml = '';
+        for(let i = 0; i <= 3; i++) {
+            const y = PT + (i / 3) * (H - PT - PB);
+            const v = maxV - (i / 3) * (maxV - minV);
+            gridHtml += `<line x1="${PL}" y1="${y}" x2="${W - PR}" y2="${y}" stroke="#e2e8f0" stroke-width="1"/>`;
+            gridHtml += `<text x="${PL - 6}" y="${y + 4}" text-anchor="end" font-family="Inter,sans-serif" font-size="10" fill="#94a3b8">${v.toFixed(1)}</text>`;
+        }
+
+        const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${xFor(i)} ${yFor(p.value)}`).join(' ');
+        const areaPath = points.length > 1 ? `${path} L ${xFor(points.length - 1)} ${H - PB} L ${xFor(0)} ${H - PB} Z` : '';
+
+        let dotsHtml = '', labelsHtml = '';
+        points.forEach((p, i) => {
+            const x = xFor(i), y = yFor(p.value);
+            dotsHtml += `<circle cx="${x}" cy="${y}" r="4" fill="#2563eb" stroke="white" stroke-width="2"/>`;
+            dotsHtml += `<text x="${x}" y="${y - 10}" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#1e293b">${p.value.toFixed(1)}</text>`;
+            labelsHtml += `<text x="${x}" y="${H - 10}" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#64748b">${p.label}</text>`;
+        });
+
+        svg.innerHTML = `
+            <defs><linearGradient id="gradArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2563eb" stop-opacity="0.25"/><stop offset="100%" stop-color="#2563eb" stop-opacity="0"/></linearGradient></defs>
+            ${gridHtml}
+            ${areaPath ? `<path d="${areaPath}" fill="url(#gradArea)"/>` : ''}
+            <path d="${path}" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+            ${dotsHtml}
+            ${labelsHtml}
+            <text x="${W/2}" y="14" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#64748b">${meta.name}${meta.unit ? ' (' + meta.unit + ')' : ''}</text>
+        `;
     }
 
     function deleteClient() {
@@ -2130,6 +2384,12 @@
         document.getElementById('dash-today-count').textContent = today.length;
         document.getElementById('dash-overdue-count').textContent = overdue.length;
 
+        // Sidebar nav-badges: Dashboard = vandaag (warn), Mijn Klanten = achterstallig (danger)
+        const dashBadge = document.getElementById('nav-badge-dash');
+        const fuBadge = document.getElementById('nav-badge-fu');
+        if(dashBadge) { dashBadge.textContent = today.length; dashBadge.classList.toggle('visible', today.length > 0); }
+        if(fuBadge) { fuBadge.textContent = overdue.length; fuBadge.classList.toggle('visible', overdue.length > 0); }
+
         // Maandwinst (sale records slaan winst direct op in s.profit)
         const now = new Date();
         const ymPrefix = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
@@ -2510,6 +2770,14 @@
         `).join('');
     }
 
+    // =========================================================================
+    // PWA — registreer service worker zodat de app installeerbaar is op gsm
+    // =========================================================================
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').catch(() => { /* dev/file:// niet fataal */ });
+        });
+    }
 </script>
 </body>
 </html>
