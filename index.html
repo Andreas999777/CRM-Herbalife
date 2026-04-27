@@ -2310,13 +2310,78 @@
                             <strong>Coaches:</strong> ${escapeHtml(coaches) || '—'}<br>
                             <strong>Emails:</strong> ${escapeHtml(emails) || '—'}
                         </div>
-                        ${t.isHomeTeam ? '' : `<button class="btn-outline" style="margin-top:10px; font-size:0.8rem;" onclick="adminResendReset('${escapeHtml((t.allowedEmails||[])[0]||'')}')">Stuur opnieuw wachtwoord-reset email</button>`}
+                        ${t.isHomeTeam ? '' : `
+                            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+                                <button class="btn-outline" style="font-size:0.8rem;" onclick="adminResendReset('${escapeJsAttr((t.allowedEmails||[])[0]||'')}')">📧 Reset-mail opnieuw</button>
+                                <button class="btn-outline" style="font-size:0.8rem; color:var(--danger); border-color:var(--danger);" onclick="adminDeleteTeam('${escapeJsAttr(doc.id)}', '${escapeJsAttr(t.name||doc.id)}')">🗑 Team verwijderen</button>
+                            </div>
+                        `}
                     </div>`);
             });
             wrap.innerHTML = rows.join('');
         } catch(e) {
             console.error(e);
             wrap.innerHTML = '<div class="muted">Kon teams niet laden: ' + escapeHtml(e.message||'') + '</div>';
+        }
+    }
+
+    async function adminDeleteTeam(teamId, teamName) {
+        if(!isTeamOwner()) return;
+        if(!teamId || teamId === HOME_TEAM_ID) {
+            alert('Het hoofdteam kan niet worden verwijderd.');
+            return;
+        }
+        const confirmName = prompt(
+            `⚠️ LET OP: dit verwijdert team "${teamName}" volledig — inclusief alle klanten, voorraad en afspraken van deze coach. Dit kan niet ongedaan worden gemaakt.\n\n` +
+            `Typ de team-naam exact om te bevestigen:`,
+            ''
+        );
+        if(confirmName === null) return;
+        if(confirmName.trim() !== (teamName || '').trim()) {
+            alert('Team-naam komt niet overeen. Verwijdering geannuleerd.');
+            return;
+        }
+        const wrap = document.getElementById('admin-teams-list');
+        const okDiv  = document.getElementById('admin-success');
+        const errDiv = document.getElementById('admin-error');
+        if(okDiv) okDiv.style.display = 'none';
+        if(errDiv) errDiv.style.display = 'none';
+        try {
+            const teamDoc = await db.collection('teams').doc(teamId).get();
+            if(!teamDoc.exists) throw new Error('Team niet gevonden');
+            const team = teamDoc.data();
+            const coaches = team.coaches || [];
+            const subcolls = ['clients', 'inventory', 'appointments'];
+            // 1) Verwijder per coach alle subcollecties + coach-doc
+            for(const c of coaches) {
+                if(!c || !c.id) continue;
+                for(const sub of subcolls) {
+                    const snap = await db.collection('coaches').doc(c.id).collection(sub).get();
+                    const batches = [];
+                    let batch = db.batch(), n = 0;
+                    snap.forEach(d => {
+                        batch.delete(d.ref);
+                        n += 1;
+                        if(n >= 400) { batches.push(batch.commit()); batch = db.batch(); n = 0; }
+                    });
+                    if(n > 0) batches.push(batch.commit());
+                    if(batches.length) await Promise.all(batches);
+                }
+                await db.collection('coaches').doc(c.id).delete().catch(()=>{});
+            }
+            // 2) Verwijder team-doc
+            await db.collection('teams').doc(teamId).delete();
+            const emails = (team.allowedEmails || []).join(', ');
+            const msg =
+                `Team "${team.name || teamId}" verwijderd uit Firestore.\n\n` +
+                (emails ? `De Firebase Auth-account(s) van ${emails} blijven nog bestaan. ` +
+                          `Verwijder die handmatig via:\nhttps://console.firebase.google.com/project/follow-up-coaches/authentication/users\n\n` : '') +
+                `Tip: zoek op het email-adres en klik op het 3-stippen-menu → "Verwijder gebruiker".`;
+            alert(msg);
+            renderAdmin();
+        } catch(e) {
+            console.error('adminDeleteTeam', e);
+            alert('Verwijderen mislukt: ' + (e.message || e.code || 'onbekende fout'));
         }
     }
 
@@ -2353,6 +2418,19 @@
 
     function escapeHtml(s) {
         return String(s || '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    }
+    // Voor strings die binnen een single-quoted JS-string in een onclick="..."
+    // attribuut staan: backslashes/quotes/newlines escapen én < neutraliseren
+    // zodat de HTML-parser de string niet voortijdig sluit.
+    function escapeJsAttr(s) {
+        return String(s == null ? '' : s)
+            .replace(/\\/g, '\\\\')
+            .replace(/&/g,  '\\x26')
+            .replace(/'/g,  "\\'")
+            .replace(/"/g,  '\\x22')
+            .replace(/\r/g, '\\r')
+            .replace(/\n/g, '\\n')
+            .replace(/</g,  '\\x3c');
     }
 
     const formatMoney = (amt) => "€ " + parseFloat(amt).toFixed(2).replace('.', ',');
