@@ -1,10 +1,12 @@
 rules_version = '2';
 
 // =========================================================================
-// HBL-Connect — Firestore Security Rules (multi-tenant)
+// HBL-Connect — Firestore Security Rules (multi-tenant + admin-rol + audit)
 //
 // Doel: elke coach kan ALLEEN data zien/wijzigen van het team waar zijn
-// email in /teams/{teamId}.allowedEmails staat.
+// email in /teams/{teamId}.allowedEmails staat. De owner (Andreas) en
+// optionele admins (in /teams/hbl-connect.adminEmails) kunnen daarnaast
+// alle teams beheren en de audit-log lezen.
 //
 // Hoe deployen (1x via Firebase Console):
 //   1. https://console.firebase.google.com/project/follow-up-coaches/firestore/rules
@@ -27,6 +29,14 @@ service cloud.firestore {
       return isSignedIn() && userEmail() == 'andreasphilips3@gmail.com';
     }
 
+    // Admin = owner OF email staat in /teams/hbl-connect.adminEmails
+    function isAdmin() {
+      return isOwner()
+        || (isSignedIn()
+            && exists(/databases/$(database)/documents/teams/hbl-connect)
+            && userEmail() in get(/databases/$(database)/documents/teams/hbl-connect).data.adminEmails);
+    }
+
     // Lid van het team waar coachId aan hangt.
     // Voor founder-coaches wordt het home-team `hbl-connect` gebruikt; voor
     // andere coaches wordt het team uit `coaches/{coachId}.teamId` gelezen.
@@ -45,30 +55,30 @@ service cloud.firestore {
     }
 
     // ---- /teams ----
-    // Leest moeten direct verifieerbaar zijn op `resource.data.allowedEmails`,
-    // anders weigert Firestore een `list`-query (rule-expansion check).
-    // Gebruik daarom geen helper met get(); evalueer ter plekke op resource.
+    // Reads moeten direct verifieerbaar zijn op `resource.data.allowedEmails`
+    // voor `list`-queries (rule-expansion check). Owner/admin krijgen extra
+    // pad om alle teams te kunnen listen voor de Beheer-pagina.
     match /teams/{teamId} {
-      allow read: if isOwner()
+      allow read: if isAdmin()
         || (isSignedIn() && userEmail() in resource.data.allowedEmails);
-      allow create, update, delete: if isOwner();
+      allow create, update, delete: if isAdmin();
     }
 
     // ---- /coaches/{coachId}/** ----
     // Alle subcollecties (clients, inventory, appointments, ...) zijn enkel
     // toegankelijk voor leden van het team waar deze coach bij hoort.
-    // Owner kan altijd lezen om audit/cleanup mogelijk te maken.
+    // Admin kan altijd lezen/schrijven om beheer/cleanup mogelijk te maken.
     match /coaches/{coachId} {
-      allow read:  if isOwner() || isMemberOfCoachTeam(coachId);
-      allow write: if isOwner() || isMemberOfCoachTeam(coachId);
+      allow read:  if isAdmin() || isMemberOfCoachTeam(coachId);
+      allow write: if isAdmin() || isMemberOfCoachTeam(coachId);
     }
 
     match /coaches/{coachId}/{subcoll}/{docId} {
-      allow read, write: if isOwner() || isMemberOfCoachTeam(coachId);
+      allow read, write: if isAdmin() || isMemberOfCoachTeam(coachId);
     }
 
     match /coaches/{coachId}/{subcoll}/{docId}/{rest=**} {
-      allow read, write: if isOwner() || isMemberOfCoachTeam(coachId);
+      allow read, write: if isAdmin() || isMemberOfCoachTeam(coachId);
     }
 
     // ---- Klant-portaal: één klant via portalToken ----
@@ -79,6 +89,18 @@ service cloud.firestore {
     // toe (geen list), zodat het portaal blijft werken.
     match /coaches/{coachId}/clients/{clientId} {
       allow get: if true;
+    }
+
+    // ---- /audit ----
+    // Append-only log van admin-acties. Alleen admins lezen + schrijven;
+    // updates/deletes zijn nooit toegelaten zodat de log immutable blijft.
+    // Bij create moet `actorEmail` overeenkomen met de ingelogde gebruiker
+    // zodat niemand zich kan voordoen als een andere admin.
+    match /audit/{auditId} {
+      allow read:   if isAdmin();
+      allow create: if isAdmin()
+                    && request.resource.data.actorEmail == userEmail();
+      allow update, delete: if false;
     }
   }
 }
