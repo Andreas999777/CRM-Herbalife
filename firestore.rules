@@ -27,52 +27,48 @@ service cloud.firestore {
       return isSignedIn() && userEmail() == 'andreasphilips3@gmail.com';
     }
 
-    // Geeft het team-document terug waar de huidige user lid van is.
-    function teamOf(teamId) {
-      return get(/databases/$(database)/documents/teams/$(teamId)).data;
-    }
-
-    function isMemberOfTeam(teamId) {
-      return isSignedIn()
-        && exists(/databases/$(database)/documents/teams/$(teamId))
-        && userEmail() in teamOf(teamId).allowedEmails;
-    }
-
-    // Geeft true als de coachId hoort bij een team waarvan de user lid is.
+    // Lid van het team waar coachId aan hangt.
+    // Voor founder-coaches wordt het home-team `hbl-connect` gebruikt; voor
+    // andere coaches wordt het team uit `coaches/{coachId}.teamId` gelezen.
     function isMemberOfCoachTeam(coachId) {
       return isSignedIn() && (
         // Founder coaches → home-team
         (coachId in ['Andreas','Thalyssa','Silvia']
-          && isMemberOfTeam('hbl-connect'))
+          && exists(/databases/$(database)/documents/teams/hbl-connect)
+          && userEmail() in get(/databases/$(database)/documents/teams/hbl-connect).data.allowedEmails)
         ||
         // Externe coaches: coach-doc bevat teamId
         (exists(/databases/$(database)/documents/coaches/$(coachId))
-          && isMemberOfTeam(get(/databases/$(database)/documents/coaches/$(coachId)).data.teamId))
+          && exists(/databases/$(database)/documents/teams/$(get(/databases/$(database)/documents/coaches/$(coachId)).data.teamId))
+          && userEmail() in get(/databases/$(database)/documents/teams/$(get(/databases/$(database)/documents/coaches/$(coachId)).data.teamId)).data.allowedEmails)
       );
     }
 
     // ---- /teams ----
-    // Iedereen die ingelogd is mag teams lezen waar hij/zij in zit.
-    // Aanmaken/wijzigen mag alleen de owner (Andreas).
+    // Leest moeten direct verifieerbaar zijn op `resource.data.allowedEmails`,
+    // anders weigert Firestore een `list`-query (rule-expansion check).
+    // Gebruik daarom geen helper met get(); evalueer ter plekke op resource.
     match /teams/{teamId} {
-      allow read: if isMemberOfTeam(teamId) || isOwner();
+      allow read: if isOwner()
+        || (isSignedIn() && userEmail() in resource.data.allowedEmails);
       allow create, update, delete: if isOwner();
     }
 
     // ---- /coaches/{coachId}/** ----
     // Alle subcollecties (clients, inventory, appointments, ...) zijn enkel
     // toegankelijk voor leden van het team waar deze coach bij hoort.
+    // Owner kan altijd lezen om audit/cleanup mogelijk te maken.
     match /coaches/{coachId} {
-      allow read: if isMemberOfCoachTeam(coachId);
-      allow write: if isMemberOfCoachTeam(coachId) || isOwner();
+      allow read:  if isOwner() || isMemberOfCoachTeam(coachId);
+      allow write: if isOwner() || isMemberOfCoachTeam(coachId);
     }
 
     match /coaches/{coachId}/{subcoll}/{docId} {
-      allow read, write: if isMemberOfCoachTeam(coachId);
+      allow read, write: if isOwner() || isMemberOfCoachTeam(coachId);
     }
 
     match /coaches/{coachId}/{subcoll}/{docId}/{rest=**} {
-      allow read, write: if isMemberOfCoachTeam(coachId);
+      allow read, write: if isOwner() || isMemberOfCoachTeam(coachId);
     }
 
     // ---- Klant-portaal: één klant via portalToken ----
