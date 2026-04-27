@@ -3681,7 +3681,17 @@
     const AI_MODEL_GEMINI = 'gemini-2.0-flash';
 
     function getAiProvider() {
-        try { return localStorage.getItem(AI_PROVIDER_STORAGE) || 'gemini'; } catch(e) { return 'gemini'; }
+        try {
+            const stored = localStorage.getItem(AI_PROVIDER_STORAGE);
+            if (stored) return stored;
+            // Backwards-compat: bestaande gebruikers die enkel een OpenAI-key hadden vóór de
+            // Gemini-toevoeging zouden anders stilzwijgend hun AI verliezen omdat de default
+            // 'gemini' is. Detecteer dat geval en behoud OpenAI als provider.
+            const hasOpenAi = !!localStorage.getItem(AI_KEY_STORAGE);
+            const hasGemini = !!localStorage.getItem(AI_GEMINI_KEY_STORAGE);
+            if (hasOpenAi && !hasGemini) return 'openai';
+            return 'gemini';
+        } catch(e) { return 'gemini'; }
     }
     function setAiProvider(p) { try { localStorage.setItem(AI_PROVIDER_STORAGE, p || 'gemini'); } catch(e) {} }
     function getAiKey(provider) {
