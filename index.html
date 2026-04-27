@@ -385,8 +385,10 @@
             .page-header { padding: 14px 16px; }
             .modal-content { max-height: 95vh; }
             .modal-body { padding: 20px; }
-            .camp-layout, .bi-layout { padding: 16px !important; grid-template-columns: 1fr !important; }
-            .bi-grid { grid-template-columns: 1fr !important; }
+            .camp-layout, .bi-layout { padding: 16px !important; grid-template-columns: minmax(0, 1fr) !important; }
+            .bi-grid { grid-template-columns: minmax(0, 1fr) !important; }
+            .camp-layout > .card, .bi-layout .card, .bi-grid > div { min-width: 0; }
+            .camp-layout .btn-primary, .camp-layout button { white-space: normal; max-width: 100%; }
             #camp-list { max-height: none !important; }
             .stock-controls { flex-direction: column; align-items: stretch; gap: 8px; }
             .dashboard-cards { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
