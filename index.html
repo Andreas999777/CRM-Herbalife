@@ -401,7 +401,6 @@
             #timeline-list > div > span:nth-child(3) { grid-column: 1 / -1; }
             .bulk-fu-row { grid-template-columns: auto minmax(0,1fr) !important; grid-template-rows: auto auto auto; }
             .bulk-fu-row > .badge, .bulk-fu-row > .btn-wa { grid-column: 1 / -1; justify-self: start; }
-            #ai-float-btn { bottom: 14px !important; right: 14px !important; width: 48px !important; height: 48px !important; font-size: 20px !important; }
         }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -950,20 +949,6 @@
                             <div id="portal-checkin-feed" style="margin-top:12px; font-size:0.85rem;"></div>
                         </div>
 
-                        <div class="card" style="border-left:4px solid #a855f7;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                                <div>
-                                    <h3 style="margin:0;">✨ AI-inzicht</h3>
-                                    <div style="font-size:0.82rem; color:var(--text-muted);">Korte samenvatting + next-best-action voor deze klant.</div>
-                                </div>
-                                <div style="display:flex; gap:8px;">
-                                    <button class="btn-outline" onclick="openAiSettings()" title="AI-instellingen">⚙️</button>
-                                    <button class="btn-primary" onclick="runAiInsight()">✨ Genereer inzicht</button>
-                                </div>
-                            </div>
-                            <div id="ai-insight-output" style="margin-top:12px; padding:10px; background:#faf5ff; border-radius:6px; display:none;"></div>
-                        </div>
-
                         <div class="card" id="timeline-card">
                             <h3 style="display:flex; align-items:center; gap:8px;">📋 Notitie-tijdlijn
                                 <span class="badge badge-muted" id="timeline-count">0</span>
@@ -1354,55 +1339,6 @@
             </div>
         </div>
 
-    </div>
-
-    <!-- AI-instellingen modal -->
-    <div id="ai-settings-modal" class="modal-overlay" onclick="if(event.target===this) closeAiSettings()">
-        <div class="modal-content" onclick="event.stopPropagation()" style="max-width:520px;">
-            <button class="modal-close" onclick="closeAiSettings()">×</button>
-            <div class="modal-body">
-                <h2>⚙️ AI-instellingen</h2>
-                <p style="font-size:0.88rem; color:var(--text-muted); margin-top:4px;">Plak een API-key om de AI-assistent te activeren. De key wordt enkel in jouw browser opgeslagen (localStorage).</p>
-                <label style="display:block; margin-top:12px; font-size:0.85rem; color:var(--text-muted);">Provider</label>
-                <select id="ai-provider" class="coach-select" style="width:100%;" onchange="updateAiProviderHint()">
-                    <option value="gemini">Google Gemini (gratis tier — aanbevolen)</option>
-                    <option value="openai">OpenAI (GPT-4o-mini — ~$0,001 per vraag)</option>
-                </select>
-                <label style="display:block; margin-top:12px; font-size:0.85rem; color:var(--text-muted);">API key</label>
-                <input type="password" id="ai-key-input" placeholder="..." style="width:100%; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border); font-family:monospace; font-size:0.8rem;">
-                <div style="display:flex; gap:8px; margin-top:14px;">
-                    <button class="btn-primary" onclick="saveAiKey()">Opslaan</button>
-                    <button class="btn-outline" onclick="clearAiKey()">Wissen</button>
-                </div>
-                <p id="ai-key-status" style="margin-top:14px; font-size:0.85rem;"></p>
-                <hr style="margin:18px 0; border:none; border-top:1px solid var(--border);">
-                <p id="ai-provider-hint" style="font-size:0.78rem; color:var(--text-muted); margin:0;"></p>
-            </div>
-        </div>
-    </div>
-
-
-
-    <button id="ai-float-btn" onclick="openAiChat()" title="AI-assistent" style="position:fixed; bottom:20px; right:20px; width:56px; height:56px; border-radius:50%; border:none; background:linear-gradient(135deg, #a855f7, #6366f1); color:white; font-size:24px; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,0.2); z-index:90;">✨</button>
-
-    <div id="ai-chat-modal" class="modal-overlay" onclick="if(event.target===this) closeAiChat()">
-        <div class="modal-content" onclick="event.stopPropagation()" style="max-width:640px; max-height:85vh; display:flex; flex-direction:column;">
-            <button class="modal-close" onclick="closeAiChat()">×</button>
-            <div class="modal-body" style="display:flex; flex-direction:column; padding-bottom:0; flex:1; min-height:0;">
-                <h2 style="margin:0 0 4px 0;">✨ HBL AI-assistent</h2>
-                <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 12px 0;">Vraag iets over klanten, producten, symptomen of coaching-aanpak.</p>
-                <div id="ai-chat-log" style="flex:1; min-height:280px; max-height:50vh; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; background:var(--bg-main); font-size:0.9rem; line-height:1.5;"></div>
-                <div style="display:flex; gap:8px; margin-top:10px;">
-                    <textarea id="ai-chat-input" rows="2" placeholder="bv. Welk product past bij iemand met reflux en hoge bloeddruk?" style="flex:1; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border); font-family:inherit; resize:none;"></textarea>
-                    <button class="btn-primary" onclick="aiChatSend()" style="padding:10px 18px;">Stuur</button>
-                </div>
-                <div style="display:flex; gap:6px; margin:8px 0 14px 0; flex-wrap:wrap;">
-                    <button class="btn-outline" style="font-size:0.72rem; padding:4px 10px;" onclick="aiQuickAsk('Geef me 3 praktische tips om mijn follow-up conversie te verhogen.')">Tips conversie</button>
-                    <button class="btn-outline" style="font-size:0.72rem; padding:4px 10px;" onclick="aiQuickAsk('Welke producten raad ik aan voor iemand met reflux én opgeblazen gevoel?')">Advies reflux</button>
-                    <button class="btn-outline" style="font-size:0.72rem; padding:4px 10px;" onclick="aiQuickAsk('Schrijf een motiverend WhatsApp-bericht voor een klant die stagneert in week 4.')">WA-bericht</button>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Afspraak-modal -->
@@ -2579,10 +2515,8 @@
         // Notitie-tijdlijn renderen
         renderTimeline(c);
 
-        // Portal check-in feed + AI-insight reset
+        // Portal check-in feed
         renderPortalFeed(c);
-        const aiOut = document.getElementById('ai-insight-output');
-        if(aiOut) { aiOut.style.display = 'none'; aiOut.innerHTML = ''; }
 
         // Alleen tab resetten bij wissel van klant — niet bij elke Firestore-snapshot.
         // Anders springt de gebruiker bij elke auto-save terug naar Evaluatie.
@@ -3672,216 +3606,8 @@
     }
 
     // =========================================================================
-    // 9. AI-ASSISTENT (OpenAI of Gemini via browser — key in localStorage)
+    // 9. (AI-assistent verwijderd in PR #15 — was niet betrouwbaar gratis bruikbaar)
     // =========================================================================
-    const AI_KEY_STORAGE = 'hbl_openai_key';        // legacy: OpenAI key
-    const AI_GEMINI_KEY_STORAGE = 'hbl_gemini_key'; // Gemini key
-    const AI_PROVIDER_STORAGE = 'hbl_ai_provider';  // 'openai' | 'gemini'
-    const AI_MODEL_OPENAI = 'gpt-4o-mini';
-    const AI_MODEL_GEMINI = 'gemini-2.0-flash';
-
-    function getAiProvider() {
-        try {
-            const stored = localStorage.getItem(AI_PROVIDER_STORAGE);
-            if (stored) return stored;
-            // Backwards-compat: bestaande gebruikers die enkel een OpenAI-key hadden vóór de
-            // Gemini-toevoeging zouden anders stilzwijgend hun AI verliezen omdat de default
-            // 'gemini' is. Detecteer dat geval en behoud OpenAI als provider.
-            const hasOpenAi = !!localStorage.getItem(AI_KEY_STORAGE);
-            const hasGemini = !!localStorage.getItem(AI_GEMINI_KEY_STORAGE);
-            if (hasOpenAi && !hasGemini) return 'openai';
-            return 'gemini';
-        } catch(e) { return 'gemini'; }
-    }
-    function setAiProvider(p) { try { localStorage.setItem(AI_PROVIDER_STORAGE, p || 'gemini'); } catch(e) {} }
-    function getAiKey(provider) {
-        const p = provider || getAiProvider();
-        try { return localStorage.getItem(p === 'openai' ? AI_KEY_STORAGE : AI_GEMINI_KEY_STORAGE) || ''; } catch(e) { return ''; }
-    }
-    function setAiKey(k, provider) {
-        const p = provider || getAiProvider();
-        try { localStorage.setItem(p === 'openai' ? AI_KEY_STORAGE : AI_GEMINI_KEY_STORAGE, k || ''); } catch(e) {}
-    }
-    function hasAiKey() { return !!getAiKey(); }
-
-    function openAiSettings() {
-        const m = document.getElementById('ai-settings-modal'); if(!m) return;
-        const provSel = document.getElementById('ai-provider');
-        if(provSel) provSel.value = getAiProvider();
-        const input = document.getElementById('ai-key-input');
-        input.value = getAiKey();
-        updateAiProviderHint();
-        updateAiKeyStatus();
-        m.classList.add('active');
-    }
-    function closeAiSettings() { document.getElementById('ai-settings-modal').classList.remove('active'); }
-    function saveAiKey() {
-        const prov = (document.getElementById('ai-provider') || {}).value || 'gemini';
-        setAiProvider(prov);
-        const v = (document.getElementById('ai-key-input').value || '').trim();
-        setAiKey(v, prov);
-        updateAiKeyStatus();
-        showToast(v ? 'AI-key opgeslagen' : 'AI-key gewist');
-    }
-    function clearAiKey() {
-        document.getElementById('ai-key-input').value = '';
-        const prov = (document.getElementById('ai-provider') || {}).value || getAiProvider();
-        setAiKey('', prov);
-        updateAiKeyStatus();
-    }
-    function updateAiProviderHint() {
-        const hint = document.getElementById('ai-provider-hint');
-        const input = document.getElementById('ai-key-input');
-        const prov = (document.getElementById('ai-provider') || {}).value || 'gemini';
-        if(input) {
-            input.value = getAiKey(prov);
-            input.placeholder = prov === 'openai' ? 'sk-...' : 'AIza...';
-        }
-        if(hint) {
-            if(prov === 'gemini') {
-                hint.innerHTML = 'Gratis key aanmaken? Ga naar <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--primary);">aistudio.google.com/apikey</a> (geen credit card nodig). Model: <code>gemini-2.0-flash</code>.';
-            } else {
-                hint.innerHTML = 'Key aanmaken? Ga naar <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--primary);">platform.openai.com/api-keys</a>. Model: <code>gpt-4o-mini</code> (~$0,001 per vraag).';
-            }
-        }
-        updateAiKeyStatus();
-    }
-    function updateAiKeyStatus() {
-        const st = document.getElementById('ai-key-status');
-        if(!st) return;
-        const prov = (document.getElementById('ai-provider') || {}).value || getAiProvider();
-        const has = !!getAiKey(prov);
-        const provLabel = prov === 'openai' ? 'OpenAI' : 'Gemini';
-        st.innerHTML = has
-            ? `<span style="color:var(--success); font-weight:600;">✓ ${provLabel} is actief</span>`
-            : `<span style="color:var(--warning); font-weight:600;">⚠ Nog geen ${provLabel}-key — AI werkt nu niet</span>`;
-    }
-
-    async function callGemini(messages, maxTokens) {
-        const key = getAiKey('gemini');
-        if(!key) throw new Error('NO_KEY');
-        // Gemini gebruikt 'systemInstruction' apart en 'contents' voor de rest
-        const sys = messages.find(m => m.role === 'system');
-        const rest = messages.filter(m => m.role !== 'system');
-        const body = {
-            contents: rest.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })),
-            generationConfig: { temperature: 0.5, maxOutputTokens: maxTokens || 500 }
-        };
-        if(sys) body.systemInstruction = { parts: [{ text: sys.content }] };
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL_GEMINI}:generateContent?key=${encodeURIComponent(key)}`;
-        const resp = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        if(!resp.ok) {
-            const err = await resp.text();
-            throw new Error(`Gemini ${resp.status}: ${err.substring(0, 200)}`);
-        }
-        const j = await resp.json();
-        const cand = (j.candidates && j.candidates[0]) || null;
-        const parts = (cand && cand.content && cand.content.parts) || [];
-        return parts.map(p => p.text || '').join('').trim();
-    }
-
-    async function callOpenAI(messages, maxTokens) {
-        const provider = getAiProvider();
-        if(provider === 'gemini') return callGemini(messages, maxTokens);
-        const key = getAiKey('openai');
-        if(!key) throw new Error('NO_KEY');
-        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-            body: JSON.stringify({ model: AI_MODEL_OPENAI, messages: messages, temperature: 0.5, max_tokens: maxTokens || 500 })
-        });
-        if(!resp.ok) {
-            const err = await resp.text();
-            throw new Error(`OpenAI ${resp.status}: ${err.substring(0, 200)}`);
-        }
-        const j = await resp.json();
-        return (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || '';
-    }
-
-    function openAiChat() {
-        if(!getAiKey()) { openAiSettings(); return; }
-        const m = document.getElementById('ai-chat-modal'); if(!m) return;
-        m.classList.add('active');
-        document.getElementById('ai-chat-input').focus();
-    }
-    function closeAiChat() { document.getElementById('ai-chat-modal').classList.remove('active'); }
-
-    function appendChatBubble(role, text) {
-        const log = document.getElementById('ai-chat-log');
-        const who = role === 'user' ? 'Jij' : '✨ AI';
-        const bg = role === 'user' ? 'var(--primary-soft)' : '#f3e8ff';
-        const div = document.createElement('div');
-        div.style.cssText = `margin:6px 0; padding:10px 12px; border-radius:10px; background:${bg};`;
-        div.innerHTML = `<div style="font-weight:700; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">${who}</div><div style="white-space:pre-wrap;">${escapeHtml(text)}</div>`;
-        log.appendChild(div);
-        log.scrollTop = log.scrollHeight;
-    }
-
-    async function aiChatSend() {
-        const input = document.getElementById('ai-chat-input');
-        const msg = (input.value || '').trim();
-        if(!msg) return;
-        input.value = '';
-        appendChatBubble('user', msg);
-        appendChatBubble('ai', '…bezig met denken…');
-        try {
-            const ans = await callOpenAI([
-                { role: 'system', content: 'Je bent een ervaren Herbalife-healthcoach assistent voor het HBL-Connect CRM in België. Antwoord altijd in het Nederlands, beknopt en praktisch. Geef nooit medisch advies dat een arts vervangt. Gebruik Herbalife-producten uit de Belgische catalogus waar relevant.' },
-                { role: 'user', content: msg }
-            ], 500);
-            const log = document.getElementById('ai-chat-log');
-            log.lastChild.remove();
-            appendChatBubble('ai', ans);
-        } catch(e) {
-            const log = document.getElementById('ai-chat-log');
-            log.lastChild.remove();
-            appendChatBubble('ai', 'Fout: ' + e.message);
-        }
-    }
-    function aiQuickAsk(q) {
-        if(!getAiKey()) { openAiSettings(); return; }
-        openAiChat();
-        document.getElementById('ai-chat-input').value = q;
-        aiChatSend();
-    }
-
-    async function runAiInsight() {
-        const c = clients[currentClientId];
-        if(!c) { showToast('Selecteer eerst een klant'); return; }
-        if(!getAiKey()) { openAiSettings(); return; }
-        const wrap = document.getElementById('ai-insight-output');
-        if(wrap) { wrap.style.display = 'block'; wrap.innerHTML = '<em>…bezig met analyseren…</em>'; }
-
-        const start = clientStart(c);
-        const days = daysBetween(start);
-        const symptoms = [];
-        ['energie','stress','vocht','obstipatie','gewrichten','reflux','slaap','hormonaal'].forEach(k => {
-            if(c[k] || (c.fiche && c.fiche[k])) symptoms.push(k + ':' + (c[k] || c.fiche[k]));
-        });
-        const context = {
-            naam: clientName(c),
-            why: c.why || (c.fiche && c.fiche.why) || '',
-            start: start,
-            dagenSindsStart: days,
-            gewichtStart: (c.tanita_start && c.tanita_start.gew) || '',
-            gewichtLaatst: (c.tanita_w3 && c.tanita_w3.gew) || (c.tanita_w2 && c.tanita_w2.gew) || (c.tanita_d7 && c.tanita_d7.gew) || '',
-            notities: (c.notes || '').slice(0, 400),
-            symptomen: symptoms.join(', ')
-        };
-        try {
-            const ans = await callOpenAI([
-                { role: 'system', content: 'Je bent Herbalife-healthcoach expert. Antwoord in het Nederlands, beknopt (max 180 woorden). Gebruik bullets. Geef concrete next-best-actions.' },
-                { role: 'user', content: `Klant-context:\n${JSON.stringify(context, null, 2)}\n\nGeef:\n1) Korte samenvatting (1 zin)\n2) Top-3 aandachtspunten\n3) Voorstel next-best-action (1 actie)\n4) Suggestie voor persoonlijk WhatsApp-bericht (max 2 zinnen).` }
-            ], 600);
-            if(wrap) wrap.innerHTML = `<div style="white-space:pre-wrap;">${escapeHtml(ans)}</div>`;
-        } catch(e) {
-            if(wrap) wrap.innerHTML = `<span style="color:var(--danger);">Fout: ${escapeHtml(e.message)}</span>`;
-        }
-    }
 
     // =========================================================================
     // 10. CAMPAGNES & SEGMENTATIE
@@ -4640,11 +4366,9 @@
             const sidebar = document.getElementById('app-sidebar');
             const main = document.getElementById('main-container');
             const mobHdr = document.querySelector('.mobile-header');
-            const aiBtn = document.getElementById('ai-float-btn');
             if(sidebar) sidebar.style.display = 'none';
             if(main) main.style.display = 'none';
             if(mobHdr) mobHdr.style.display = 'none';
-            if(aiBtn) aiBtn.style.display = 'none';
             renderPortal(coach, clientId, data);
             return true;
         } catch(e) {
