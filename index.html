@@ -395,6 +395,13 @@
             .dashboard-cards { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
             #stockTable { min-width: 600px; }
             .page-header h1 { font-size: 1.2rem; }
+            .timeline-form { grid-template-columns: 1fr 1fr !important; }
+            .timeline-form > div:nth-child(3), .timeline-form > button { grid-column: 1 / -1 !important; }
+            #timeline-list > div { grid-template-columns: auto auto auto !important; grid-template-rows: auto auto; row-gap: 4px; }
+            #timeline-list > div > span:nth-child(3) { grid-column: 1 / -1; }
+            .bulk-fu-row { grid-template-columns: auto minmax(0,1fr) !important; grid-template-rows: auto auto auto; }
+            .bulk-fu-row > .badge, .bulk-fu-row > .btn-wa { grid-column: 1 / -1; justify-self: start; }
+            #ai-float-btn { bottom: 14px; right: 14px; width: 48px; height: 48px; font-size: 20px; }
         }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -508,7 +515,7 @@
                 </div>
 
                 <div class="modal-section" id="modal-helps-wrap" style="display:none;">
-                    <h4 style="color:var(--warn);">🎯 Helpt bij klachten</h4>
+                    <h4 style="color:var(--warning);">🎯 Helpt bij klachten</h4>
                     <ul id="modal-helps"></ul>
                 </div>
 
@@ -578,6 +585,7 @@
                     <div class="muted" id="dash-date"></div>
                 </div>
                 <div class="dash-quick">
+                    <button class="btn-wa" onclick="openBulkFollowup()"><span>🚀</span> Bulk-opvolging</button>
                     <button class="btn-outline" onclick="switchView('view-fu', document.querySelectorAll('.nav-btn')[1])"><span>👥</span> Klanten</button>
                     <button class="btn-primary" onclick="switchView('view-eval', document.querySelectorAll('.nav-btn')[2])"><span>＋</span> Nieuwe Evaluatie</button>
                 </div>
@@ -844,6 +852,7 @@
                         </div>
                         <div class="actions">
                             <button id="btn-toggle-active" class="btn-outline" onclick="toggleActiveStatus()">Zet Inactief</button>
+                            <button class="btn-outline" onclick="exportClientPdf()" title="Open een afdrukvriendelijke versie — gebruik 'Bestemming: Opslaan als PDF'">📄 PDF</button>
                             <div class="wa-wrap">
                                 <button id="wa-btn" class="btn-wa" onclick="toggleWaMenu(event)">💬 WhatsApp ▾</button>
                                 <div id="wa-menu" class="wa-menu"></div>
@@ -939,6 +948,48 @@
                                 </div>
                             </div>
                             <div id="portal-checkin-feed" style="margin-top:12px; font-size:0.85rem;"></div>
+                        </div>
+
+                        <div class="card" style="border-left:4px solid #a855f7;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                                <div>
+                                    <h3 style="margin:0;">✨ AI-inzicht</h3>
+                                    <div style="font-size:0.82rem; color:var(--text-muted);">Korte samenvatting + next-best-action voor deze klant.</div>
+                                </div>
+                                <div style="display:flex; gap:8px;">
+                                    <button class="btn-outline" onclick="openAiSettings()" title="AI-instellingen">⚙️</button>
+                                    <button class="btn-primary" onclick="runAiInsight()">✨ Genereer inzicht</button>
+                                </div>
+                            </div>
+                            <div id="ai-insight-output" style="margin-top:12px; padding:10px; background:#faf5ff; border-radius:6px; display:none;"></div>
+                        </div>
+
+                        <div class="card" id="timeline-card">
+                            <h3 style="display:flex; align-items:center; gap:8px;">📋 Notitie-tijdlijn
+                                <span class="badge badge-muted" id="timeline-count">0</span>
+                            </h3>
+                            <div style="display:grid; grid-template-columns: 130px 130px minmax(0,1fr) auto; gap:8px; margin:10px 0; align-items:end;" class="timeline-form">
+                                <div>
+                                    <label style="font-size:0.75rem; color:var(--text-muted);">Datum</label>
+                                    <input type="date" id="tl-date" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border);">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.75rem; color:var(--text-muted);">Type</label>
+                                    <select id="tl-type" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border);">
+                                        <option value="call">📞 Telefoon</option>
+                                        <option value="wa">💬 WhatsApp</option>
+                                        <option value="meeting">🤝 Afspraak</option>
+                                        <option value="note">📝 Notitie</option>
+                                        <option value="purchase">🛒 Aankoop</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="font-size:0.75rem; color:var(--text-muted);">Wat is er gebeurd?</label>
+                                    <input type="text" id="tl-text" placeholder="Korte beschrijving..." style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border);" onkeydown="if(event.key==='Enter') addTimelineEntry()">
+                                </div>
+                                <button class="btn-primary" onclick="addTimelineEntry()">+ Toevoegen</button>
+                            </div>
+                            <div id="timeline-list" style="display:flex; flex-direction:column; gap:6px; margin-top:8px;"></div>
                         </div>
 
                         <div class="progress-card">
@@ -1311,21 +1362,28 @@
             <button class="modal-close" onclick="closeAiSettings()">×</button>
             <div class="modal-body">
                 <h2>⚙️ AI-instellingen</h2>
-                <p style="font-size:0.88rem; color:var(--text-muted); margin-top:4px;">Plak je OpenAI API key om de AI-assistent te activeren. De key wordt enkel in jouw browser opgeslagen (localStorage).</p>
-                <label style="display:block; margin-top:12px; font-size:0.85rem; color:var(--text-muted);">OpenAI API key</label>
-                <input type="password" id="ai-key-input" placeholder="sk-..." style="width:100%; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border); font-family:monospace; font-size:0.8rem;">
+                <p style="font-size:0.88rem; color:var(--text-muted); margin-top:4px;">Plak een API-key om de AI-assistent te activeren. De key wordt enkel in jouw browser opgeslagen (localStorage).</p>
+                <label style="display:block; margin-top:12px; font-size:0.85rem; color:var(--text-muted);">Provider</label>
+                <select id="ai-provider" class="coach-select" style="width:100%;" onchange="updateAiProviderHint()">
+                    <option value="gemini">Google Gemini (gratis tier — aanbevolen)</option>
+                    <option value="openai">OpenAI (GPT-4o-mini — ~$0,001 per vraag)</option>
+                </select>
+                <label style="display:block; margin-top:12px; font-size:0.85rem; color:var(--text-muted);">API key</label>
+                <input type="password" id="ai-key-input" placeholder="..." style="width:100%; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border); font-family:monospace; font-size:0.8rem;">
                 <div style="display:flex; gap:8px; margin-top:14px;">
                     <button class="btn-primary" onclick="saveAiKey()">Opslaan</button>
                     <button class="btn-outline" onclick="clearAiKey()">Wissen</button>
                 </div>
                 <p id="ai-key-status" style="margin-top:14px; font-size:0.85rem;"></p>
                 <hr style="margin:18px 0; border:none; border-top:1px solid var(--border);">
-                <p style="font-size:0.78rem; color:var(--text-muted); margin:0;">Een key aanmaken? Ga naar <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--primary);">platform.openai.com/api-keys</a>. Model: <code>gpt-4o-mini</code> (~$0,001 per vraag).</p>
+                <p id="ai-provider-hint" style="font-size:0.78rem; color:var(--text-muted); margin:0;"></p>
             </div>
         </div>
     </div>
 
 
+
+    <button id="ai-float-btn" onclick="openAiChat()" title="AI-assistent" style="position:fixed; bottom:20px; right:20px; width:56px; height:56px; border-radius:50%; border:none; background:linear-gradient(135deg, #a855f7, #6366f1); color:white; font-size:24px; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,0.2); z-index:90;">✨</button>
 
     <div id="ai-chat-modal" class="modal-overlay" onclick="if(event.target===this) closeAiChat()">
         <div class="modal-content" onclick="event.stopPropagation()" style="max-width:640px; max-height:85vh; display:flex; flex-direction:column;">
@@ -1376,10 +1434,28 @@
                 <input type="url" id="appt-zoom" placeholder="https://zoom.us/j/..." style="width:100%; padding:9px; border-radius:var(--radius-sm); border:1px solid var(--border); font-family:monospace; font-size:0.8rem;">
                 <label style="display:block; margin-top:10px; font-size:0.85rem; color:var(--text-muted);">Notitie</label>
                 <textarea id="appt-note" rows="3" style="width:100%; padding:9px; border-radius:var(--radius-sm); border:1px solid var(--border); font-family:inherit; resize:vertical;"></textarea>
-                <div style="display:flex; gap:8px; margin-top:14px;">
+                <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
                     <button class="btn-primary" onclick="saveAppointment()">Opslaan</button>
+                    <button class="btn-wa" id="appt-invite-btn" onclick="sendApptInvite()" style="display:none;">💬 Stuur uitnodiging</button>
                     <button class="btn-outline" onclick="closeApptModal()">Annuleren</button>
                     <button class="btn-danger" id="appt-delete-btn" style="margin-left:auto; display:none;" onclick="deleteAppointment()">Verwijderen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk-opvolging modal -->
+    <div id="bulk-fu-modal" class="modal-overlay" onclick="if(event.target===this) closeBulkFollowup()">
+        <div class="modal-content" onclick="event.stopPropagation()" style="max-width:720px;">
+            <button class="modal-close" onclick="closeBulkFollowup()">×</button>
+            <div class="modal-body">
+                <h2 style="margin:0 0 4px;">🚀 Bulk-opvolging vandaag</h2>
+                <div class="muted" style="margin-bottom:14px;">Eén klik per klant om WhatsApp te openen. Vink af na contact.</div>
+                <div id="bulk-fu-summary" style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; font-size:0.85rem;"></div>
+                <div id="bulk-fu-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+                <div style="display:flex; gap:8px; margin-top:18px; flex-wrap:wrap;">
+                    <button class="btn-outline" onclick="closeBulkFollowup()">Sluiten</button>
+                    <button class="btn-outline" id="bulk-fu-clear-btn" onclick="bulkFuClearChecks()" style="margin-left:auto;">Reset vinkjes</button>
                 </div>
             </div>
         </div>
@@ -2500,6 +2576,9 @@
         // Voortgang-grafiek renderen
         renderProgressChart(c);
 
+        // Notitie-tijdlijn renderen
+        renderTimeline(c);
+
         // Portal check-in feed + AI-insight reset
         renderPortalFeed(c);
         const aiOut = document.getElementById('ai-insight-output');
@@ -3593,49 +3672,127 @@
     }
 
     // =========================================================================
-    // 9. AI-ASSISTENT (OpenAI via browser — key in localStorage)
+    // 9. AI-ASSISTENT (OpenAI of Gemini via browser — key in localStorage)
     // =========================================================================
-    const AI_KEY_STORAGE = 'hbl_openai_key';
-    const AI_MODEL = 'gpt-4o-mini';
+    const AI_KEY_STORAGE = 'hbl_openai_key';        // legacy: OpenAI key
+    const AI_GEMINI_KEY_STORAGE = 'hbl_gemini_key'; // Gemini key
+    const AI_PROVIDER_STORAGE = 'hbl_ai_provider';  // 'openai' | 'gemini'
+    const AI_MODEL_OPENAI = 'gpt-4o-mini';
+    const AI_MODEL_GEMINI = 'gemini-2.0-flash';
 
-    function getAiKey() { try { return localStorage.getItem(AI_KEY_STORAGE) || ''; } catch(e) { return ''; } }
-    function setAiKey(k) { try { localStorage.setItem(AI_KEY_STORAGE, k || ''); } catch(e) {} }
+    function getAiProvider() {
+        try {
+            const stored = localStorage.getItem(AI_PROVIDER_STORAGE);
+            if (stored) return stored;
+            // Backwards-compat: bestaande gebruikers die enkel een OpenAI-key hadden vóór de
+            // Gemini-toevoeging zouden anders stilzwijgend hun AI verliezen omdat de default
+            // 'gemini' is. Detecteer dat geval en behoud OpenAI als provider.
+            const hasOpenAi = !!localStorage.getItem(AI_KEY_STORAGE);
+            const hasGemini = !!localStorage.getItem(AI_GEMINI_KEY_STORAGE);
+            if (hasOpenAi && !hasGemini) return 'openai';
+            return 'gemini';
+        } catch(e) { return 'gemini'; }
+    }
+    function setAiProvider(p) { try { localStorage.setItem(AI_PROVIDER_STORAGE, p || 'gemini'); } catch(e) {} }
+    function getAiKey(provider) {
+        const p = provider || getAiProvider();
+        try { return localStorage.getItem(p === 'openai' ? AI_KEY_STORAGE : AI_GEMINI_KEY_STORAGE) || ''; } catch(e) { return ''; }
+    }
+    function setAiKey(k, provider) {
+        const p = provider || getAiProvider();
+        try { localStorage.setItem(p === 'openai' ? AI_KEY_STORAGE : AI_GEMINI_KEY_STORAGE, k || ''); } catch(e) {}
+    }
+    function hasAiKey() { return !!getAiKey(); }
 
     function openAiSettings() {
         const m = document.getElementById('ai-settings-modal'); if(!m) return;
+        const provSel = document.getElementById('ai-provider');
+        if(provSel) provSel.value = getAiProvider();
         const input = document.getElementById('ai-key-input');
         input.value = getAiKey();
+        updateAiProviderHint();
         updateAiKeyStatus();
         m.classList.add('active');
     }
     function closeAiSettings() { document.getElementById('ai-settings-modal').classList.remove('active'); }
     function saveAiKey() {
+        const prov = (document.getElementById('ai-provider') || {}).value || 'gemini';
+        setAiProvider(prov);
         const v = (document.getElementById('ai-key-input').value || '').trim();
-        setAiKey(v);
+        setAiKey(v, prov);
         updateAiKeyStatus();
         showToast(v ? 'AI-key opgeslagen' : 'AI-key gewist');
     }
     function clearAiKey() {
         document.getElementById('ai-key-input').value = '';
-        setAiKey('');
+        const prov = (document.getElementById('ai-provider') || {}).value || getAiProvider();
+        setAiKey('', prov);
+        updateAiKeyStatus();
+    }
+    function updateAiProviderHint() {
+        const hint = document.getElementById('ai-provider-hint');
+        const input = document.getElementById('ai-key-input');
+        const prov = (document.getElementById('ai-provider') || {}).value || 'gemini';
+        if(input) {
+            input.value = getAiKey(prov);
+            input.placeholder = prov === 'openai' ? 'sk-...' : 'AIza...';
+        }
+        if(hint) {
+            if(prov === 'gemini') {
+                hint.innerHTML = 'Gratis key aanmaken? Ga naar <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--primary);">aistudio.google.com/apikey</a> (geen credit card nodig). Model: <code>gemini-2.0-flash</code>.';
+            } else {
+                hint.innerHTML = 'Key aanmaken? Ga naar <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--primary);">platform.openai.com/api-keys</a>. Model: <code>gpt-4o-mini</code> (~$0,001 per vraag).';
+            }
+        }
         updateAiKeyStatus();
     }
     function updateAiKeyStatus() {
         const st = document.getElementById('ai-key-status');
         if(!st) return;
-        const has = !!getAiKey();
+        const prov = (document.getElementById('ai-provider') || {}).value || getAiProvider();
+        const has = !!getAiKey(prov);
+        const provLabel = prov === 'openai' ? 'OpenAI' : 'Gemini';
         st.innerHTML = has
-            ? '<span style="color:var(--success); font-weight:600;">✓ AI is actief</span>'
-            : '<span style="color:var(--warn); font-weight:600;">⚠ Nog geen key — AI werkt nu niet</span>';
+            ? `<span style="color:var(--success); font-weight:600;">✓ ${provLabel} is actief</span>`
+            : `<span style="color:var(--warning); font-weight:600;">⚠ Nog geen ${provLabel}-key — AI werkt nu niet</span>`;
+    }
+
+    async function callGemini(messages, maxTokens) {
+        const key = getAiKey('gemini');
+        if(!key) throw new Error('NO_KEY');
+        // Gemini gebruikt 'systemInstruction' apart en 'contents' voor de rest
+        const sys = messages.find(m => m.role === 'system');
+        const rest = messages.filter(m => m.role !== 'system');
+        const body = {
+            contents: rest.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })),
+            generationConfig: { temperature: 0.5, maxOutputTokens: maxTokens || 500 }
+        };
+        if(sys) body.systemInstruction = { parts: [{ text: sys.content }] };
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL_GEMINI}:generateContent?key=${encodeURIComponent(key)}`;
+        const resp = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if(!resp.ok) {
+            const err = await resp.text();
+            throw new Error(`Gemini ${resp.status}: ${err.substring(0, 200)}`);
+        }
+        const j = await resp.json();
+        const cand = (j.candidates && j.candidates[0]) || null;
+        const parts = (cand && cand.content && cand.content.parts) || [];
+        return parts.map(p => p.text || '').join('').trim();
     }
 
     async function callOpenAI(messages, maxTokens) {
-        const key = getAiKey();
+        const provider = getAiProvider();
+        if(provider === 'gemini') return callGemini(messages, maxTokens);
+        const key = getAiKey('openai');
         if(!key) throw new Error('NO_KEY');
         const resp = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-            body: JSON.stringify({ model: AI_MODEL, messages: messages, temperature: 0.5, max_tokens: maxTokens || 500 })
+            body: JSON.stringify({ model: AI_MODEL_OPENAI, messages: messages, temperature: 0.5, max_tokens: maxTokens || 500 })
         });
         if(!resp.ok) {
             const err = await resp.text();
@@ -4093,6 +4250,7 @@
             document.getElementById('appt-zoom').value = a.zoomLink || '';
             document.getElementById('appt-note').value = a.note || '';
             delBtn.style.display = '';
+            document.getElementById('appt-invite-btn').style.display = '';
         } else {
             document.getElementById('appt-modal-title').textContent = 'Nieuwe afspraak';
             document.getElementById('appt-id').value = '';
@@ -4102,6 +4260,7 @@
             document.getElementById('appt-zoom').value = '';
             document.getElementById('appt-note').value = '';
             delBtn.style.display = 'none';
+            document.getElementById('appt-invite-btn').style.display = 'none';
         }
         m.classList.add('active');
     }
@@ -4123,6 +4282,296 @@
             .then(() => { showToast('Afspraak opgeslagen'); closeApptModal(); })
             .catch(e => showToast('Fout: ' + e.message));
     }
+    // =========================================================================
+    // PDF-EXPORT KLANTDOSSIER — print-vriendelijke window
+    // =========================================================================
+    function exportClientPdf() {
+        if(!currentClientId || !clients[currentClientId]) { showToast('Selecteer eerst een klant'); return; }
+        const c = clients[currentClientId];
+        const name = clientName(c);
+        const phone = c.phone || (c.fiche && c.fiche.phone) || '';
+        const startdate = clientStart(c);
+        const why = c.why || (c.fiche && c.fiche.why) || '';
+        const notes = c.notes || (c.fiche && c.fiche.notes) || '';
+        const ts = c.tanita_start || {};
+        const symptoms = (c.symptoms || []).join(', ');
+        const focus = (c.focus || []).join(', ');
+        const advies = c.advies || '';
+        const eet = c.eetgewoonten || {};
+        const meds = c.medicatie || 'Geen';
+        const tlEntries = Array.isArray(c.timeline) ? c.timeline.slice() : [];
+        tlEntries.sort((a,b) => (b.date || '').localeCompare(a.date || ''));
+
+        // Tanita per milestone
+        const milestones = [
+            { k: 'tanita_start', label: 'Intake' },
+            { k: 'tanita_d1', label: 'Dag 1' },
+            { k: 'tanita_d3', label: 'Dag 3' },
+            { k: 'tanita_d7', label: 'Dag 7' },
+            { k: 'tanita_w2', label: 'Week 2' },
+            { k: 'tanita_w3', label: 'Week 3+' }
+        ];
+        const tanitaRows = milestones.map(m => {
+            const t = c[m.k] || {};
+            return `<tr><td>${m.label}</td><td>${t.gew || '—'}</td><td>${t.vet || '—'}</td><td>${t.spier || '—'}</td><td>${t.visc || '—'}</td><td>${t.lft || '—'}</td></tr>`;
+        }).join('');
+
+        // Probeer SVG van progressgrafiek mee te nemen
+        const chartSvg = document.getElementById('progress-chart');
+        let chartHtml = '';
+        if(chartSvg) {
+            const clone = chartSvg.cloneNode(true);
+            clone.setAttribute('width', '100%');
+            clone.setAttribute('height', '220');
+            chartHtml = clone.outerHTML;
+        }
+
+        const today = new Date().toLocaleDateString('nl-BE', { day:'2-digit', month:'long', year:'numeric' });
+        const win = window.open('', '_blank', 'width=900,height=1100');
+        if(!win) { showToast('Popup geblokkeerd — sta popups toe'); return; }
+        const html = `<!doctype html><html lang="nl"><head><meta charset="utf-8"><title>Dossier — ${escapeHtml(name)}</title>
+<style>
+  body { font-family: -apple-system, system-ui, sans-serif; max-width: 760px; margin: 24px auto; padding: 0 24px; color: #1f2937; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 15px; margin: 24px 0 6px; padding-bottom:4px; border-bottom: 2px solid #10b981; }
+  .meta { color:#6b7280; font-size:12px; margin-bottom:16px; }
+  .grid { display:grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; font-size: 13px; }
+  table { width:100%; border-collapse: collapse; font-size:12px; margin-top:6px; }
+  th, td { padding: 5px 7px; border: 1px solid #e5e7eb; text-align: left; }
+  th { background:#f3f4f6; font-weight:700; }
+  .why { background:#ecfdf5; padding:10px 12px; border-left: 3px solid #10b981; border-radius: 4px; font-size:13px; margin: 8px 0 16px; }
+  .notes { white-space: pre-wrap; font-size:12px; padding:8px; background:#f9fafb; border-radius:4px; }
+  .tl li { margin-bottom: 4px; font-size: 12px; }
+  .footer { margin-top: 28px; padding-top: 10px; border-top:1px solid #e5e7eb; font-size:10px; color:#9ca3af; text-align:center; }
+  @media print { body { margin: 0; padding: 0 14px; } .no-print { display:none !important; } }
+</style></head><body>
+  <div class="no-print" style="text-align:right; margin-bottom:10px;">
+    <button onclick="window.print()" style="padding:8px 16px; background:#10b981; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600;">🖨️ Afdrukken / Opslaan als PDF</button>
+  </div>
+  <h1>📋 Klantdossier — ${escapeHtml(name)}</h1>
+  <div class="meta">Telefoon: ${escapeHtml(phone || '—')} · Startdatum: ${escapeHtml(startdate || '—')} · Geëxporteerd op ${today}</div>
+  ${why ? `<div class="why"><strong>De "WHY":</strong> ${escapeHtml(why)}</div>` : ''}
+
+  <h2>Lichaamsanalyse — Tanita per moment</h2>
+  <table>
+    <thead><tr><th>Moment</th><th>Gewicht</th><th>Vet %</th><th>Spier</th><th>Visc.</th><th>Meta lft.</th></tr></thead>
+    <tbody>${tanitaRows}</tbody>
+  </table>
+
+  ${chartHtml ? `<h2>Voortgang (gewicht)</h2><div>${chartHtml}</div>` : ''}
+
+  <h2>Intake-evaluatie</h2>
+  <div class="grid">
+    <div><strong>Score:</strong> ${c.score !== undefined ? c.score : '—'}</div>
+    <div><strong>Medicatie:</strong> ${escapeHtml(meds)}</div>
+    <div style="grid-column:1/-1;"><strong>Symptomen:</strong> ${escapeHtml(symptoms || '—')}</div>
+    <div style="grid-column:1/-1;"><strong>Focuspunten:</strong> ${escapeHtml(focus || '—')}</div>
+    <div style="grid-column:1/-1;"><strong>Productadvies:</strong> ${escapeHtml(advies || '—')}</div>
+  </div>
+
+  <h2>Eetgewoonten</h2>
+  <div class="grid">
+    <div><strong>Ontbijt:</strong> ${escapeHtml(eet.ontbijt || '—')}</div>
+    <div><strong>Middag:</strong> ${escapeHtml(eet.middag || '—')}</div>
+    <div><strong>Avond:</strong> ${escapeHtml(eet.avond || '—')}</div>
+    <div><strong>Tussendoor:</strong> ${escapeHtml(eet.tussen || '—')}</div>
+    <div><strong>Water:</strong> ${escapeHtml(eet.water || '—')}</div>
+    <div><strong>Andere dranken:</strong> ${escapeHtml(eet.drank || '—')}</div>
+  </div>
+
+  ${notes ? `<h2>Intake-notities</h2><div class="notes">${escapeHtml(notes)}</div>` : ''}
+
+  ${tlEntries.length ? `<h2>Notitie-tijdlijn (${tlEntries.length})</h2><ul class="tl">${tlEntries.map(e => `<li><strong>${escapeHtml(e.date || '')}</strong> · ${escapeHtml(TL_TYPE_LABEL[e.type] || e.type || '')} — ${escapeHtml(e.text || '')}</li>`).join('')}</ul>` : ''}
+
+  <div class="footer">HBL-Connect · Klantdossier · ${today}</div>
+</body></html>`;
+        win.document.open();
+        win.document.write(html);
+        win.document.close();
+    }
+
+    // =========================================================================
+    // NOTITIE-TIJDLIJN — chronologische log per klant (bovenop fiche-notes)
+    // =========================================================================
+    const TL_TYPE_LABEL = {
+        call: '📞 Telefoon', wa: '💬 WhatsApp', meeting: '🤝 Afspraak',
+        note: '📝 Notitie', purchase: '🛒 Aankoop'
+    };
+    function renderTimeline(c) {
+        const list = document.getElementById('timeline-list');
+        const cnt = document.getElementById('timeline-count');
+        const dateInp = document.getElementById('tl-date');
+        if(!list || !c) return;
+        if(dateInp && !dateInp.value) dateInp.value = new Date().toISOString().substring(0,10);
+        const entries = Array.isArray(c.timeline) ? c.timeline.slice() : [];
+        entries.sort((a,b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt || 0) - (a.createdAt || 0));
+        cnt.textContent = entries.length;
+        if(!entries.length) {
+            list.innerHTML = '<div class="empty-hint" style="padding:12px;">Nog geen tijdlijn-entries. Voeg er één toe hierboven.</div>';
+            return;
+        }
+        list.innerHTML = entries.map((e, idx) => {
+            const dt = e.date ? new Date(e.date + 'T00:00').toLocaleDateString('nl-BE', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+            const lbl = TL_TYPE_LABEL[e.type] || '📝 Notitie';
+            return `<div style="display:grid; grid-template-columns:auto auto minmax(0,1fr) auto; gap:10px; align-items:center; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-light);">
+                <span style="font-weight:700; font-size:0.78rem; color:var(--text-muted); white-space:nowrap;">${escapeHtml(dt)}</span>
+                <span style="font-size:0.78rem; white-space:nowrap;">${escapeHtml(lbl)}</span>
+                <span style="white-space:pre-wrap; word-break:break-word;">${escapeHtml(e.text || '')}</span>
+                <button class="btn-outline" style="padding:3px 8px; font-size:0.72rem;" onclick="deleteTimelineEntry(${idx})" title="Verwijderen">×</button>
+            </div>`;
+        }).join('');
+    }
+    function addTimelineEntry() {
+        if(!currentClientId || !clients[currentClientId]) { showToast('Geen klant geselecteerd'); return; }
+        const date = document.getElementById('tl-date').value || new Date().toISOString().substring(0,10);
+        const type = document.getElementById('tl-type').value || 'note';
+        const text = (document.getElementById('tl-text').value || '').trim();
+        if(!text) { showToast('Typ eerst een korte beschrijving'); return; }
+        const c = clients[currentClientId];
+        const entries = Array.isArray(c.timeline) ? c.timeline.slice() : [];
+        entries.push({ date, type, text, createdAt: Date.now() });
+        c.timeline = entries;
+        db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId)
+            .set({ timeline: entries }, { merge: true })
+            .then(() => { document.getElementById('tl-text').value = ''; renderTimeline(c); showToast('Toegevoegd aan tijdlijn'); })
+            .catch(e => showToast('Fout: ' + e.message));
+    }
+    function deleteTimelineEntry(idx) {
+        if(!currentClientId || !clients[currentClientId]) return;
+        const c = clients[currentClientId];
+        const entries = Array.isArray(c.timeline) ? c.timeline.slice() : [];
+        entries.sort((a,b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt || 0) - (a.createdAt || 0));
+        if(!confirm('Deze entry verwijderen?')) return;
+        entries.splice(idx, 1);
+        c.timeline = entries;
+        db.collection('coaches').doc(currentCoach).collection('clients').doc(currentClientId)
+            .set({ timeline: entries }, { merge: true })
+            .then(() => renderTimeline(c));
+    }
+
+    // =========================================================================
+    // BULK-OPVOLGING — alle dues van vandaag + overdue in één scherm
+    // =========================================================================
+    const BULK_FU_STORAGE = 'hbl_bulk_fu_done';
+    function bulkFuGetDone() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(BULK_FU_STORAGE) || '{}');
+            const today = new Date().toISOString().substring(0,10);
+            return (raw.date === today) ? (raw.ids || {}) : {};
+        } catch(e) { return {}; }
+    }
+    function bulkFuSetDone(map) {
+        try {
+            localStorage.setItem(BULK_FU_STORAGE, JSON.stringify({ date: new Date().toISOString().substring(0,10), ids: map }));
+        } catch(e) {}
+    }
+    function bulkFuToggleDone(clientId) {
+        const map = bulkFuGetDone();
+        map[clientId] = !map[clientId];
+        bulkFuSetDone(map);
+        renderBulkFollowup();
+    }
+    function bulkFuClearChecks() { bulkFuSetDone({}); renderBulkFollowup(); }
+
+    function bulkFuMilestoneToTplId(label) {
+        if(!label) return 'blank';
+        const l = label.toLowerCase();
+        if(l.includes('dag 1')) return 'd1';
+        if(l.includes('dag 3')) return 'd3';
+        if(l.includes('dag 7')) return 'd7';
+        if(l.includes('week 2')) return 'w2';
+        return 'w3';
+    }
+
+    function openBulkFollowup() {
+        renderBulkFollowup();
+        document.getElementById('bulk-fu-modal').classList.add('active');
+    }
+    function closeBulkFollowup() { document.getElementById('bulk-fu-modal').classList.remove('active'); }
+
+    function renderBulkFollowup() {
+        const list = document.getElementById('bulk-fu-list');
+        const summary = document.getElementById('bulk-fu-summary');
+        if(!list) return;
+        const arr = Object.entries(clients || {}).map(([id, c]) => ({ id, ...c })).filter(c => c.active !== false);
+        const rows = [];
+        arr.forEach(c => {
+            const info = getDueInfo(c);
+            if(!info) return;
+            if(info.when === 'today' || info.when === 'overdue') rows.push({ c, info });
+        });
+        rows.sort((a, b) => {
+            if(a.info.when === 'overdue' && b.info.when !== 'overdue') return -1;
+            if(b.info.when === 'overdue' && a.info.when !== 'overdue') return 1;
+            return (b.info.daysLate || 0) - (a.info.daysLate || 0);
+        });
+        const done = bulkFuGetDone();
+        const total = rows.length;
+        const doneCount = rows.filter(r => done[r.c.id]).length;
+        summary.innerHTML = `
+            <span class="badge badge-warn">📞 ${rows.filter(r => r.info.when === 'today').length} vandaag</span>
+            <span class="badge badge-danger">⚠️ ${rows.filter(r => r.info.when === 'overdue').length} achterstallig</span>
+            <span class="badge badge-muted">✓ ${doneCount}/${total} afgehandeld</span>
+        `;
+        if(!total) {
+            list.innerHTML = '<div class="empty-hint" style="padding:16px;">Geen opvolgingen vandaag of achterstallig 🎉</div>';
+            return;
+        }
+        list.innerHTML = rows.map(r => {
+            const c = r.c, info = r.info;
+            const isDone = !!done[c.id];
+            const nm = clientName(c);
+            const phone = c.phone || (c.fiche && c.fiche.phone) || '';
+            const why = c.why || (c.fiche && c.fiche.why) || '';
+            const tone = info.when === 'overdue' ? 'danger' : 'warn';
+            const lbl = info.when === 'overdue' ? `${info.label} · ${info.daysLate}d laat` : `${info.label} vandaag`;
+            return `<div class="bulk-fu-row${isDone ? ' done' : ''}" style="display:grid; grid-template-columns:auto minmax(0,1fr) auto auto; gap:10px; align-items:center; padding:12px; border:1px solid var(--border); border-radius:10px; background:${isDone ? 'var(--success-soft, #ecfdf5)' : 'var(--bg-light)'};">
+                <input type="checkbox" ${isDone ? 'checked' : ''} onchange="bulkFuToggleDone('${c.id}')" style="width:20px; height:20px; cursor:pointer;">
+                <div style="min-width:0;">
+                    <div style="font-weight:700; ${isDone ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${escapeHtml(nm)}</div>
+                    <div style="font-size:0.78rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${why ? '🎯 ' + escapeHtml(why) : 'Geen WHY'}</div>
+                </div>
+                <span class="badge badge-${tone}">${escapeHtml(lbl)}</span>
+                <button class="btn-wa" onclick="bulkFuOpenWa('${c.id}', '${bulkFuMilestoneToTplId(info.label)}')" ${phone ? '' : 'disabled title="Geen telefoonnummer"'}>💬 WA</button>
+            </div>`;
+        }).join('');
+    }
+
+    function bulkFuOpenWa(clientId, tplId) {
+        const c = clients[clientId]; if(!c) return;
+        const tpl = WA_TEMPLATES.find(t => t.id === tplId) || WA_TEMPLATES[0];
+        const nm = (clientName(c) || '').split(' ')[0] || 'daar';
+        const why = c.why || (c.fiche && c.fiche.why) || '';
+        const text = tpl.build(nm, why);
+        const url = buildWhatsAppUrl(c.phone || (c.fiche && c.fiche.phone) || '', text);
+        if(!url) { showToast('Geen telefoonnummer'); return; }
+        window.open(url, '_blank');
+        // automatisch markeren als afgehandeld
+        const map = bulkFuGetDone();
+        map[clientId] = true;
+        bulkFuSetDone(map);
+        renderBulkFollowup();
+    }
+
+    function sendApptInvite() {
+        const id = document.getElementById('appt-id').value;
+        const a = appointments[id]; if(!a) { showToast('Eerst de afspraak opslaan'); return; }
+        const c = clients[a.clientId]; if(!c) { showToast('Klant niet gevonden'); return; }
+        const phone = c.phone || (c.fiche && c.fiche.phone) || '';
+        if(!phone) { showToast('Geen telefoonnummer voor deze klant'); return; }
+        const nm = (clientName(c) || '').split(' ')[0] || 'daar';
+        const dt = a.date ? new Date(a.date + 'T00:00').toLocaleDateString('nl-BE', { weekday:'long', day:'numeric', month:'long' }) : '';
+        const tm = a.time || '';
+        const typeLabel = ({call:'telefoon-afspraak', video:'video-consult', meeting:'afspraak'})[a.type] || 'afspraak';
+        let txt = `Hé ${nm}! Bevestiging van onze ${typeLabel} op ${dt}${tm ? ' om ' + tm : ''}.`;
+        if(a.zoomLink) txt += `\n\nLink: ${a.zoomLink}`;
+        if(a.note) txt += `\n\n${a.note}`;
+        txt += `\n\nTot dan! 🙌`;
+        const url = buildWhatsAppUrl(phone, txt);
+        if(!url) { showToast('Telefoonnummer niet bruikbaar'); return; }
+        window.open(url, '_blank');
+    }
+
     function deleteAppointment() {
         const id = document.getElementById('appt-id').value;
         if(!id) return;
