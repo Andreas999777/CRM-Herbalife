@@ -385,6 +385,13 @@
             .page-header { padding: 14px 16px; }
             .modal-content { max-height: 95vh; }
             .modal-body { padding: 20px; }
+            .camp-layout, .bi-layout { padding: 16px !important; grid-template-columns: 1fr !important; }
+            .bi-grid { grid-template-columns: 1fr !important; }
+            #camp-list { max-height: none !important; }
+            .stock-controls { flex-direction: column; align-items: stretch; gap: 8px; }
+            .dashboard-cards { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+            #stockTable { min-width: 600px; }
+            .page-header h1 { font-size: 1.2rem; }
         }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -1212,7 +1219,7 @@
                     <div class="muted">Filter je klanten, bouw één bericht, open WhatsApp per klant</div>
                 </div>
             </div>
-            <div style="padding: 20px 28px 40px; overflow-y:auto; display:grid; grid-template-columns: 360px 1fr; gap:20px;">
+            <div class="camp-layout" style="padding: 20px 28px 40px; overflow-y:auto; display:grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap:20px;">
                 <div class="card" style="padding:18px;">
                     <h3 style="margin-top:0;">1. Selecteer segment</h3>
                     <label style="display:block; margin-top:10px; font-size:0.85rem; color:var(--text-muted);">Status</label>
@@ -1261,14 +1268,14 @@
                     <div class="muted">Cohort-retentie, herbestel-voorspelling, Volume Points en trends</div>
                 </div>
             </div>
-            <div style="padding: 20px 28px 40px; overflow-y:auto;">
+            <div class="bi-layout" style="padding: 20px 28px 40px; overflow-y:auto;">
                 <div class="stat-grid">
                     <div class="stat-card"><div class="stat-label">Actieve klanten</div><div class="stat-value" id="bi-stat-active">0</div></div>
                     <div class="stat-card"><div class="stat-label">Volume Points (dit jaar)</div><div class="stat-value" id="bi-stat-vp">0</div></div>
                     <div class="stat-card"><div class="stat-label">Winst dit jaar</div><div class="stat-value" id="bi-stat-profit">€ 0</div></div>
                     <div class="stat-card"><div class="stat-label">Retentie 90 dagen</div><div class="stat-value" id="bi-stat-retention">-</div></div>
                 </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:20px;">
+                <div class="bi-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap:16px; margin-top:20px;">
                     <div class="card" style="padding:18px;">
                         <h3 style="margin-top:0;">📈 Winst per maand (12 maanden)</h3>
                         <div id="bi-profit-chart" style="min-height:220px;"></div>
@@ -1279,7 +1286,7 @@
                         <div id="bi-cohort-table" style="font-size:0.85rem;"></div>
                     </div>
                 </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:16px;">
+                <div class="bi-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap:16px; margin-top:16px;">
                     <div class="card" style="padding:18px;">
                         <h3 style="margin-top:0;">🏆 Top 5 producten</h3>
                         <div id="bi-top-products" style="font-size:0.9rem;"></div>
