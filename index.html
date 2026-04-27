@@ -1268,6 +1268,58 @@
 
                 <h3 style="margin:32px 0 12px 0;">Bestaande teams</h3>
                 <div id="admin-teams-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+
+                <div class="card" style="padding:20px; max-width:560px; margin-top:32px;">
+                    <h3 style="margin-top:0;">👥 Admin-rechten</h3>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin:0 0 12px 0;">
+                        Geef Thalyssa of Silvia toegang tot deze Beheer-pagina zodat ze zelf nieuwe coaches kunnen inschrijven.
+                        Alleen jij (eigenaar) kan deze rechten wijzigen.
+                    </p>
+                    <div id="admin-roles-list"></div>
+                </div>
+
+                <h3 style="margin:32px 0 12px 0;">📋 Recente acties</h3>
+                <div class="card" style="padding:14px 18px; max-width:920px;">
+                    <div id="admin-audit-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bewerk-team modal -->
+        <div id="admin-edit-modal" class="modal-bg" style="display:none;" onclick="if(event.target===this) adminCloseEditTeam()">
+            <div class="modal-content" style="max-width:560px; padding:24px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                    <h3 style="margin:0;">✏ Team bewerken</h3>
+                    <button class="btn-icon" onclick="adminCloseEditTeam()" aria-label="Sluiten">✕</button>
+                </div>
+                <div class="form-group" style="text-align:left;">
+                    <label>Team-naam</label>
+                    <input type="text" id="admin-edit-team-name" style="width:100%; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+                </div>
+                <div class="form-group" style="text-align:left;">
+                    <label>Coaches in dit team (naam aanpasbaar)</label>
+                    <div id="admin-edit-coaches-list"></div>
+                </div>
+                <div id="admin-edit-error" style="display:none; color:var(--danger); background:var(--danger-soft); padding:10px 14px; border-radius:var(--radius-sm); font-size:0.85rem; margin-bottom:12px;"></div>
+                <div id="admin-edit-success" style="display:none; color:var(--success); background:#d1fae5; padding:10px 14px; border-radius:var(--radius-sm); font-size:0.85rem; margin-bottom:12px;"></div>
+                <button class="btn-primary" style="width:100%; padding:12px; margin-bottom:18px;" onclick="adminSaveTeamEdits()">💾 Wijzigingen opslaan</button>
+
+                <div style="border-top:1px solid var(--border); padding-top:16px;">
+                    <h4 style="margin:0 0 10px 0;">➕ Extra coach toevoegen aan dit team</h4>
+                    <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 12px 0;">
+                        De nieuwe coach krijgt automatisch een wachtwoord-reset-mail en kan daarna inloggen —
+                        ziet enkel data van dit team.
+                    </p>
+                    <div class="form-group" style="text-align:left;">
+                        <label>Naam</label>
+                        <input type="text" id="admin-edit-new-coach-name" placeholder="Bv. Sofie" style="width:100%; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+                    </div>
+                    <div class="form-group" style="text-align:left;">
+                        <label>Email</label>
+                        <input type="email" id="admin-edit-new-coach-email" placeholder="sofie@example.com" style="width:100%; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+                    </div>
+                    <button class="btn-success" style="width:100%; padding:12px;" onclick="adminAddCoachToTeam()">📨 Coach toevoegen &amp; uitnodiging sturen</button>
+                </div>
             </div>
         </div>
 
@@ -2103,6 +2155,7 @@
     // Externe coaches krijgen een unieke coach-id (slug van team-naam).
     let currentTeam = null;
     let currentTeamId = null;
+    let homeTeamCache = null;
     const HOME_TEAM_ID = 'hbl-connect';
     const OWNER_EMAIL = 'andreasphilips3@gmail.com';
     const FOUNDER_COACHES = [
@@ -2136,15 +2189,22 @@
                 allowedEmails: FOUNDER_EMAILS.slice(),
                 coaches: FOUNDER_COACHES.slice(),
                 ownerEmail: OWNER_EMAIL,
+                adminEmails: [OWNER_EMAIL.toLowerCase()],
                 isHomeTeam: true,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             await db.collection('teams').doc(HOME_TEAM_ID).set(homeTeam, { merge: true });
             currentTeamId = HOME_TEAM_ID;
             currentTeam = homeTeam;
+            homeTeamCache = homeTeam;
             return currentTeam;
         }
         return null;
+    }
+
+    function getAdminEmails() {
+        const src = (currentTeamId === HOME_TEAM_ID ? currentTeam : homeTeamCache) || {};
+        return (src.adminEmails || []).map(e => String(e || '').toLowerCase());
     }
 
     function populateCoachSelector() {
@@ -2174,9 +2234,31 @@
         const user = auth.currentUser;
         return !!user && (user.email || '').toLowerCase() === OWNER_EMAIL.toLowerCase();
     }
+    function isAdmin() {
+        if(isTeamOwner()) return true;
+        const user = auth.currentUser;
+        if(!user) return false;
+        const email = (user.email || '').toLowerCase();
+        return !!email && getAdminEmails().includes(email);
+    }
     function updateAdminVisibility() {
         const link = document.getElementById('nav-admin');
-        if(link) link.style.display = isTeamOwner() ? '' : 'none';
+        if(link) link.style.display = isAdmin() ? '' : 'none';
+    }
+
+    async function adminLogAction(action, details) {
+        try {
+            const user = auth.currentUser;
+            if(!user) return;
+            await db.collection('audit').add({
+                ts: firebase.firestore.FieldValue.serverTimestamp(),
+                actorEmail: (user.email || '').toLowerCase(),
+                action: String(action || ''),
+                details: details || {}
+            });
+        } catch(e) {
+            console.warn('audit-log faalde', e);
+        }
     }
 
     function slugify(s) {
@@ -2210,7 +2292,7 @@
     }
 
     async function adminCreateTeam() {
-        if(!isTeamOwner()) return;
+        if(!isAdmin()) return;
         const errDiv = document.getElementById('admin-error');
         const okDiv  = document.getElementById('admin-success');
         errDiv.style.display = 'none';
@@ -2269,6 +2351,8 @@
                 teamId, displayName: coachName, email, createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
 
+            await adminLogAction('team.create', { teamId, teamName, coachName, email });
+
             okDiv.innerText = `Account aangemaakt voor ${coachName} (${email}). Er is een email gestuurd om het wachtwoord in te stellen.`;
             okDiv.style.display = 'block';
             document.getElementById('admin-team-name').value = '';
@@ -2287,7 +2371,17 @@
     }
 
     async function renderAdmin() {
-        if(!isTeamOwner()) return;
+        if(!isAdmin()) return;
+        // Refresh home team cache zodat admin-rol changes direct doorkomen
+        try {
+            const home = await db.collection('teams').doc(HOME_TEAM_ID).get();
+            if(home.exists) {
+                homeTeamCache = home.data();
+                if(currentTeamId === HOME_TEAM_ID) currentTeam = homeTeamCache;
+            }
+        } catch(e) { /* ignore */ }
+        renderAdminRoles();
+        renderAuditLog();
         const wrap = document.getElementById('admin-teams-list');
         if(!wrap) return;
         wrap.innerHTML = '<div class="muted">Laden…</div>';
@@ -2312,6 +2406,7 @@
                         </div>
                         ${t.isHomeTeam ? '' : `
                             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+                                <button class="btn-outline" style="font-size:0.8rem;" onclick="adminOpenEditTeam('${escapeJsAttr(doc.id)}')">✏ Bewerken</button>
                                 <button class="btn-outline" style="font-size:0.8rem;" onclick="adminResendReset('${escapeJsAttr((t.allowedEmails||[])[0]||'')}')">📧 Reset-mail opnieuw</button>
                                 <button class="btn-outline" style="font-size:0.8rem; color:var(--danger); border-color:var(--danger);" onclick="adminDeleteTeam('${escapeJsAttr(doc.id)}', '${escapeJsAttr(t.name||doc.id)}')">🗑 Team verwijderen</button>
                             </div>
@@ -2325,8 +2420,104 @@
         }
     }
 
+    function renderAdminRoles() {
+        const wrap = document.getElementById('admin-roles-list');
+        if(!wrap) return;
+        if(!isTeamOwner()) {
+            // Alleen owner mag admin-rollen wijzigen
+            wrap.innerHTML = '<div class="muted" style="font-size:0.85rem;">Alleen de hoofd-eigenaar kan admin-rollen wijzigen.</div>';
+            return;
+        }
+        const adminEmails = getAdminEmails();
+        const rows = FOUNDER_COACHES.map(c => {
+            const isOwnerRow = c.email.toLowerCase() === OWNER_EMAIL.toLowerCase();
+            const checked = isOwnerRow || adminEmails.includes(c.email.toLowerCase());
+            return `
+                <label style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border);">
+                    <input type="checkbox" ${checked ? 'checked' : ''} ${isOwnerRow ? 'disabled' : ''}
+                        onchange="adminToggleAdminRole('${escapeJsAttr(c.email)}', this.checked)">
+                    <div style="flex:1;">
+                        <div style="font-weight:600;">${escapeHtml(c.displayName)}${isOwnerRow ? ' <span style="font-size:0.7rem; color:var(--text-muted); font-weight:500;">(eigenaar — vast)</span>' : ''}</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted);">${escapeHtml(c.email)}</div>
+                    </div>
+                </label>`;
+        }).join('');
+        wrap.innerHTML = rows;
+    }
+
+    async function adminToggleAdminRole(email, makeAdmin) {
+        if(!isTeamOwner()) {
+            alert('Alleen de hoofd-eigenaar kan admin-rollen wijzigen.');
+            renderAdminRoles();
+            return;
+        }
+        const e = String(email || '').toLowerCase();
+        if(!e || e === OWNER_EMAIL.toLowerCase()) {
+            renderAdminRoles();
+            return;
+        }
+        try {
+            const ref = db.collection('teams').doc(HOME_TEAM_ID);
+            await ref.update({
+                adminEmails: makeAdmin
+                    ? firebase.firestore.FieldValue.arrayUnion(e)
+                    : firebase.firestore.FieldValue.arrayRemove(e)
+            });
+            await adminLogAction(makeAdmin ? 'admin.grant' : 'admin.revoke', { email: e });
+            const home = await ref.get();
+            homeTeamCache = home.exists ? home.data() : homeTeamCache;
+            if(currentTeamId === HOME_TEAM_ID) currentTeam = homeTeamCache;
+            renderAdminRoles();
+            showToast(makeAdmin ? `${e} is nu admin` : `${e} is geen admin meer`);
+        } catch(err) {
+            console.error('toggleAdminRole', err);
+            alert('Wijzigen mislukt: ' + (err.message || err.code || 'onbekende fout'));
+            renderAdminRoles();
+        }
+    }
+
+    async function renderAuditLog() {
+        const wrap = document.getElementById('admin-audit-list');
+        if(!wrap) return;
+        wrap.innerHTML = '<div class="muted">Laden…</div>';
+        try {
+            const snap = await db.collection('audit').orderBy('ts', 'desc').limit(50).get();
+            if(snap.empty) {
+                wrap.innerHTML = '<div class="muted" style="font-size:0.85rem;">Nog geen acties.</div>';
+                return;
+            }
+            const labels = {
+                'team.create': 'Team aangemaakt',
+                'team.update': 'Team bewerkt',
+                'team.delete': 'Team verwijderd',
+                'team.coach.add': 'Coach toegevoegd',
+                'admin.grant':  'Admin-rechten gegeven',
+                'admin.revoke': 'Admin-rechten ingetrokken'
+            };
+            const rows = [];
+            snap.forEach(doc => {
+                const a = doc.data();
+                const ts = a.ts && a.ts.toDate ? a.ts.toDate() : null;
+                const when = ts ? ts.toLocaleString('nl-BE', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+                const label = labels[a.action] || a.action || '?';
+                const det = a.details || {};
+                const summary = det.teamName || det.email || det.coachName || det.teamId || '';
+                rows.push(`
+                    <div style="display:flex; gap:12px; padding:8px 0; border-bottom:1px solid var(--border); font-size:0.85rem;">
+                        <div style="min-width:130px; color:var(--text-muted);">${escapeHtml(when)}</div>
+                        <div style="flex:1;"><strong>${escapeHtml(label)}</strong>${summary ? ' — ' + escapeHtml(String(summary)) : ''}</div>
+                        <div style="color:var(--text-muted); font-size:0.78rem;">${escapeHtml(a.actorEmail || '')}</div>
+                    </div>`);
+            });
+            wrap.innerHTML = rows.join('');
+        } catch(e) {
+            console.error('audit-log', e);
+            wrap.innerHTML = '<div class="muted" style="font-size:0.85rem;">Kon audit-log niet laden.</div>';
+        }
+    }
+
     async function adminDeleteTeam(teamId, teamName) {
-        if(!isTeamOwner()) return;
+        if(!isAdmin()) return;
         if(!teamId || teamId === HOME_TEAM_ID) {
             alert('Het hoofdteam kan niet worden verwijderd.');
             return;
@@ -2371,6 +2562,7 @@
             }
             // 2) Verwijder team-doc
             await db.collection('teams').doc(teamId).delete();
+            await adminLogAction('team.delete', { teamId, teamName: team.name || teamId, emails: team.allowedEmails || [] });
             const emails = (team.allowedEmails || []).join(', ');
             const msg =
                 `Team "${team.name || teamId}" verwijderd uit Firestore.\n\n` +
@@ -2392,6 +2584,170 @@
             showToast('Reset-email opnieuw gestuurd naar ' + email);
         } catch(e) {
             alert('Versturen mislukt: ' + (e.message || e.code));
+        }
+    }
+
+    // ---------- Admin: Team bewerken ----------
+    let editingTeamId = null;
+    let editingTeamData = null;
+
+    async function adminOpenEditTeam(teamId) {
+        if(!isAdmin()) return;
+        try {
+            const doc = await db.collection('teams').doc(teamId).get();
+            if(!doc.exists) { alert('Team niet gevonden.'); return; }
+            editingTeamId = teamId;
+            editingTeamData = doc.data();
+            const modal = document.getElementById('admin-edit-modal');
+            const errDiv = document.getElementById('admin-edit-error');
+            const okDiv  = document.getElementById('admin-edit-success');
+            if(errDiv) errDiv.style.display = 'none';
+            if(okDiv)  okDiv.style.display = 'none';
+            document.getElementById('admin-edit-team-name').value = editingTeamData.name || '';
+            renderEditCoachList();
+            document.getElementById('admin-edit-new-coach-name').value = '';
+            document.getElementById('admin-edit-new-coach-email').value = '';
+            modal.style.display = 'flex';
+        } catch(e) {
+            console.error('adminOpenEditTeam', e);
+            alert('Kon team niet laden: ' + (e.message || e.code));
+        }
+    }
+
+    function adminCloseEditTeam() {
+        editingTeamId = null;
+        editingTeamData = null;
+        const modal = document.getElementById('admin-edit-modal');
+        if(modal) modal.style.display = 'none';
+    }
+
+    function renderEditCoachList() {
+        const wrap = document.getElementById('admin-edit-coaches-list');
+        if(!wrap || !editingTeamData) return;
+        const coaches = editingTeamData.coaches || [];
+        if(coaches.length === 0) {
+            wrap.innerHTML = '<div class="muted" style="font-size:0.85rem;">Nog geen coaches.</div>';
+            return;
+        }
+        wrap.innerHTML = coaches.map((c, i) => `
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                <input type="text" value="${escapeHtml(c.displayName || '')}" data-coach-idx="${i}" class="admin-edit-coach-input"
+                    style="flex:1; padding:8px; border:1px solid var(--border); border-radius:var(--radius-sm);">
+                <span style="font-size:0.75rem; color:var(--text-muted); min-width:0; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(c.email || '')}</span>
+            </div>
+        `).join('');
+    }
+
+    async function adminSaveTeamEdits() {
+        if(!isAdmin() || !editingTeamId || !editingTeamData) return;
+        const errDiv = document.getElementById('admin-edit-error');
+        const okDiv  = document.getElementById('admin-edit-success');
+        if(errDiv) errDiv.style.display = 'none';
+        if(okDiv)  okDiv.style.display = 'none';
+
+        const newName = (document.getElementById('admin-edit-team-name').value || '').trim();
+        if(!newName) {
+            if(errDiv) { errDiv.innerText = 'Team-naam mag niet leeg zijn.'; errDiv.style.display = 'block'; }
+            return;
+        }
+
+        // Lees coach-naam-inputs
+        const inputs = document.querySelectorAll('.admin-edit-coach-input');
+        const newCoaches = (editingTeamData.coaches || []).map(c => ({ ...c }));
+        inputs.forEach(inp => {
+            const idx = parseInt(inp.getAttribute('data-coach-idx'), 10);
+            const v = (inp.value || '').trim();
+            if(!isNaN(idx) && newCoaches[idx] && v) newCoaches[idx].displayName = v;
+        });
+
+        try {
+            await db.collection('teams').doc(editingTeamId).update({
+                name: newName,
+                coaches: newCoaches,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedBy: (auth.currentUser && auth.currentUser.email) || ''
+            });
+            // Sync coach-docs (displayName)
+            for(const c of newCoaches) {
+                if(c && c.id) {
+                    try { await db.collection('coaches').doc(c.id).set({ displayName: c.displayName || c.id }, { merge: true }); }
+                    catch(_) { /* ignore individual failures */ }
+                }
+            }
+            await adminLogAction('team.update', { teamId: editingTeamId, teamName: newName });
+            if(okDiv) { okDiv.innerText = 'Wijzigingen opgeslagen.'; okDiv.style.display = 'block'; }
+            // Refresh state if we edited our own team
+            if(currentTeamId === editingTeamId) {
+                currentTeam.name = newName;
+                currentTeam.coaches = newCoaches;
+                applyBranding();
+                populateCoachSelector();
+            }
+            renderAdmin();
+        } catch(e) {
+            console.error('adminSaveTeamEdits', e);
+            if(errDiv) { errDiv.innerText = 'Opslaan mislukt: ' + (e.message || e.code || 'onbekende fout'); errDiv.style.display = 'block'; }
+        }
+    }
+
+    async function adminAddCoachToTeam() {
+        if(!isAdmin() || !editingTeamId || !editingTeamData) return;
+        const errDiv = document.getElementById('admin-edit-error');
+        const okDiv  = document.getElementById('admin-edit-success');
+        if(errDiv) errDiv.style.display = 'none';
+        if(okDiv)  okDiv.style.display = 'none';
+
+        const name  = (document.getElementById('admin-edit-new-coach-name').value || '').trim();
+        const email = (document.getElementById('admin-edit-new-coach-email').value || '').trim().toLowerCase();
+        if(!name || !email) {
+            if(errDiv) { errDiv.innerText = 'Vul naam én email in voor de nieuwe coach.'; errDiv.style.display = 'block'; }
+            return;
+        }
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            if(errDiv) { errDiv.innerText = 'Ongeldig email-adres.'; errDiv.style.display = 'block'; }
+            return;
+        }
+        // Check op duplicate email in een team
+        try {
+            const dup = await db.collection('teams')
+                .where('allowedEmails', 'array-contains', email)
+                .limit(1).get();
+            if(!dup.empty) {
+                if(errDiv) { errDiv.innerText = 'Deze email zit al in een team.'; errDiv.style.display = 'block'; }
+                return;
+            }
+            // Maak Firebase Auth-account met random pwd + reset-mail
+            const tempPwd = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + 'Aa1!';
+            try {
+                await createCoachFirebaseUser(email, tempPwd);
+            } catch(authErr) {
+                if(authErr.code !== 'auth/email-already-in-use') throw authErr;
+            }
+            await auth.sendPasswordResetEmail(email);
+            const coachId = editingTeamId + '-coach-' + Date.now().toString(36);
+            const newCoach = { id: coachId, displayName: name, email };
+            await db.collection('teams').doc(editingTeamId).update({
+                allowedEmails: firebase.firestore.FieldValue.arrayUnion(email),
+                coaches: firebase.firestore.FieldValue.arrayUnion(newCoach),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedBy: (auth.currentUser && auth.currentUser.email) || ''
+            });
+            await db.collection('coaches').doc(coachId).set({
+                teamId: editingTeamId, displayName: name, email,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+            await adminLogAction('team.coach.add', { teamId: editingTeamId, teamName: editingTeamData.name || editingTeamId, coachName: name, email });
+            // Refresh editing state
+            const fresh = await db.collection('teams').doc(editingTeamId).get();
+            editingTeamData = fresh.data();
+            renderEditCoachList();
+            document.getElementById('admin-edit-new-coach-name').value = '';
+            document.getElementById('admin-edit-new-coach-email').value = '';
+            if(okDiv) { okDiv.innerText = `Coach ${name} toegevoegd — reset-mail verstuurd naar ${email}.`; okDiv.style.display = 'block'; }
+            renderAdmin();
+        } catch(e) {
+            console.error('adminAddCoachToTeam', e);
+            if(errDiv) { errDiv.innerText = 'Toevoegen mislukt: ' + (e.message || e.code || 'onbekende fout'); errDiv.style.display = 'block'; }
         }
     }
 
@@ -2539,13 +2895,25 @@
         document.getElementById('mobile-overlay').classList.remove('active');
     }
 
+    function applyBranding() {
+        const brandTextEl = document.querySelector('.brand-text');
+        const bc = document.getElementById('brand-coach');
+        if(currentTeam && !currentTeam.isHomeTeam) {
+            // Externe coach — toon team-naam als hoofdtitel
+            if(brandTextEl) brandTextEl.textContent = currentTeam.name || 'HBL-Connect';
+            if(bc) bc.innerText = currentCoach || '';
+        } else {
+            if(brandTextEl) brandTextEl.innerHTML = 'HBL-Connect <span>Pro</span>';
+            if(bc) bc.innerText = currentCoach || '';
+        }
+    }
+
     function switchCoach() {
         // Alleen laden als we ingelogd zijn!
         if (!auth.currentUser) return; 
 
         currentCoach = document.getElementById('coach-selector').value;
-        const bc = document.getElementById('brand-coach');
-        if(bc) bc.innerText = currentCoach;
+        applyBranding();
         const av = document.getElementById('coach-avatar');
         if(av) av.innerText = (currentCoach || '?').charAt(0).toUpperCase();
         
