@@ -3421,23 +3421,28 @@
     }
 
     function getProgressPoints(client, metric) {
-        const start = client.startdate || (client.fiche && client.fiche.startdate) || '';
-        const startTs = start ? new Date(start + 'T00:00').getTime() : null;
-        const basePoints = PROGRESS_STAGES.map(s => {
-            const t = client[s.key];
-            const v = t && t[metric];
-            const n = v !== undefined && v !== null && v !== '' ? parseFloat(String(v).replace(',', '.')) : NaN;
-            return { label: s.label, day: s.day, value: isNaN(n) ? null : n };
-        }).filter(p => p.value !== null);
-        const extraPoints = (client.tanita_extra || []).map((x, idx) => {
-            const v = x && x[metric];
-            const n = v !== undefined && v !== null && v !== '' ? parseFloat(String(v).replace(',', '.')) : NaN;
-            const entryTs = x.date ? new Date(x.date + 'T00:00').getTime() : null;
-            const dayFromStart = (startTs && entryTs) ? Math.max(0, Math.round((entryTs - startTs) / 86400000)) : (22 + idx);
-            const shortDate = x.date ? new Date(x.date + 'T00:00').toLocaleDateString('nl-BE', { day:'2-digit', month:'2-digit' }) : '';
-            return { label: shortDate ? `Extra (${shortDate})` : `Extra ${idx + 1}`, day: dayFromStart, value: isNaN(n) ? null : n, date: x.date || '' };
-        }).filter(p => p.value !== null);
-        return basePoints.concat(extraPoints).sort((a,b) => (a.day - b.day));
+function getProgressPoints(client, metric) {
+    const start = client.startdate || (client.fiche && client.fiche.startdate) || '';
+    const startTs = start ? new Date(start + 'T00:00').getTime() : null;
+
+    const basePoints = PROGRESS_STAGES.map(s => {
+        const t = client[s.key];
+        const v = t && t[metric];
+        const n = v !== undefined && v !== null && v !== '' ? parseFloat(String(v).replace(',', '.')) : NaN;
+        return { label: s.label, day: s.day, value: isNaN(n) ? null : n };
+    }).filter(p => p.value !== null);
+
+    const extraPoints = (client.tanita_extra || []).map((x, idx) => {
+        const v = x && x[metric];
+        const n = v !== undefined && v !== null && v !== '' ? parseFloat(String(v).replace(',', '.')) : NaN;
+        const entryTs = x.date ? new Date(x.date + 'T00:00').getTime() : null;
+        const dayFromStart = (startTs && entryTs) ? Math.max(0, Math.round((entryTs - startTs) / 86400000)) : (22 + idx);
+        const shortDate = x.date ? new Date(x.date + 'T00:00').toLocaleDateString('nl-BE', { day:'2-digit', month:'2-digit' }) : '';
+        return { label: shortDate ? `Extra (${shortDate})` : `Extra ${idx + 1}`, day: dayFromStart, value: isNaN(n) ? null : n, date: x.date || '' };
+    }).filter(p => p.value !== null);
+
+    return basePoints.concat(extraPoints).sort((a,b) => (a.day - b.day));
+}
     }
 
     function saveExtraTanita() {
